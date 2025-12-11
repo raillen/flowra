@@ -193,4 +193,97 @@ export default async function statsRoutes(fastify) {
             });
         }
     });
+
+    // Get workload stats per user (for a project/board)
+    fastify.get('/stats/workload', {
+        preHandler: [authenticate]
+    }, async (request, reply) => {
+        try {
+            const { projectId, boardId } = request.query;
+
+            // Build where clause
+            const where = {};
+            if (boardId) {
+                where.boardId = boardId;
+            } else if (projectId) {
+                where.board = { projectId };
+            }
+
+            // Get cards grouped by assignedUserId
+            const cards = await prisma.card.findMany({
+                where: {
+                    ...where,
+                    assignedUserId: { not: null }
+                },
+                select: {
+                    id: true,
+                    status: true,
+                    priority: true,
+                    dueDate: true,
+                    assignedUserId: true,
+                    assignedUser: {
+                        select: { id: true, name: true, avatar: true }
+                    }
+                }
+            });
+
+            // Group by user
+            const userWorkload = {};
+            cards.forEach(card => {
+                const userId = card.assignedUserId;
+                if (!userWorkload[userId]) {
+                    userWorkload[userId] = {
+                        user: card.assignedUser,
+                        total: 0,
+                        byStatus: {},
+                        overdue: 0,
+                        highPriority: 0
+                    };
+                }
+                userWorkload[userId].total++;
+
+                // Count by status
+                const status = card.status || 'todo';
+                userWorkload[userId].byStatus[status] = (userWorkload[userId].byStatus[status] || 0) + 1;
+
+                // Check overdue
+                if (card.dueDate && new Date(card.dueDate) < new Date()) {
+                    userWorkload[userId].overdue++;
+                }
+
+                // High priority
+                if (card.priority === 'alta' || card.priority === 'urgente') {
+                    userWorkload[userId].highPriority++;
+                }
+            });
+
+            // Convert to array and add workload level
+            const workloadData = Object.values(userWorkload).map(item => {
+                let level = 'low';
+                if (item.total > 15 || item.overdue > 3) level = 'critical';
+                else if (item.total > 10 || item.overdue > 1) level = 'high';
+                else if (item.total > 5) level = 'medium';
+
+                return {
+                    ...item,
+                    level
+                };
+            });
+
+            // Sort by total cards descending
+            workloadData.sort((a, b) => b.total - a.total);
+
+            return reply.send({
+                success: true,
+                data: workloadData
+            });
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                message: 'Erro ao obter carga de trabalho'
+            });
+        }
+    });
 }
+

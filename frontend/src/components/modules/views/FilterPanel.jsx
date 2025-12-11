@@ -16,6 +16,7 @@ import {
     CheckSquare,
     List
 } from 'lucide-react';
+import SavedFiltersDropdown from '../../common/SavedFiltersDropdown';
 
 /**
  * Filter chip component for active filters
@@ -64,6 +65,8 @@ const FilterPanel = ({
     totalCards = 0,
     filteredCount = 0,
     customFieldDefinitions = [], // { id, name, type, options }[]
+    projectId,
+    boardId,
 }) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [searchValue, setSearchValue] = useState(filters.search || '');
@@ -291,8 +294,8 @@ const FilterPanel = ({
                 <button
                     onClick={() => setIsDrawerOpen(true)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${activeFilterCount > 0
-                            ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm'
-                            : 'bg-white border-secondary-200 text-secondary-600 hover:bg-secondary-50'
+                        ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm'
+                        : 'bg-white border-secondary-200 text-secondary-600 hover:bg-secondary-50'
                         }`}
                 >
                     <Filter size={16} />
@@ -303,6 +306,14 @@ const FilterPanel = ({
                         </span>
                     )}
                 </button>
+
+                {/* Saved Filters */}
+                <SavedFiltersDropdown
+                    currentFilters={filters}
+                    onLoadFilter={onFiltersChange}
+                    projectId={projectId}
+                    boardId={boardId}
+                />
 
                 {/* Results Count */}
                 <div className="text-sm text-secondary-500 px-2 border-l border-secondary-200">
