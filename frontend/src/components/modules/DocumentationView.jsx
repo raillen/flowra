@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css';
 import { useApp } from '../../contexts/AppContext';
 import api from '../../config/api';
 import {
     Book,
-    Code,
     Search,
     ChevronRight,
     ChevronDown,
@@ -20,12 +23,13 @@ import {
     Edit3,
     Save,
     X,
-    ExternalLink
+    Copy,
+    Check
 } from 'lucide-react';
 
 /**
  * DocumentationView - Documentation module with technical and usage sections
- * Technical docs are admin-only
+ * Uses react-markdown for proper Markdown rendering with syntax highlighting
  */
 const DocumentationView = () => {
     const { user } = useApp();
@@ -65,7 +69,6 @@ const DocumentationView = () => {
         } catch (error) {
             console.error('Failed to load sidebar:', error);
             if (error.response?.status === 403) {
-                // Switch to usage if not admin
                 setActiveSection('usage');
             }
         }
@@ -290,15 +293,117 @@ const DocumentationView = () => {
                     </div>
                 ) : (
                     /* Render Markdown */
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 docs-content">
                         {loading ? (
                             <div className="flex items-center justify-center py-12">
                                 <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
                             </div>
                         ) : (
-                            <div className="prose prose-slate max-w-none prose-headings:text-slate-800 prose-a:text-primary-600 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100">
-                                <MarkdownRenderer content={content} />
-                            </div>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeHighlight]}
+                                components={{
+                                    // Custom code block with copy button
+                                    pre: ({ children, ...props }) => (
+                                        <div className="relative group">
+                                            <CopyButton content={children?.props?.children || ''} />
+                                            <pre className="!bg-slate-900 !rounded-xl !p-4 !my-4 overflow-x-auto" {...props}>
+                                                {children}
+                                            </pre>
+                                        </div>
+                                    ),
+                                    code: ({ inline, className, children, ...props }) => {
+                                        if (inline) {
+                                            return (
+                                                <code className="px-1.5 py-0.5 bg-slate-100 text-slate-800 rounded text-sm font-mono" {...props}>
+                                                    {children}
+                                                </code>
+                                            );
+                                        }
+                                        return <code className={className} {...props}>{children}</code>;
+                                    },
+                                    // Tables
+                                    table: ({ children }) => (
+                                        <div className="overflow-x-auto my-4">
+                                            <table className="w-full border-collapse border border-slate-200 rounded-lg overflow-hidden">
+                                                {children}
+                                            </table>
+                                        </div>
+                                    ),
+                                    thead: ({ children }) => (
+                                        <thead className="bg-slate-50">{children}</thead>
+                                    ),
+                                    th: ({ children }) => (
+                                        <th className="border border-slate-200 px-4 py-2 text-left text-sm font-semibold text-slate-700">
+                                            {children}
+                                        </th>
+                                    ),
+                                    td: ({ children }) => (
+                                        <td className="border border-slate-200 px-4 py-2 text-sm text-slate-600">{children}</td>
+                                    ),
+                                    // Headings
+                                    h1: ({ children }) => (
+                                        <h1 className="text-3xl font-bold text-slate-800 mb-6 pb-3 border-b border-slate-200">{children}</h1>
+                                    ),
+                                    h2: ({ children }) => (
+                                        <h2 className="text-2xl font-bold text-slate-800 mt-8 mb-4">{children}</h2>
+                                    ),
+                                    h3: ({ children }) => (
+                                        <h3 className="text-xl font-semibold text-slate-700 mt-6 mb-3">{children}</h3>
+                                    ),
+                                    // Paragraphs
+                                    p: ({ children }) => (
+                                        <p className="text-slate-600 leading-relaxed mb-4">{children}</p>
+                                    ),
+                                    // Lists
+                                    ul: ({ children }) => (
+                                        <ul className="list-disc list-inside space-y-2 mb-4 text-slate-600 ml-4">{children}</ul>
+                                    ),
+                                    ol: ({ children }) => (
+                                        <ol className="list-decimal list-inside space-y-2 mb-4 text-slate-600 ml-4">{children}</ol>
+                                    ),
+                                    li: ({ children }) => (
+                                        <li className="text-slate-600">{children}</li>
+                                    ),
+                                    // Blockquotes
+                                    blockquote: ({ children }) => (
+                                        <blockquote className="border-l-4 border-primary-500 pl-4 py-2 my-4 bg-primary-50 rounded-r-lg">
+                                            {children}
+                                        </blockquote>
+                                    ),
+                                    // Links
+                                    a: ({ children, href }) => (
+                                        <a
+                                            href={href}
+                                            className="text-primary-600 hover:text-primary-700 underline underline-offset-2"
+                                            target={href?.startsWith('http') ? '_blank' : undefined}
+                                            rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                        >
+                                            {children}
+                                        </a>
+                                    ),
+                                    // Horizontal Rule
+                                    hr: () => <hr className="my-8 border-slate-200" />,
+                                    // Images
+                                    img: ({ src, alt }) => (
+                                        <img
+                                            src={src}
+                                            alt={alt}
+                                            className="rounded-xl shadow-md border border-slate-200 my-4 max-w-full"
+                                        />
+                                    ),
+                                    // Strong
+                                    strong: ({ children }) => (
+                                        <strong className="font-semibold text-slate-800">{children}</strong>
+                                    ),
+                                    // Emphasis
+                                    em: ({ children }) => (
+                                        <em className="italic text-slate-600">{children}</em>
+                                    ),
+                                }}
+                            >
+                                {content}
+                            </ReactMarkdown>
                         )}
                     </div>
                 )}
@@ -308,55 +413,30 @@ const DocumentationView = () => {
 };
 
 /**
- * Simple Markdown Renderer
- * Supports: headings, bold, italic, code, lists, links, tables, blockquotes
+ * Copy button component for code blocks
  */
-const MarkdownRenderer = ({ content }) => {
-    const html = useMemo(() => {
-        let result = content
-            // Escape HTML
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            // Code blocks
-            .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
-            // Inline code
-            .replace(/`([^`]+)`/g, '<code>$1</code>')
-            // Headers
-            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-            // Bold and Italic
-            .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            // Links
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-            // Horizontal Rules
-            .replace(/^---$/gm, '<hr />')
-            // Blockquotes
-            .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-            // Unordered Lists
-            .replace(/^- (.+)$/gm, '<li>$1</li>')
-            .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-            // Tables (simple)
-            .replace(/\|(.+)\|/g, (match) => {
-                const cells = match.split('|').filter(Boolean).map(c => `<td>${c.trim()}</td>`).join('');
-                return `<tr>${cells}</tr>`;
-            })
-            // Wrap tables
-            .replace(/(<tr>.*<\/tr>\n?)+/g, '<table>$&</table>')
-            // Paragraphs
-            .split('\n\n')
-            .map(p => {
-                if (p.startsWith('<') || p.trim() === '') return p;
-                return `<p>${p.replace(/\n/g, '<br/>')}</p>`;
-            })
-            .join('\n');
+const CopyButton = ({ content }) => {
+    const [copied, setCopied] = useState(false);
 
-        return result;
-    }, [content]);
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(content);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
 
-    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+    return (
+        <button
+            onClick={handleCopy}
+            className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Copiar código"
+        >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+        </button>
+    );
 };
 
 export default DocumentationView;
