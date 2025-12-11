@@ -17,6 +17,7 @@ import KanbanBoardView from '../modules/KanbanBoardView';
 import NotificationModule from '../modules/NotificationModule';
 import GlobalDashboard from '../modules/GlobalDashboard';
 import BriefingTemplatesView from '../modules/views/BriefingTemplatesView';
+import ArchiveModule from '../modules/ArchiveModule';
 import { LayoutDashboard, Bell } from 'lucide-react';
 import Breadcrumbs from '../common/Breadcrumbs';
 
@@ -67,6 +68,8 @@ const MainContent = () => {
         return <DocumentationView />;
       case 'briefings':
         return <BriefingTemplatesView />;
+      case 'archive':
+        return <ArchiveModule />;
       case 'settings':
         return <SettingsModule />;
       default:

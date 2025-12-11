@@ -20,7 +20,8 @@ import {
   LogOut,
   ChevronRight,
   Plus,
-  Sparkles
+  Sparkles,
+  Archive
 } from 'lucide-react';
 
 /**
@@ -64,6 +65,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
         { id: 'notes', label: 'Anotações', icon: StickyNote },
         { id: 'docs', label: 'Documentação', icon: FileText },
         { id: 'briefings', label: 'Briefings', icon: Sparkles },
+        { id: 'archive', label: 'Arquivo', icon: Archive },
         { id: 'transfer', label: 'Transferência', icon: ArrowRightLeft },
       ]
     },

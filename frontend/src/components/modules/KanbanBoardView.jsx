@@ -792,9 +792,9 @@ const KanbanBoardView = () => {
             variant="ghost"
             onClick={() => setIsSettingsModalOpen(true)}
             icon={Settings}
-            title="Configurar campos do board"
+            title="Configurações do board"
           >
-            Configurar Campos
+            Configurar Board
           </Button>
           <Button
             variant="ghost"
