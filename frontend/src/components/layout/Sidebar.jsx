@@ -17,11 +17,15 @@ import {
   X,
   Code2,
   LogOut,
+  ChevronRight,
+  Search,
+  Plus,
+  Sparkles
 } from 'lucide-react';
 
 /**
  * Sidebar navigation component
- * Responsive with collapsible mode and mobile drawer
+ * Redesigned with modern glassmorphism and gradient accents
  * 
  * @module components/layout/Sidebar
  */
@@ -31,6 +35,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const { unreadTotal } = useChatContext();
   const { unreadCount: notificationUnreadCount } = useNotificationContext();
   const { logout } = useAuthContext();
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
 
@@ -39,34 +44,34 @@ const Sidebar = ({ isOpen, onToggle }) => {
       id: 'principal',
       label: 'Principal',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'notifications', label: 'Notificações', icon: Bell, badge: notificationUnreadCount > 0 ? notificationUnreadCount : null },
-        { id: 'chat', label: 'Chat', icon: MessageSquare, badge: unreadTotal > 0 ? unreadTotal : null },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, gradient: 'from-blue-500 to-cyan-400' },
+        { id: 'notifications', label: 'Notificações', icon: Bell, badge: notificationUnreadCount > 0 ? notificationUnreadCount : null, gradient: 'from-amber-500 to-orange-400' },
+        { id: 'chat', label: 'Mensagens', icon: MessageSquare, badge: unreadTotal > 0 ? unreadTotal : null, gradient: 'from-violet-500 to-purple-400' },
       ]
     },
     {
       id: 'gestao',
       label: 'Gestão',
       items: [
-        { id: 'projects', label: 'Projetos', icon: Folder },
-        { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
+        { id: 'projects', label: 'Projetos', icon: Folder, gradient: 'from-emerald-500 to-teal-400' },
+        { id: 'calendar', label: 'Calendário', icon: CalendarIcon, gradient: 'from-rose-500 to-pink-400' },
       ]
     },
     {
       id: 'ferramentas',
       label: 'Ferramentas',
       items: [
-        { id: 'notes', label: 'Anotações', icon: StickyNote },
-        { id: 'docs', label: 'Documentação', icon: FileText },
-        { id: 'briefings', label: 'Briefings', icon: LayoutDashboard }, // Using LayoutDashboard temporarily or maybe FileText? Briefing is like a form.
-        { id: 'transfer', label: 'Transferência', icon: ArrowRightLeft },
+        { id: 'notes', label: 'Anotações', icon: StickyNote, gradient: 'from-yellow-500 to-amber-400' },
+        { id: 'docs', label: 'Documentação', icon: FileText, gradient: 'from-slate-500 to-slate-400' },
+        { id: 'briefings', label: 'Briefings', icon: Sparkles, gradient: 'from-indigo-500 to-blue-400' },
+        { id: 'transfer', label: 'Transferência', icon: ArrowRightLeft, gradient: 'from-cyan-500 to-blue-400' },
       ]
     },
     {
       id: 'sistema',
       label: 'Sistema',
       items: [
-        { id: 'settings', label: 'Configurações', icon: Settings },
+        { id: 'settings', label: 'Configurações', icon: Settings, gradient: 'from-slate-600 to-slate-500' },
       ]
     }
   ];
@@ -93,43 +98,61 @@ const Sidebar = ({ isOpen, onToggle }) => {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
           onClick={onToggle}
         />
       )}
 
-      {/* Checkbox for mobile interactions (optional/legacy) */}
-      <input type="checkbox" id="nav-toggle" className="hidden" checked={isOpen} readOnly />
-
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-64 bg-surface border-r border-border
-        transform transition-transform duration-300 ease-in-out
+        w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/50
+        transform transition-all duration-300 ease-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        flex flex-col h-full shadow-lg
+        flex flex-col h-full shadow-xl lg:shadow-none
       `}>
+
         {/* Logo Area */}
-        <div className="h-16 flex items-center px-6 border-b border-border bg-surface/50">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md">
-              <Code2 className="text-primary-fg" size={20} />
+            <div className="w-9 h-9 bg-gradient-to-br from-primary-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
+              <Code2 className="text-white" size={20} />
             </div>
-            <span className="font-bold text-lg text-text-primary tracking-tight">KBSYS</span>
+            <div>
+              <span className="font-bold text-lg text-slate-800 tracking-tight">KBSys</span>
+              <span className="text-[10px] text-slate-400 block -mt-1">Project Manager</span>
+            </div>
           </div>
           <button
-            className="ml-auto lg:hidden text-text-secondary hover:text-text-primary transition-colors"
+            className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
             onClick={onToggle}
           >
             <X size={20} />
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="px-4 py-3">
+          <div className={`relative transition-all duration-200 ${searchFocused ? 'scale-[1.02]' : ''}`}>
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              className={`w-full pl-9 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all
+                ${searchFocused ? 'border-primary-300 bg-white shadow-md' : 'border-slate-200 hover:border-slate-300'}
+              `}
+            />
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">⌘K</kbd>
+          </div>
+        </div>
+
         {/* Navigation Items */}
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 custom-scrollbar">
           {menuGroups.map((group) => (
             <div key={group.id}>
               {group.label && (
-                <h3 className="px-3 text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
+                <h3 className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   {group.label}
                 </h3>
               )}
@@ -142,33 +165,38 @@ const Sidebar = ({ isOpen, onToggle }) => {
                       key={item.id}
                       onClick={() => handleNavigation(item.id)}
                       className={`
-                        w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 group
+                        w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative overflow-hidden
                         ${isActive
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                          ? 'bg-gradient-to-r ' + item.gradient + ' text-white shadow-md'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                         }
                       `}
                     >
-                      <div className="flex items-center gap-3">
-                        <item.icon
-                          size={18}
-                          className={`
-                            transition-colors duration-200
-                            ${isActive ? 'text-primary' : 'text-text-secondary group-hover:text-text-primary'}
-                          `}
-                        />
-                        <span className="text-sm">{item.label}</span>
+                      <div className="flex items-center gap-3 relative z-10">
+                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                          <item.icon
+                            size={16}
+                            className={isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}
+                          />
+                        </div>
+                        <span className="text-sm font-medium">{item.label}</span>
                       </div>
-                      {item.badge && (
+
+                      {item.badge ? (
                         <span className={`
-                          text-[10px] font-bold px-2 py-0.5 rounded-full
+                          text-[10px] font-bold px-2 py-0.5 rounded-full relative z-10
                           ${isActive
-                            ? 'bg-primary/20 text-primary'
-                            : 'bg-background text-text-secondary'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-red-100 text-red-600'
                           }
                         `}>
                           {item.badge}
                         </span>
+                      ) : (
+                        <ChevronRight
+                          size={14}
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-white/70' : 'text-slate-400'}`}
+                        />
                       )}
                     </button>
                   );
@@ -176,68 +204,66 @@ const Sidebar = ({ isOpen, onToggle }) => {
               </div>
             </div>
           ))}
-
-          {/* Contextual Project Navigation removed on user request (redundant) */}
         </div>
 
-        {/* User Profile Section */}
-        <div className="p-4 border-t border-border bg-surface/50">
+        {/* Bottom Section */}
+        <div className="p-4 border-t border-slate-100 bg-gradient-to-t from-slate-50 to-transparent">
+
           {/* Active Project Card */}
           {activeProject && (
-            <div className="mb-4 p-3 bg-surface rounded-lg border border-border shadow-sm">
+            <div className="mb-4 p-3 bg-gradient-to-br from-primary-50 to-indigo-50 rounded-xl border border-primary-100">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-1.5 bg-primary/10 text-primary rounded-md">
-                  <Folder size={14} />
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <Folder size={14} className="text-primary-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">Projeto Ativo</p>
-                  <p className="text-sm font-semibold text-text-primary truncate">{activeProject.name}</p>
+                  <p className="text-[10px] font-medium text-primary-600 uppercase tracking-wide">Projeto Ativo</p>
+                  <p className="text-sm font-bold text-slate-800 truncate">{activeProject.name}</p>
                 </div>
               </div>
               <button
                 onClick={handleExitProject}
-                className="w-full text-xs flex items-center justify-center gap-1.5 py-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50/10 rounded transition-colors"
-                title="Sair do projeto e voltar à lista"
+                className="w-full text-xs flex items-center justify-center gap-1.5 py-2 text-slate-500 hover:text-red-600 bg-white/80 hover:bg-white rounded-lg transition-all shadow-sm"
               >
-                <LogOut size={12} />
+                <ArrowRightLeft size={12} />
                 <span>Trocar Projeto</span>
               </button>
             </div>
           )}
 
-          <div className="flex items-center gap-3 px-2">
+          {/* User Profile */}
+          <div className="flex items-center gap-3 p-2 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer group">
             <div className="relative">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                  className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-md"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold border-2 border-white shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md">
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary truncate">
+              <p className="text-sm font-semibold text-slate-800 truncate">
                 {user?.name || 'Usuário'}
               </p>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-text-secondary truncate max-w-[80px]">
-                  {user?.email}
-                </p>
-                <button
-                  onClick={handleLogout}
-                  className="text-text-secondary hover:text-red-500 transition-colors"
-                  title="Sair"
-                >
-                  <LogOut size={14} />
-                </button>
-              </div>
+              <p className="text-xs text-slate-400 truncate">
+                {user?.email}
+              </p>
             </div>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+              title="Sair"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </aside>

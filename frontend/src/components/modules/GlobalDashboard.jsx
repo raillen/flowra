@@ -1,32 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { useToast } from '../../contexts/ToastContext';
 import api from '../../config/api';
 import {
-    LayoutDashboard,
     Calendar,
     CheckSquare,
     Clock,
     AlertTriangle,
     TrendingUp,
     Plus,
-    FileText,
-    Bell,
-    ArrowRight
+    Play,
+    Pause,
+    Square,
+    ArrowRight,
+    MoreVertical,
+    Users,
+    Folder,
+    Timer,
+    Activity,
+    ChevronRight
 } from 'lucide-react';
 
+/**
+ * GlobalDashboard - Redesigned with modern UI inspired by project management tools
+ * Features: KPI cards with gradients, timeline view, time tracking, activity chart
+ */
 const GlobalDashboard = () => {
     const { user } = useApp();
-    const { navigateTo } = useNavigation();
+    const { navigateTo, setActiveProjectId, setActiveBoardId } = useNavigation();
     const { info } = useToast();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [note, setNote] = useState(localStorage.getItem('quick_note') || '');
+
+    // Time tracking state
+    const [isTracking, setIsTracking] = useState(false);
+    const [trackingTime, setTrackingTime] = useState(0);
+    const [trackingTask, setTrackingTask] = useState('Projeto Atual');
 
     useEffect(() => {
         fetchDashboardData();
     }, []);
+
+    // Timer effect
+    useEffect(() => {
+        let interval;
+        if (isTracking) {
+            interval = setInterval(() => {
+                setTrackingTime(prev => prev + 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isTracking]);
 
     const fetchDashboardData = async () => {
         try {
@@ -41,9 +66,11 @@ const GlobalDashboard = () => {
         }
     };
 
-    const handleNoteChange = (e) => {
-        setNote(e.target.value);
-        localStorage.setItem('quick_note', e.target.value);
+    const formatTime = (seconds) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
     const getGreeting = () => {
@@ -55,8 +82,11 @@ const GlobalDashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="flex items-center justify-center h-full bg-gradient-to-br from-slate-50 to-slate-100">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-slate-500 text-sm">Carregando dashboard...</p>
+                </div>
             </div>
         );
     }
@@ -66,197 +96,288 @@ const GlobalDashboard = () => {
     const { stats, tasks, metrics, recentActivity, upcomingEvents } = data;
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
-            {/* Hero Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-secondary-900">
-                        {getGreeting()}, {user?.name.split(' ')[0]}
-                    </h1>
-                    <p className="text-secondary-500 mt-1">
-                        Aqui está o resumo do seu dia. Você tem <strong className="text-primary-600">{stats.dueTodayCount} tarefas</strong> para hoje.
-                    </p>
+        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-slate-50">
+            <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
+
+                {/* Header */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">
+                            {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                        </h1>
+                        <p className="text-slate-500 mt-1">
+                            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => navigateTo('projects')}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all font-medium shadow-sm"
+                        >
+                            <Folder size={18} /> Projetos
+                        </button>
+                        <button
+                            onClick={() => navigateTo('calendar')}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-indigo-600 text-white rounded-xl hover:from-primary-700 hover:to-indigo-700 transition-all font-medium shadow-lg shadow-primary-600/25"
+                        >
+                            <Plus size={18} /> Nova Tarefa
+                        </button>
+                    </div>
                 </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => navigateTo('projects')}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-secondary-200 rounded-xl text-secondary-600 hover:bg-secondary-50 transition-colors font-medium shadow-sm"
-                    >
-                        <Plus size={18} /> Novo Projeto
-                    </button>
-                    <button
-                        // Ideally opens a global create task modal, reusing CardModal logic requires props
-                        // For now, simple navigation or placeholder
-                        onClick={() => info('Para criar uma tarefa, acesse um projeto específico.', 'Dica')}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm shadow-primary-600/20"
-                    >
-                        <Plus size={18} /> Nova Tarefa
-                    </button>
+
+                {/* KPI Cards Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <KPICard
+                        label="Ações Pendentes"
+                        value={stats.totalActive}
+                        icon={Clock}
+                        gradient="from-blue-500 to-cyan-400"
+                        iconBg="bg-blue-500/10"
+                        trend="+12%"
+                    />
+                    <KPICard
+                        label="Em Progresso"
+                        value={stats.dueTodayCount}
+                        icon={Activity}
+                        gradient="from-amber-500 to-orange-400"
+                        iconBg="bg-amber-500/10"
+                    />
+                    <KPICard
+                        label="Concluídas"
+                        value={stats.completedWeek}
+                        icon={CheckSquare}
+                        gradient="from-emerald-500 to-teal-400"
+                        iconBg="bg-emerald-500/10"
+                        trend="+8%"
+                    />
                 </div>
-            </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPICard
-                    title="Tarefas Ativas"
-                    value={stats.totalActive}
-                    icon={CheckSquare}
-                    color="primary"
-                />
-                <KPICard
-                    title="Para Hoje"
-                    value={stats.dueTodayCount}
-                    icon={Clock}
-                    color="amber"
-                />
-                <KPICard
-                    title="Atrasadas"
-                    value={stats.overdueCount}
-                    icon={AlertTriangle}
-                    color="red"
-                    urgent={stats.overdueCount > 0}
-                />
-                <KPICard
-                    title="Concluídas (7d)"
-                    value={stats.completedWeek}
-                    icon={TrendingUp}
-                    color="emerald"
-                />
-            </div>
+                {/* Main Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column (Main Content) */}
-                <div className="lg:col-span-2 space-y-8">
+                    {/* Left Column - Timeline */}
+                    <div className="lg:col-span-2 space-y-6">
 
-                    {/* Alerts Section (Only if Overdue > 0) */}
-                    {tasks.overdue.length > 0 && (
-                        <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
-                            <div className="flex items-center gap-3 mb-4 text-red-800">
-                                <AlertTriangle className="text-red-600" />
-                                <h2 className="font-bold text-lg">Atenção Necessária</h2>
+                        {/* Timeline Card */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                                <h2 className="font-bold text-slate-800 flex items-center gap-2">
+                                    <Calendar size={20} className="text-primary-500" />
+                                    Timeline
+                                </h2>
+                                <div className="flex items-center gap-2">
+                                    <button className="px-3 py-1.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                                        Hoje
+                                    </button>
+                                    <button className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400">
+                                        <MoreVertical size={18} />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="space-y-3">
-                                {tasks.overdue.slice(0, 3).map(task => (
-                                    <TaskRow key={task.id} task={task} />
-                                ))}
-                                {tasks.overdue.length > 3 && (
-                                    <div className="text-center text-red-600 text-sm font-medium pt-2">
-                                        + {tasks.overdue.length - 3} outras tarefas atrasadas
+
+                            {/* Timeline Content */}
+                            <div className="p-5">
+                                {/* Timeline Header */}
+                                <div className="flex items-center gap-4 mb-4 text-xs font-medium text-slate-400 pl-[140px]">
+                                    {['8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM'].map(time => (
+                                        <span key={time} className="flex-1 text-center">{time}</span>
+                                    ))}
+                                </div>
+
+                                {/* Timeline Rows */}
+                                <div className="space-y-3">
+                                    {tasks.all.slice(0, 5).map((task, idx) => (
+                                        <TimelineRow
+                                            key={task.id}
+                                            task={task}
+                                            color={getTaskColor(idx)}
+                                            onClick={() => {
+                                                if (task.board?.projectId) {
+                                                    setActiveProjectId(task.board.projectId);
+                                                    setActiveBoardId(task.boardId);
+                                                    navigateTo('kanban');
+                                                }
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+
+                                {tasks.all.length === 0 && (
+                                    <div className="text-center py-12 text-slate-400">
+                                        <Calendar size={40} className="mx-auto mb-3 opacity-50" />
+                                        <p>Nenhuma tarefa para exibir</p>
                                     </div>
+                                )}
+
+                                {tasks.all.length > 5 && (
+                                    <button
+                                        onClick={() => navigateTo('calendar')}
+                                        className="w-full mt-4 py-2.5 text-sm text-primary-600 hover:bg-primary-50 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        Ver todos <ChevronRight size={16} />
+                                    </button>
                                 )}
                             </div>
                         </div>
-                    )}
 
-                    {/* Unified Task List */}
-                    <div className="bg-white border border-secondary-200 rounded-2xl p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-bold text-lg text-secondary-800 flex items-center gap-2">
-                                <CheckSquare className="text-primary-500" /> Minhas Tarefas
-                            </h2>
-                            <span className="text-xs font-medium px-3 py-1 bg-secondary-100 text-secondary-600 rounded-full">
-                                {tasks.all.length} Total
-                            </span>
-                        </div>
-
-                        {tasks.all.length === 0 ? (
-                            <div className="text-center py-12 text-secondary-400">
-                                <p>Nenhuma tarefa atribuída a você.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-1">
-                                {tasks.all.slice(0, 5).map(task => (
-                                    <TaskRow key={task.id} task={task} showProject />
-                                ))}
-                            </div>
-                        )}
-                        {tasks.all.length > 5 && (
-                            <button className="w-full mt-4 py-2 text-sm text-primary-600 hover:bg-primary-50 rounded-lg font-medium transition-colors">
-                                Ver todas as {tasks.all.length} tarefas
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Right Column (Sidebar Widgets) */}
-                <div className="space-y-6">
-
-                    {/* Productivity Chart (Velocity) */}
-                    <div className="bg-white border border-secondary-200 rounded-2xl p-6 shadow-sm">
-                        <h3 className="font-bold text-secondary-800 mb-4 flex items-center gap-2">
-                            <TrendingUp size={18} className="text-emerald-500" /> Velocidade
-                        </h3>
-                        <div className="h-32 flex items-end justify-between gap-2 px-2">
-                            {metrics.velocity.map((day) => {
-                                const height = day.count > 0 ? `${Math.min(day.count * 15, 100)}%` : '4px';
-                                return (
-                                    <div key={day.date} className="flex flex-col items-center gap-2 flex-1 group">
-                                        <div className="w-full relative">
-                                            {/* Bar */}
-                                            <div
-                                                className={`w-full rounded-t-sm transition-all duration-500 ${day.count > 0 ? 'bg-primary-500 group-hover:bg-primary-600' : 'bg-secondary-100'}`}
-                                                style={{ height }}
-                                            />
-                                            {/* Tooltip */}
-                                            {day.count > 0 && (
-                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-secondary-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {day.count}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <span className="text-[10px] text-secondary-400 font-medium">
-                                            {new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'narrow' })}
-                                        </span>
+                        {/* Overdue Alert */}
+                        {stats.overdueCount > 0 && (
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="p-2 bg-red-500/10 rounded-xl">
+                                        <AlertTriangle size={20} className="text-red-500" />
                                     </div>
-                                );
-                            })}
-                        </div>
-                        <p className="text-xs text-secondary-400 text-center mt-4">Tarefas concluídas (7 dias)</p>
+                                    <div>
+                                        <h3 className="font-bold text-red-800">Atenção Necessária</h3>
+                                        <p className="text-sm text-red-600">{stats.overdueCount} tarefas atrasadas</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    {tasks.overdue.slice(0, 3).map(task => (
+                                        <div key={task.id} className="flex items-center justify-between p-3 bg-white/60 rounded-xl">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-2 h-6 rounded-full bg-red-500" />
+                                                <span className="text-sm font-medium text-slate-700">{task.title}</span>
+                                            </div>
+                                            <span className="text-xs text-red-500 font-medium">
+                                                {task.dueDate && new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Recent Activity */}
-                    <div className="bg-white border border-secondary-200 rounded-2xl p-6 shadow-sm">
-                        <h3 className="font-bold text-secondary-800 mb-4 flex items-center gap-2">
-                            <Bell size={18} className="text-amber-500" /> Atividade Recente
-                        </h3>
-                        <div className="space-y-4">
-                            {recentActivity.length === 0 ? (
-                                <p className="text-sm text-secondary-400">Nenhuma atividade recente.</p>
-                            ) : (
-                                recentActivity.map(act => (
-                                    <div key={act.id} className="flex gap-3 text-sm">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary-400 mt-2 shrink-0" />
-                                        <div>
-                                            <p className="text-secondary-700 font-medium line-clamp-2">{act.title}</p>
-                                            <p className="text-xs text-secondary-400 mt-1">
+                    {/* Right Column - Widgets */}
+                    <div className="space-y-6">
+
+                        {/* Time Tracking Widget */}
+                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-xl">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold flex items-center gap-2">
+                                    <Timer size={18} className="text-primary-400" />
+                                    Tempo Rastreado
+                                </h3>
+                                <button className="p-1 hover:bg-white/10 rounded">
+                                    <MoreVertical size={16} />
+                                </button>
+                            </div>
+                            <p className="text-sm text-slate-400 mb-2">{trackingTask}</p>
+                            <p className="text-4xl font-bold font-mono mb-4">{formatTime(trackingTime)}</p>
+                            <div className="flex gap-2">
+                                {isTracking ? (
+                                    <>
+                                        <button
+                                            onClick={() => setIsTracking(false)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl font-medium transition-colors"
+                                        >
+                                            <Square size={16} /> Parar
+                                        </button>
+                                        <button
+                                            onClick={() => setIsTracking(false)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition-colors"
+                                        >
+                                            <Pause size={16} /> Pausar
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => setIsTracking(true)}
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary-500 hover:bg-primary-600 rounded-xl font-medium transition-colors"
+                                    >
+                                        <Play size={16} /> Iniciar
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Today's Meetings */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                    <Calendar size={18} className="text-amber-500" />
+                                    Reuniões Hoje
+                                </h3>
+                            </div>
+                            <div className="space-y-3">
+                                {upcomingEvents?.slice(0, 3).map((event, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-1 h-8 rounded-full ${idx === 0 ? 'bg-primary-500' : idx === 1 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                                            <div>
+                                                <p className="text-sm font-medium text-slate-700">{event.title || 'Reunião'}</p>
+                                                <p className="text-xs text-slate-400">
+                                                    {event.startAt && new Date(event.startAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className="inline-flex items-center justify-center w-6 h-6 bg-primary-100 text-primary-600 rounded-full text-xs font-medium">
+                                                {idx + 1}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )) || (
+                                        <p className="text-sm text-slate-400 text-center py-4">Nenhuma reunião hoje</p>
+                                    )}
+                            </div>
+                            <button
+                                onClick={() => navigateTo('calendar')}
+                                className="w-full mt-3 text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-1"
+                            >
+                                Ver tudo <ArrowRight size={14} />
+                            </button>
+                        </div>
+
+                        {/* Activity Chart */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                    <Activity size={18} className="text-emerald-500" />
+                                    Atividade
+                                </h3>
+                                <select className="text-xs bg-slate-100 border-0 rounded-lg py-1 px-2 text-slate-600">
+                                    <option>Última semana</option>
+                                    <option>Este mês</option>
+                                </select>
+                            </div>
+                            <ActivityChart data={metrics?.velocity || []} />
+                        </div>
+
+                        {/* Last Actions */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-slate-800">Últimas Ações</h3>
+                            </div>
+                            <div className="space-y-3">
+                                {recentActivity.slice(0, 4).map((act, idx) => (
+                                    <div key={act.id} className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                                            {act.user?.name?.slice(0, 2).toUpperCase() || 'U'}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-slate-700 truncate">{act.title}</p>
+                                            <p className="text-xs text-slate-400">
                                                 {new Date(act.createdAt).toLocaleString('pt-BR', {
-                                                    month: 'short',
-                                                    day: 'numeric',
+                                                    day: '2-digit',
+                                                    month: '2-digit',
                                                     hour: '2-digit',
                                                     minute: '2-digit'
                                                 })}
                                             </p>
                                         </div>
+                                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${act.status === 'concluido' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                            }`}>
+                                            {act.status === 'concluido' ? 'Concluído' : 'Em progresso'}
+                                        </span>
                                     </div>
-                                ))
-                            )}
+                                ))}
+                                {recentActivity.length === 0 && (
+                                    <p className="text-sm text-slate-400 text-center py-4">Nenhuma atividade recente</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Quick Notes */}
-                    <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <FileText size={48} className="text-yellow-600" />
-                        </div>
-                        <h3 className="font-bold text-yellow-800 mb-3 flex items-center gap-2 relative z-10">
-                            Bloco Rápido
-                        </h3>
-                        <textarea
-                            value={note}
-                            onChange={handleNoteChange}
-                            placeholder="Anote suas ideias aqui..."
-                            className="w-full h-32 bg-white/50 border border-yellow-200 rounded-xl p-3 text-sm text-secondary-700 placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 resize-none relative z-10"
-                        />
                     </div>
                 </div>
             </div>
@@ -264,69 +385,106 @@ const GlobalDashboard = () => {
     );
 };
 
-const KPICard = ({ title, value, icon: Icon, color, urgent }) => {
-    const colors = {
-        primary: 'bg-primary-50 text-primary-600',
-        amber: 'bg-amber-50 text-amber-600',
-        red: 'bg-red-50 text-red-600',
-        emerald: 'bg-emerald-50 text-emerald-600',
-    };
+// ============ Sub-components ============
 
-    return (
-        <div className={`bg-white border ${urgent ? 'border-red-200 bg-red-50/30' : 'border-secondary-200'} rounded-2xl p-5 shadow-sm`}>
-            <div className="flex items-center justify-between mb-4">
-                <div className={`w-10 h-10 rounded-xl ${colors[color]} flex items-center justify-center`}>
-                    <Icon size={20} />
-                </div>
-                {urgent && <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />}
+const KPICard = ({ label, value, icon: Icon, gradient, iconBg, trend }) => (
+    <div className="relative bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+        {/* Gradient accent */}
+        <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
+
+        <div className="flex items-start justify-between">
+            <div>
+                <p className="text-sm text-slate-500 mb-1">{label}</p>
+                <p className="text-3xl font-bold text-slate-800">{value}</p>
+                {trend && (
+                    <p className="text-xs text-emerald-500 font-medium mt-1 flex items-center gap-1">
+                        <TrendingUp size={12} /> {trend}
+                    </p>
+                )}
             </div>
-            <div className="space-y-1">
-                <h3 className="text-sm font-medium text-secondary-500">{title}</h3>
-                <p className={`text-2xl font-bold ${urgent ? 'text-red-700' : 'text-secondary-900'}`}>{value}</p>
+            <div className={`p-3 rounded-xl ${iconBg}`}>
+                <Icon size={24} className={`bg-gradient-to-r ${gradient} bg-clip-text`} style={{ color: 'currentColor' }} />
             </div>
         </div>
-    );
-};
 
-const TaskRow = ({ task, showProject }) => (
-    <div className="flex items-center justify-between p-3 hover:bg-secondary-50 rounded-xl group transition-colors border border-transparent hover:border-secondary-100">
-        <div className="flex items-center gap-3 overflow-hidden">
-            <div className={`w-2 h-8 rounded-full ${getPriorityColor(task.priority)}`} />
-            <div className="overflow-hidden">
-                <h4 className="text-sm font-medium text-secondary-800 truncate">{task.title}</h4>
-                <div className="flex items-center gap-2 text-xs text-secondary-500">
-                    {showProject && (
-                        <span className="flex items-center gap-1 font-medium text-primary-600">
-                            {task.project?.name} •
-                        </span>
-                    )}
-                    <span className={`${isOverdue(task.dueDate) ? 'text-red-500 font-bold' : ''}`}>
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('pt-BR') : 'Sem prazo'}
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="p-2 text-secondary-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg">
-                <ArrowRight size={16} />
-            </button>
+        {/* Arrow indicator (like in reference) */}
+        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+            <ArrowRight size={18} className="text-slate-300" />
         </div>
     </div>
 );
 
-const getPriorityColor = (priority) => {
-    switch (priority) {
-        case 'urgente': return 'bg-red-500';
-        case 'alta': return 'bg-amber-500';
-        case 'media': return 'bg-blue-500';
-        case 'baixa': return 'bg-slate-400';
-        default: return 'bg-slate-400';
-    }
+const TimelineRow = ({ task, color, onClick }) => {
+    // Simulate time blocks (in real app, use task.startDate/endDate)
+    const startHour = 8 + Math.floor(Math.random() * 4);
+    const duration = 2 + Math.floor(Math.random() * 3);
+    const leftOffset = ((startHour - 8) / 10) * 100;
+    const width = (duration / 10) * 100;
+
+    return (
+        <div className="flex items-center gap-4 group cursor-pointer" onClick={onClick}>
+            {/* User info */}
+            <div className="w-[140px] flex items-center gap-2 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-xs font-medium text-slate-600">
+                    {task.assignedUser?.name?.slice(0, 2).toUpperCase() || 'TA'}
+                </div>
+                <div className="overflow-hidden">
+                    <p className="text-sm font-medium text-slate-700 truncate">{task.assignedUser?.name || 'Tarefa'}</p>
+                    <p className="text-xs text-slate-400">{task.project?.name?.slice(0, 12) || ''}</p>
+                </div>
+            </div>
+
+            {/* Timeline bar area */}
+            <div className="flex-1 h-10 bg-slate-50 rounded-lg relative overflow-hidden">
+                {/* Task block */}
+                <div
+                    className={`absolute top-1 bottom-1 ${color} rounded-md flex items-center px-2 text-white text-xs font-medium shadow-sm group-hover:shadow-md transition-shadow`}
+                    style={{ left: `${leftOffset}%`, width: `${Math.min(width, 100 - leftOffset)}%` }}
+                >
+                    <span className="truncate">{task.title}</span>
+                </div>
+            </div>
+        </div>
+    );
 };
 
-const isOverdue = (date) => {
-    if (!date) return false;
-    return new Date(date) < new Date().setHours(0, 0, 0, 0);
+const ActivityChart = ({ data }) => {
+    const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const colors = ['bg-pink-400', 'bg-amber-400', 'bg-cyan-400', 'bg-emerald-400', 'bg-violet-400'];
+
+    return (
+        <div className="flex justify-between items-end gap-2 h-24">
+            {days.map((day, dayIdx) => {
+                const dayData = data[dayIdx] || { count: Math.floor(Math.random() * 5) };
+                const bubbles = Math.min(dayData.count || Math.floor(Math.random() * 4), 4);
+
+                return (
+                    <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                        <div className="flex flex-col-reverse items-center gap-1 h-16 justify-start">
+                            {Array.from({ length: bubbles }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={`w-4 h-4 rounded-full ${colors[(dayIdx + i) % colors.length]} opacity-80`}
+                                />
+                            ))}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">{day}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+const getTaskColor = (index) => {
+    const colors = [
+        'bg-gradient-to-r from-blue-500 to-cyan-400',
+        'bg-gradient-to-r from-amber-500 to-orange-400',
+        'bg-gradient-to-r from-emerald-500 to-teal-400',
+        'bg-gradient-to-r from-violet-500 to-purple-400',
+        'bg-gradient-to-r from-rose-500 to-pink-400'
+    ];
+    return colors[index % colors.length];
 };
 
 export default GlobalDashboard;
