@@ -1,0 +1,650 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String
+  password  String
+  role      String    @default("user")
+  avatar    String?   // Base64 or URL
+  bio       String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  projects        Project[]
+  collaborators   Collaborator[]
+  assignedCards   Card[]          @relation("CardAssignedUser")
+  reportedCards   Card[]          @relation("CardReporter")
+  reviewingCards  Card[]          @relation("CardReviewer")
+  watchingCards   CardWatcher[]
+  cardAssignees   CardAssignee[]
+  comments        Comment[]
+  notes           Note[]
+  calendarEvents  CalendarEvent[]
+  notifications   Notification[]
+  
+  // Chat relations
+  conversations    ConversationParticipant[]
+  sentMessages     Message[]
+  messageReactions MessageReaction[]
+  commentReactions CommentReaction[]
+  projectMemberships ProjectMember[]
+  boardMemberships   BoardMember[]
+  
+  @@map("users")
+}
+
+model Company {
+  id           String    @id @default(uuid())
+  name         String
+  legalName    String?
+  cnpj         String    @unique
+  city         String?
+  state        String?
+  segment      String?
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  projects      Project[]
+  collaborators CollaboratorCompany[]
+  
+  @@map("companies")
+}
+
+model Group {
+  id        String    @id @default(uuid())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  projects      Project[]
+  collaborators CollaboratorGroup[]
+  
+  @@map("groups")
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  companyId   String?
+  groupId     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company      Company?      @relation(fields: [companyId], references: [id])
+  group        Group?        @relation(fields: [groupId], references: [id])
+  boards       Board[]
+  conversation Conversation?
+  members      ProjectMember[]
+  briefingTemplates BriefingTemplate[]
+  
+  @@index([userId])
+  @@index([companyId])
+  @@map("projects")
+}
+
+model Board {
+  id        String    @id @default(uuid())
+  name      String
+  projectId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  title     String?   // Optional title for the board (if different from name)
+  isPrivate Boolean   @default(false)
+  
+  project     Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columns     Column[]
+  cards       Card[]
+  tags        Tag[]
+  fieldConfig BoardFieldConfig?
+  members     BoardMember[]
+  
+  @@index([projectId])
+  @@map("boards")
+}
+
+// Configuration for which fields are enabled on a board
+model BoardFieldConfig {
+  id        String   @id @default(uuid())
+  boardId   String   @unique
+  fields    String   // JSON string with field configurations
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  @@map("board_field_configs")
+}
+
+model Column {
+  id        String    @id @default(uuid())
+  title     String
+  color     String    @default("bg-slate-100")
+  order     Int
+  boardId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+  
+  @@index([boardId])
+  @@map("columns")
+}
+
+model Card {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  
+  // Priority and Status
+  priority      String?   @default("media")  // baixa, media, alta, urgente
+  status        String?   @default("novo")   // novo, em_progresso, bloqueado, concluido
+  type          String?   @default("tarefa") // tarefa, bug, feature, melhoria, reuniao
+  
+  // Dates
+  dueDate       DateTime?
+  startDate     DateTime?
+  completedAt   DateTime?
+  
+  // Time tracking
+  estimatedHours Float?
+  actualHours    Float?
+  progress       Int?      @default(0) // 0-100
+  
+  // Visual
+  color         String?   // Hex color for card
+  icon          String?   // Emoji or icon name
+  cover         String?   // Cover image URL
+  
+  // Business/Project fields
+  projectPhase  String?
+  budget        Float?
+  billable      Boolean   @default(false)
+  storyPoints   Int?
+  externalUrl   String?
+  checklist     String?   // JSON string for checklist items [{id, text, done}]
+  
+  // Custom fields (JSON)
+  customFields  String?   // JSON string for custom field values
+  
+  // Relations
+  order          Int       @default(0)
+  assignedUserId String?
+  reporterId     String?
+  reviewerId     String?
+  parentCardId   String?
+  columnId       String
+  boardId        String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  // Core relations
+  column        Column      @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  board         Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  assignedUser  User?       @relation("CardAssignedUser", fields: [assignedUserId], references: [id])
+  reporter      User?       @relation("CardReporter", fields: [reporterId], references: [id])
+  reviewer      User?       @relation("CardReviewer", fields: [reviewerId], references: [id])
+
+  // Briefing Relations
+  briefingTemplateId String?
+  briefingTemplate   BriefingTemplate? @relation(fields: [briefingTemplateId], references: [id])
+  briefingData       String?           // JSON string with form answers
+  briefingVersions   BriefingVersion[]
+  
+  // Self relations
+  parentCard    Card?       @relation("CardSubtasks", fields: [parentCardId], references: [id], onDelete: SetNull)
+  subtasks      Card[]      @relation("CardSubtasks")
+  
+  // Many-to-many
+  assignees     CardAssignee[]
+  watchers      CardWatcher[]
+  tags          CardTag[]
+  attachments   Attachment[]
+  comments      Comment[]
+  blockedBy     CardBlocker[] @relation("BlockedCard")
+  blocking      CardBlocker[] @relation("BlockerCard")
+  relatedFrom   CardRelation[] @relation("RelatedFromCard")
+  relatedTo     CardRelation[] @relation("RelatedToCard")
+  
+  @@index([columnId])
+  @@index([boardId])
+  @@index([assignedUserId])
+  @@index([reporterId])
+  @@index([reviewerId])
+  @@index([parentCardId])
+  @@map("cards")
+}
+
+// Multiple assignees for a card
+model CardAssignee {
+  cardId String
+  userId String
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([cardId, userId])
+  @@map("card_assignees")
+}
+
+// Card watchers (users following the card)
+model CardWatcher {
+  cardId String
+  userId String
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([cardId, userId])
+  @@map("card_watchers")
+}
+
+// Card blocking relationships
+model CardBlocker {
+  blockedCardId String
+  blockerCardId String
+  
+  blockedCard Card @relation("BlockedCard", fields: [blockedCardId], references: [id], onDelete: Cascade)
+  blockerCard Card @relation("BlockerCard", fields: [blockerCardId], references: [id], onDelete: Cascade)
+  
+  @@id([blockedCardId, blockerCardId])
+  @@map("card_blockers")
+}
+
+// Card relations (related cards)
+model CardRelation {
+  fromCardId String
+  toCardId   String
+  
+  fromCard Card @relation("RelatedFromCard", fields: [fromCardId], references: [id], onDelete: Cascade)
+  toCard   Card @relation("RelatedToCard", fields: [toCardId], references: [id], onDelete: Cascade)
+  
+  @@id([fromCardId, toCardId])
+  @@map("card_relations")
+}
+
+model Collaborator {
+  id         String    @id @default(uuid())
+  employeeId String?
+  pis        String?
+  name       String
+  email      String
+  status     String    @default("Ativo")
+  userId     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  user       User?                @relation(fields: [userId], references: [id])
+  companies  CollaboratorCompany[]
+  groups     CollaboratorGroup[]
+  
+  @@unique([email])
+  @@index([userId])
+  @@map("collaborators")
+}
+
+model CollaboratorCompany {
+  collaboratorId String
+  companyId      String
+  
+  collaborator Collaborator @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@id([collaboratorId, companyId])
+  @@map("collaborator_companies")
+}
+
+model CollaboratorGroup {
+  collaboratorId String
+  groupId        String
+  
+  collaborator Collaborator @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@id([collaboratorId, groupId])
+  @@map("collaborator_groups")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  cardId    String
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Threading
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies  Comment[] @relation("CommentReplies")
+
+  // Reactions
+  reactions CommentReaction[]
+  
+  @@index([cardId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model CommentReaction {
+  id        String   @id @default(uuid())
+  emoji     String
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+  
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, emoji])
+  @@index([commentId])
+  @@map("comment_reactions")
+}
+
+model Attachment {
+  id          String    @id @default(uuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int       // in bytes
+  url         String    // path or URL to file
+  cardId      String
+  uploadedBy  String
+  createdAt   DateTime  @default(now())
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  @@index([cardId])
+  @@map("attachments")
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String
+  color     String    @default("#3b82f6")
+  boardId   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  cards CardTag[]
+  board Board? @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  @@unique([name, boardId])
+  @@index([boardId])
+  @@map("tags")
+}
+
+model CardTag {
+  cardId String
+  tagId  String
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([cardId, tagId])
+  @@map("card_tags")
+}
+
+// Notes module for rich text notes with references
+model Note {
+  id           String    @id @default(uuid())
+  title        String
+  content      String    // HTML content from WYSIWYG
+  rawContent   String    // Plain text for search
+  userId       String
+  projectId    String?   // Optional link to a project
+  reminderDate DateTime? // Date to show in calendar
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  references NoteReference[]
+  
+  @@index([userId])
+  @@index([projectId])
+  @@index([reminderDate])
+  @@map("notes")
+}
+
+// References/mentions within notes
+model NoteReference {
+  id            String   @id @default(uuid())
+  noteId        String
+  referenceType String   // "project" | "board" | "card"
+  referenceId   String
+  referenceTitle String  // Cached title for display
+  createdAt     DateTime @default(now())
+  
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  @@index([noteId])
+  @@index([referenceType, referenceId])
+  @@map("note_references")
+}
+
+// Calendar events for user
+model CalendarEvent {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  startAt     DateTime
+  endAt       DateTime?
+  allDay      Boolean   @default(false)
+  color       String?
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([startAt])
+  @@map("calendar_events")
+}
+
+// Notifications for users
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // card_overdue, card_due_today, card_due_tomorrow, event_soon, mention, assigned
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  userId    String
+  refType   String?  // card, event, note, comment
+  refId     String?
+  priority  String   @default("normal") // urgent, high, normal, low
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// Transfer history log
+model TransferLog {
+  id           String   @id @default(uuid())
+  type         String   // ownership_transfer, board_move, card_move, card_clone
+  entityType   String   // project, board, card
+  entityId     String
+  entityTitle  String
+  fromType     String   // user, project, board
+  fromId       String
+  fromTitle    String
+  toType       String   // user, project, board
+  toId         String
+  toTitle      String
+  userId       String   // who performed the transfer
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("transfer_logs")
+}
+
+// ============================================
+// CHAT MODULE
+// ============================================
+
+// Chat conversation between users
+model Conversation {
+  id          String   @id @default(uuid())
+  name        String?  // Name for group chats
+  isGroup     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Optional relations to project/board for context
+  projectId   String?  @unique // Unique so each project has only one chat
+  boardId     String?
+  
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     Message[]
+  
+  @@index([projectId])
+  @@index([boardId])
+  @@map("conversations")
+}
+
+// Participant in a conversation
+model ConversationParticipant {
+  id             String    @id @default(uuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+  createdAt      DateTime  @default(now())
+  
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+// Chat message
+model Message {
+  id             String   @id @default(uuid())
+  content        String
+  conversationId String
+  senderId       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reactions    MessageReaction[]
+  
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// Reaction to a message
+model MessageReaction {
+  id        String   @id @default(uuid())
+  emoji     String
+  messageId String
+  userId    String
+  createdAt DateTime @default(now())
+  
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("message_reactions")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String   @default("member") // owner, admin, member, viewer
+  createdAt DateTime @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model BoardMember {
+  id        String   @id @default(uuid())
+  boardId   String
+  userId    String
+  role      String   @default("editor") // viewer, editor
+  createdAt DateTime @default(now())
+
+  board     Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, userId])
+  @@map("board_members")
+}
+
+model BriefingTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  fields      String   // JSON: Definitions of fields
+  
+  // Public Access
+  isPublic    Boolean  @default(false)
+  publicToken String?  @unique
+  
+  // Project Scope
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  
+  // Default Destination for Submissions
+  defaultBoardId  String?
+  defaultColumnId String?
+  
+  cards       Card[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("briefing_templates")
+}
+
+model BriefingVersion {
+  id        String   @id @default(uuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  data      String   // JSON: Snapshot of briefingData
+  changeLog String?
+  
+  createdBy String?
+  createdAt DateTime @default(now())
+  
+  @@index([cardId])
+  @@map("briefing_versions")
+}
+

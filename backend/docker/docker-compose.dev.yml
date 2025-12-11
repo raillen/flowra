@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kbsys-postgres-dev
+    environment:
+      POSTGRES_DB: ${DB_NAME:-kbsys}
+      POSTGRES_USER: ${DB_USER:-kbsys_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kbsys_user} -d ${DB_NAME:-kbsys}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - kbsys-network
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: kbsys-backend-dev
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${DB_USER:-kbsys_user}:${DB_PASSWORD:-dev_password}@postgres:5432/${DB_NAME:-kbsys}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
+      PORT: 3000
+      HOST: 0.0.0.0
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      LOG_LEVEL: debug
+      ENABLE_SWAGGER: true
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src
+      - ../prisma:/app/prisma
+      - /app/node_modules
+    restart: unless-stopped
+    command: npm run dev
+    networks:
+      - kbsys-network
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  kbsys-network:
+    driver: bridge
+

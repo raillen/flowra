@@ -1,0 +1,36 @@
+{
+  "steps": [
+    {
+      "step": "GetUser",
+      "status": "Success"
+    },
+    {
+      "step": "GetBoard",
+      "status": "Success",
+      "boardId": "71a5aa88-f56b-42d2-ae77-fcaff2a5c173"
+    },
+    {
+      "step": "DefineField",
+      "id": "test_field_1765397795222"
+    },
+    {
+      "step": "CreateCard",
+      "status": "Success",
+      "data": {
+        "test_field_1765397795222": "Initial Value"
+      }
+    },
+    {
+      "step": "UpdateCard",
+      "status": "Success",
+      "data": {
+        "test_field_1765397795222": "Updated Value"
+      }
+    },
+    {
+      "step": "Cleanup",
+      "status": "Success"
+    }
+  ],
+  "success": true
+}

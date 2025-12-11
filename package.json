@@ -1,0 +1,22 @@
+{
+  "name": "kbsys-tests",
+  "version": "1.0.0",
+  "description": "Testes E2E e de API para KBSys usando Playwright",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:frontend": "playwright test tests/frontend",
+    "test:backend": "playwright test tests/backend",
+    "test:all": "playwright test && node scripts/generate-test-report.js",
+    "test:run": "node scripts/run-tests.js",
+    "test:skip-server": "SKIP_WEB_SERVER=true playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}
+

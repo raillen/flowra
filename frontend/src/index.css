@@ -1,0 +1,264 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Theme (Default) */
+    --bg-background: 248 250 252;
+    /* slate-50 */
+    --bg-surface: 255 255 255;
+    /* white */
+    --bg-surface-hover: 241 245 249;
+    /* slate-100 */
+    --text-primary: 15 23 42;
+    /* slate-900 */
+    --text-secondary: 100 116 139;
+    /* slate-500 */
+    --border-color: 226 232 240;
+    /* slate-200 */
+    --primary: 99 102 241;
+    /* indigo-500 */
+    --primary-fg: 255 255 255;
+    --success: 34 197 94;
+    --warning: 234 179 8;
+    --error: 239 68 68;
+  }
+
+  [data-theme='dark'] {
+    --bg-background: 15 23 42;
+    /* slate-900 */
+    --bg-surface: 30 41 59;
+    /* slate-800 */
+    --bg-surface-hover: 51 65 85;
+    /* slate-700 */
+    --text-primary: 248 250 252;
+    /* slate-50 */
+    --text-secondary: 148 163 184;
+    /* slate-400 */
+    --border-color: 51 65 85;
+    /* slate-700 */
+    --primary: 129 140 248;
+    /* indigo-400 */
+    --primary-fg: 15 23 42;
+  }
+
+  [data-theme='gruvbox'] {
+    --bg-background: 40 40 40;
+    /* bg0 */
+    --bg-surface: 60 56 54;
+    /* bg1 */
+    --bg-surface-hover: 80 73 69;
+    /* bg2 */
+    --text-primary: 235 219 178;
+    /* fg */
+    --text-secondary: 168 153 132;
+    /* gray */
+    --border-color: 102 92 84;
+    /* bg3 */
+    --primary: 251 73 52;
+    /* red (as accent) or 215 153 33 (yellow) */
+    --primary-fg: 40 40 40;
+    --success: 184 187 38;
+    --warning: 250 189 47;
+    --error: 204 36 29;
+  }
+
+  [data-theme='nord'] {
+    --bg-background: 46 52 64;
+    /* nord0 */
+    --bg-surface: 59 66 82;
+    /* nord1 */
+    --bg-surface-hover: 67 76 94;
+    /* nord2 */
+    --text-primary: 236 239 244;
+    /* nord6 */
+    --text-secondary: 216 222 233;
+    /* nord4 */
+    --border-color: 76 86 106;
+    /* nord3 */
+    --primary: 136 192 208;
+    /* nord8 */
+    --primary-fg: 46 52 64;
+    --success: 163 190 140;
+    --warning: 235 203 139;
+    --error: 191 97 106;
+  }
+
+  [data-theme='rose-pine'] {
+    --bg-background: 25 23 36;
+    /* base */
+    --bg-surface: 31 29 46;
+    /* surface */
+    --bg-surface-hover: 38 35 58;
+    /* overlay */
+    --text-primary: 224 222 244;
+    /* text */
+    --text-secondary: 144 140 170;
+    /* subtle */
+    --border-color: 64 61 82;
+    /* highlight low */
+    --primary: 196 167 231;
+    /* iris */
+    --primary-fg: 25 23 36;
+    --success: 156 207 216;
+    /* foam */
+    --warning: 246 193 119;
+    /* gold */
+    --error: 235 110 121;
+    /* love */
+  }
+
+  [data-theme='dracula'] {
+    --bg-background: 40 42 54;
+    /* #282a36 */
+    --bg-surface: 68 71 90;
+    /* #44475a */
+    --bg-surface-hover: 98 114 164;
+    /* #6272a4 (using comment syntax for hover logic usually lighter, using selection color here) */
+    --text-primary: 248 248 242;
+    /* #f8f8f2 */
+    --text-secondary: 189 147 249;
+    /* #bd93f9 (using purple for secondary/accent text feel) or #6272a4 */
+    --border-color: 98 114 164;
+    /* #6272a4 */
+    --primary: 255 121 198;
+    /* #ff79c6 Pink */
+    --primary-fg: 40 42 54;
+    --success: 80 250 123;
+    --warning: 241 250 140;
+    --error: 255 85 85;
+  }
+
+  [data-theme='catppuccin'] {
+    --bg-background: 30 30 46;
+    /* #1e1e2e Mocha Base */
+    --bg-surface: 49 50 68;
+    /* #313244 Mocha Surface0 */
+    --bg-surface-hover: 69 71 90;
+    /* #45475a Mocha Surface1 */
+    --text-primary: 205 214 244;
+    /* #cdd6f4 Text */
+    --text-secondary: 166 173 200;
+    /* #a6adc8 Subtext0 */
+    --border-color: 69 71 90;
+    /* #45475a Surface1 */
+    --primary: 203 166 247;
+    /* #cba6f7 Mauve */
+    --primary-fg: 30 30 46;
+    --success: 166 227 161;
+    --warning: 249 226 175;
+    --error: 243 139 168;
+  }
+
+  [data-theme='solarized'] {
+    --bg-background: 0 43 54;
+    /* #002b36 Base03 */
+    --bg-surface: 7 54 66;
+    /* #073642 Base02 */
+    --bg-surface-hover: 88 110 117;
+    /* #586e75 Base01 */
+    --text-primary: 147 161 161;
+    /* #93a1a1 Base1 */
+    --text-secondary: 88 110 117;
+    /* #586e75 Base01 */
+    --border-color: 88 110 117;
+    /* #586e75 Base01 */
+    --primary: 38 139 210;
+    /* #268bd2 Blue */
+    --primary-fg: 0 43 54;
+    --success: 133 153 0;
+    --warning: 181 137 0;
+    --error: 220 50 47;
+  }
+
+  [data-theme='tokyo-night'] {
+    --bg-background: 26 27 38;
+    /* #1a1b26 */
+    --bg-surface: 36 40 59;
+    /* #24283b */
+    --bg-surface-hover: 65 72 104;
+    /* #414868 */
+    --text-primary: 192 202 245;
+    /* #c0caf5 */
+    --text-secondary: 154 165 206;
+    /* #9aa5ce */
+    --border-color: 65 72 104;
+    /* #414868 */
+    --primary: 122 162 247;
+    /* #7aa2f7 Blue */
+    --primary-fg: 26 27 38;
+    --success: 158 206 106;
+    --warning: 224 175 104;
+    --error: 247 118 142;
+  }
+
+  [data-theme='synthwave'] {
+    --bg-background: 38 35 53;
+    /* #262335 */
+    --bg-surface: 54 48 74;
+    /* #36304a */
+    --bg-surface-hover: 73 66 99;
+    /* #494263 */
+    --text-primary: 255 255 255;
+    /* #ffffff */
+    --text-secondary: 42 229 238;
+    /* #2ae5ee Cyan (for secondary text/glow vibe) */
+    --border-color: 73 66 99;
+    /* #494263 */
+    --primary: 255 65 145;
+    /* #ff4191 Pink/Magenta */
+    --primary-fg: 255 255 255;
+    --success: 114 241 184;
+    --warning: 255 211 25;
+    --error: 254 68 80;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-text-primary transition-colors duration-300;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-secondary/50;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

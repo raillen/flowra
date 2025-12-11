@@ -1,0 +1,32 @@
+[
+  {
+    "id": "224de35a-06fe-4dff-a555-575f3dab1d94",
+    "name": "New TemplateBriefing Teste Final",
+    "isPublic": true,
+    "publicToken": "1ae0014fc967d2c0b0346b96f2d530552ada7dc4992ab7464a3d97e8296dd221"
+  },
+  {
+    "id": "c934e320-6572-41e8-b516-ade12f1a1b72",
+    "name": "raillen",
+    "isPublic": false,
+    "publicToken": null
+  },
+  {
+    "id": "cb3fae00-8c7a-4d7f-9edf-c58375fca17e",
+    "name": "New Template",
+    "isPublic": false,
+    "publicToken": null
+  },
+  {
+    "id": "e8af3f96-e516-4c1e-bec4-7366184a3cd6",
+    "name": "New Template",
+    "isPublic": false,
+    "publicToken": null
+  },
+  {
+    "id": "7c8f46ba-0fb6-4f00-af57-25a410cdd532",
+    "name": "New Template",
+    "isPublic": false,
+    "publicToken": null
+  }
+]

@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String
+  password  String
+  role      String    @default("user")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  projects      Project[]
+  collaborators Collaborator[]
+  assignedCards Card[]
+  comments      Comment[]
+  
+  @@map("users")
+}
+
+model Company {
+  id           String    @id @default(uuid())
+  name         String
+  legalName    String?
+  cnpj         String    @unique
+  city         String?
+  state        String?
+  segment      String?
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  projects      Project[]
+  collaborators CollaboratorCompany[]
+  
+  @@map("companies")
+}
+
+model Group {
+  id        String    @id @default(uuid())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  projects      Project[]
+  collaborators CollaboratorGroup[]
+  
+  @@map("groups")
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  companyId   String?
+  groupId     String?
+  createdAt   DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id])
+  group   Group?   @relation(fields: [groupId], references: [id])
+  boards  Board[]
+  
+  @@index([userId])
+  @@index([companyId])
+  @@map("projects")
+}
+
+model Board {
+  id        String    @id @default(uuid())
+  name      String
+  projectId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columns Column[]
+  cards   Card[]
+  tags    Tag[]
+  
+  @@index([projectId])
+  @@map("boards")
+}
+
+model Column {
+  id        String    @id @default(uuid())
+  title     String
+  color     String    @default("bg-slate-100")
+  order     Int
+  boardId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+  
+  @@index([boardId])
+  @@map("columns")
+}
+
+model Card {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  priority      String?   @default("media")
+  dueDate       DateTime?
+  assignedUserId String?
+  columnId      String
+  boardId       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  column        Column      @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  board         Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  assignedUser  User?       @relation(fields: [assignedUserId], references: [id])
+  comments      Comment[]
+  attachments   Attachment[]
+  tags          CardTag[]
+  
+  @@index([columnId])
+  @@index([boardId])
+  @@index([assignedUserId])
+  @@map("cards")
+}
+
+model Collaborator {
+  id         String    @id @default(uuid())
+  employeeId String?
+  pis        String?
+  name       String
+  email      String
+  status     String    @default("Ativo")
+  userId     String?
+  createdAt  DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  user       User?                @relation(fields: [userId], references: [id])
+  companies  CollaboratorCompany[]
+  groups     CollaboratorGroup[]
+  
+  @@unique([email])
+  @@index([userId])
+  @@map("collaborators")
+}
+
+model CollaboratorCompany {
+  collaboratorId String
+  companyId      String
+  
+  collaborator Collaborator @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@id([collaboratorId, companyId])
+  @@map("collaborator_companies")
+}
+
+model CollaboratorGroup {
+  collaboratorId String
+  groupId        String
+  
+  collaborator Collaborator @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@id([collaboratorId, groupId])
+  @@map("collaborator_groups")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  cardId    String
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([cardId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model Attachment {
+  id          String    @id @default(uuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int       // in bytes
+  url         String    // path or URL to file
+  cardId      String
+  uploadedBy  String
+  createdAt   DateTime  @default(now())
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  @@index([cardId])
+  @@map("attachments")
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String
+  color     String    @default("#3b82f6")
+  boardId   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  cards CardTag[]
+  board Board? @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  @@unique([name, boardId])
+  @@index([boardId])
+  @@map("tags")
+}
+
+model CardTag {
+  cardId String
+  tagId  String
+  
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([cardId, tagId])
+  @@map("card_tags")
+}
+
