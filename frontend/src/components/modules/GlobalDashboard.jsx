@@ -82,10 +82,10 @@ const GlobalDashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full bg-gradient-to-br from-slate-50 to-slate-100">
+            <div className="flex items-center justify-center h-full bg-background">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-3" />
-                    <p className="text-slate-500 text-sm">Carregando dashboard...</p>
+                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-text-secondary text-sm">Carregando dashboard...</p>
                 </div>
             </div>
         );
@@ -96,7 +96,7 @@ const GlobalDashboard = () => {
     const { stats, tasks, metrics, recentActivity, upcomingEvents } = data;
 
     return (
-        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-slate-50">
+        <div className="min-h-full bg-background">
             <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
 
                 {/* Header */}
@@ -112,7 +112,7 @@ const GlobalDashboard = () => {
                     <div className="flex gap-3">
                         <button
                             onClick={() => navigateTo('projects')}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all font-medium shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border rounded-xl text-text-secondary hover:bg-surface-hover hover:border-border transition-all font-medium shadow-sm"
                         >
                             <Folder size={18} /> Projetos
                         </button>
@@ -159,17 +159,17 @@ const GlobalDashboard = () => {
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* Timeline Card */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-                                <h2 className="font-bold text-slate-800 flex items-center gap-2">
+                        <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+                            <div className="flex items-center justify-between p-5 border-b border-border">
+                                <h2 className="font-bold text-text-primary flex items-center gap-2">
                                     <Calendar size={20} className="text-primary-500" />
                                     Timeline
                                 </h2>
                                 <div className="flex items-center gap-2">
-                                    <button className="px-3 py-1.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                                    <button className="px-3 py-1.5 bg-surface-hover text-text-secondary text-sm font-medium rounded-lg hover:bg-border transition-colors">
                                         Hoje
                                     </button>
-                                    <button className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400">
+                                    <button className="p-1.5 hover:bg-surface-hover rounded-lg text-text-secondary">
                                         <MoreVertical size={18} />
                                     </button>
                                 </div>
@@ -178,7 +178,7 @@ const GlobalDashboard = () => {
                             {/* Timeline Content */}
                             <div className="p-5">
                                 {/* Timeline Header */}
-                                <div className="flex items-center gap-4 mb-4 text-xs font-medium text-slate-400 pl-[140px]">
+                                <div className="flex items-center gap-4 mb-4 text-xs font-medium text-text-secondary pl-[140px]">
                                     {['8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM'].map(time => (
                                         <span key={time} className="flex-1 text-center">{time}</span>
                                     ))}
@@ -203,7 +203,7 @@ const GlobalDashboard = () => {
                                 </div>
 
                                 {tasks.all.length === 0 && (
-                                    <div className="text-center py-12 text-slate-400">
+                                    <div className="text-center py-12 text-text-secondary">
                                         <Calendar size={40} className="mx-auto mb-3 opacity-50" />
                                         <p>Nenhuma tarefa para exibir</p>
                                     </div>

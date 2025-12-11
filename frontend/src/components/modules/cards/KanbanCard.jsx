@@ -166,7 +166,7 @@ const KanbanCard = ({
         <div
             onClick={onClick}
             className={`
-                group relative bg-white rounded-xl overflow-hidden cursor-pointer
+                group relative bg-surface rounded-xl overflow-hidden cursor-pointer
                 transition-all duration-200 ease-out
                 ${isDragging
                     ? 'shadow-card-drag rotate-2 scale-105 ring-2 ring-primary-300'

@@ -58,14 +58,14 @@ const ProjectsListView = () => {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div className="min-h-full bg-background">
       <div className="p-6 lg:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
 
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">Meus Projetos</h1>
-            <p className="text-slate-500 mt-1">
+            <h1 className="text-2xl lg:text-3xl font-bold text-text-primary">Meus Projetos</h1>
+            <p className="text-text-secondary mt-1">
               {projects.length} projetos • Selecione para gerenciar
             </p>
           </div>

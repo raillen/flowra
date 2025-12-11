@@ -49,13 +49,13 @@ export const Button = ({
       hover:-translate-y-0.5
     `,
     secondary: `
-      bg-white text-secondary-700 
-      border-2 border-secondary-200
-      hover:bg-secondary-50 hover:border-secondary-300
+      bg-surface text-text-secondary 
+      border-2 border-border
+      hover:bg-surface-hover hover:border-border
     `,
     ghost: `
-      text-secondary-600 
-      hover:bg-secondary-100 hover:text-secondary-800
+      text-text-secondary 
+      hover:bg-surface-hover hover:text-text-primary
     `,
     danger: `
       bg-red-50 text-red-600 border border-red-200

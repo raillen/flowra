@@ -52,21 +52,21 @@ export const Modal = ({
       {/* Modal */}
       <div
         className={`
-          relative bg-white rounded-2xl shadow-2xl w-full ${maxWidth}
+          relative bg-surface rounded-2xl shadow-2xl w-full ${maxWidth}
           mx-4 overflow-hidden flex flex-col max-h-[90vh]
           animate-scale-in
         `}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex justify-between items-center px-6 py-4 border-b border-secondary-100 bg-secondary-50/50 shrink-0">
+          <div className="flex justify-between items-center px-6 py-4 border-b border-border bg-surface-hover/50 shrink-0">
             {title && (
-              <h3 className="font-bold text-lg text-secondary-800">{title}</h3>
+              <h3 className="font-bold text-lg text-text-primary">{title}</h3>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-secondary-200 rounded-xl transition-all hover:rotate-90 text-secondary-400 hover:text-secondary-600"
+                className="p-2 hover:bg-border rounded-xl transition-all hover:rotate-90 text-text-secondary hover:text-text-primary"
               >
                 <X size={20} />
               </button>
@@ -75,7 +75,7 @@ export const Modal = ({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-surface">
           {children}
         </div>
       </div>

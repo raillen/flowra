@@ -61,7 +61,7 @@ export const ConfirmationDialog = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-surface rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className={`${styles.iconBg} p-3 rounded-full shrink-0`}>
@@ -72,15 +72,15 @@ export const ConfirmationDialog = ({
                 {title || 'Confirmar ação'}
               </h3>
               {message && (
-                <p className="text-slate-600 text-sm mb-4">{message}</p>
+                <p className="text-text-secondary text-sm mb-4">{message}</p>
               )}
               {children && <div className="mb-4">{children}</div>}
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-slate-100 rounded-full transition-colors shrink-0"
+              className="p-1 hover:bg-surface-hover rounded-full transition-colors shrink-0"
             >
-              <X size={20} className="text-slate-400" />
+              <X size={20} className="text-text-secondary" />
             </button>
           </div>
           <div className="flex justify-end gap-3 mt-6">
