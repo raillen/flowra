@@ -113,6 +113,7 @@ model Board {
   
   title     String?   // Optional title for the board (if different from name)
   isPrivate Boolean   @default(false)
+  autoArchiveCompleted Boolean @default(false) // Auto-archive cards when completed
   
   project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   columns      Column[]
@@ -199,6 +200,11 @@ model Card {
   parentCardId   String?
   columnId       String
   boardId        String
+  
+  // Archive
+  archivedAt           DateTime?  // null = not archived
+  keepVisibleOnComplete Boolean   @default(false) // Override board auto-archive
+  
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   

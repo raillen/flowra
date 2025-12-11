@@ -32,6 +32,7 @@ import docsRoutes from './routes/docs.routes.js';
 import statsRoutes from './routes/stats.routes.js';
 import filterRoutes from './routes/filter.routes.js';
 import auditRoutes from './routes/audit.routes.js';
+import archiveRoutes from './routes/archive.routes.js';
 import { initializeSocket } from './config/socket.js';
 
 /**
@@ -166,6 +167,7 @@ async function createApp() {
   await app.register(statsRoutes, { prefix: '/api' });
   await app.register(filterRoutes, { prefix: '/api' });
   await app.register(auditRoutes, { prefix: '/api' });
+  await app.register(archiveRoutes, { prefix: '/api' });
 
   // Error handling
   app.setErrorHandler(errorHandler);

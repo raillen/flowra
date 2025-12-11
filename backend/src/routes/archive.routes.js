@@ -1,0 +1,301 @@
+import { PrismaClient } from '@prisma/client';
+import { authenticate } from '../middleware/auth.middleware.js';
+
+const prisma = new PrismaClient();
+
+/**
+ * Archive routes for managing archived cards
+ * @param {FastifyInstance} fastify
+ */
+export default async function archiveRoutes(fastify) {
+
+    // Get all archived cards for user, grouped by project/board
+    fastify.get('/archive/cards', {
+        preHandler: [authenticate]
+    }, async (request, reply) => {
+        try {
+            const userId = request.user.id;
+            const companyId = request.user.companyId;
+
+            // Get archived cards from user's projects/boards
+            const archivedCards = await prisma.card.findMany({
+                where: {
+                    archivedAt: { not: null },
+                    board: {
+                        project: {
+                            OR: [
+                                { userId },
+                                { members: { some: { userId } } },
+                                ...(companyId ? [{ companyId }] : [])
+                            ]
+                        }
+                    }
+                },
+                include: {
+                    board: {
+                        select: {
+                            id: true,
+                            name: true,
+                            project: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    },
+                    assignedUser: {
+                        select: { id: true, name: true, avatar: true }
+                    },
+                    tags: {
+                        include: { tag: true }
+                    }
+                },
+                orderBy: { archivedAt: 'desc' }
+            });
+
+            // Group by project, then by board
+            const grouped = {};
+            archivedCards.forEach(card => {
+                const projectId = card.board.project.id;
+                const projectName = card.board.project.name;
+                const boardId = card.board.id;
+                const boardName = card.board.name;
+
+                if (!grouped[projectId]) {
+                    grouped[projectId] = {
+                        id: projectId,
+                        name: projectName,
+                        boards: {}
+                    };
+                }
+
+                if (!grouped[projectId].boards[boardId]) {
+                    grouped[projectId].boards[boardId] = {
+                        id: boardId,
+                        name: boardName,
+                        cards: []
+                    };
+                }
+
+                grouped[projectId].boards[boardId].cards.push({
+                    id: card.id,
+                    title: card.title,
+                    description: card.description,
+                    priority: card.priority,
+                    status: card.status,
+                    archivedAt: card.archivedAt,
+                    completedAt: card.completedAt,
+                    assignedUser: card.assignedUser,
+                    tags: card.tags.map(t => t.tag)
+                });
+            });
+
+            // Convert to array
+            const result = Object.values(grouped).map(project => ({
+                ...project,
+                boards: Object.values(project.boards)
+            }));
+
+            return reply.send({
+                success: true,
+                data: result,
+                totalArchived: archivedCards.length
+            });
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                message: 'Erro ao buscar cards arquivados'
+            });
+        }
+    });
+
+    // Restore archived card
+    fastify.post('/archive/cards/:cardId/restore', {
+        preHandler: [authenticate]
+    }, async (request, reply) => {
+        try {
+            const { cardId } = request.params;
+
+            const card = await prisma.card.findUnique({
+                where: { id: cardId },
+                include: { board: { include: { project: true } } }
+            });
+
+            if (!card || !card.archivedAt) {
+                return reply.status(404).send({
+                    success: false,
+                    message: 'Card arquivado não encontrado'
+                });
+            }
+
+            // Verify access
+            const hasAccess = card.board.project.userId === request.user.id ||
+                card.board.project.companyId === request.user.companyId;
+
+            if (!hasAccess) {
+                return reply.status(403).send({
+                    success: false,
+                    message: 'Sem permissão para restaurar este card'
+                });
+            }
+
+            const restored = await prisma.card.update({
+                where: { id: cardId },
+                data: {
+                    archivedAt: null,
+                    status: 'em_progresso' // Reset status when restoring
+                }
+            });
+
+            return reply.send({
+                success: true,
+                data: restored,
+                message: 'Card restaurado com sucesso'
+            });
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                message: 'Erro ao restaurar card'
+            });
+        }
+    });
+
+    // Permanently delete archived card
+    fastify.delete('/archive/cards/:cardId', {
+        preHandler: [authenticate]
+    }, async (request, reply) => {
+        try {
+            const { cardId } = request.params;
+
+            const card = await prisma.card.findUnique({
+                where: { id: cardId },
+                include: { board: { include: { project: true } } }
+            });
+
+            if (!card) {
+                return reply.status(404).send({
+                    success: false,
+                    message: 'Card não encontrado'
+                });
+            }
+
+            // Only allow deletion of archived cards
+            if (!card.archivedAt) {
+                return reply.status(400).send({
+                    success: false,
+                    message: 'Apenas cards arquivados podem ser deletados permanentemente'
+                });
+            }
+
+            // Verify access
+            const hasAccess = card.board.project.userId === request.user.id ||
+                card.board.project.companyId === request.user.companyId;
+
+            if (!hasAccess) {
+                return reply.status(403).send({
+                    success: false,
+                    message: 'Sem permissão para deletar este card'
+                });
+            }
+
+            await prisma.card.delete({
+                where: { id: cardId }
+            });
+
+            return reply.send({
+                success: true,
+                message: 'Card deletado permanentemente'
+            });
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                message: 'Erro ao deletar card'
+            });
+        }
+    });
+
+    // Archive a card manually
+    fastify.post('/archive/cards/:cardId/archive', {
+        preHandler: [authenticate]
+    }, async (request, reply) => {
+        try {
+            const { cardId } = request.params;
+
+            const card = await prisma.card.findUnique({
+                where: { id: cardId },
+                include: { board: { include: { project: true } } }
+            });
+
+            if (!card) {
+                return reply.status(404).send({
+                    success: false,
+                    message: 'Card não encontrado'
+                });
+            }
+
+            if (card.archivedAt) {
+                return reply.status(400).send({
+                    success: false,
+                    message: 'Card já está arquivado'
+                });
+            }
+
+            const archived = await prisma.card.update({
+                where: { id: cardId },
+                data: { archivedAt: new Date() }
+            });
+
+            return reply.send({
+                success: true,
+                data: archived,
+                message: 'Card arquivado com sucesso'
+            });
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                message: 'Erro ao arquivar card'
+            });
+        }
+    });
+
+    // Bulk delete archived cards
+    fastify.delete('/archive/cards/bulk', {
+        preHandler: [authenticate]
+    }, async (request, reply) => {
+        try {
+            const { cardIds } = request.body;
+
+            if (!cardIds || !Array.isArray(cardIds) || cardIds.length === 0) {
+                return reply.status(400).send({
+                    success: false,
+                    message: 'cardIds deve ser um array não vazio'
+                });
+            }
+
+            // Delete only archived cards
+            const result = await prisma.card.deleteMany({
+                where: {
+                    id: { in: cardIds },
+                    archivedAt: { not: null }
+                }
+            });
+
+            return reply.send({
+                success: true,
+                deletedCount: result.count,
+                message: `${result.count} cards deletados permanentemente`
+            });
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                message: 'Erro ao deletar cards em massa'
+            });
+        }
+    });
+}
