@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
@@ -14,7 +15,7 @@ const __dirname = path.dirname(__filename);
 export default async function statsRoutes(fastify) {
     // Get database statistics (admin only)
     fastify.get('/stats/database', {
-        preHandler: [fastify.authenticate]
+        preHandler: [authenticate]
     }, async (request, reply) => {
         try {
             // Check if user is admin
@@ -120,7 +121,7 @@ export default async function statsRoutes(fastify) {
 
     // Export data (admin only)
     fastify.get('/stats/export/:entity', {
-        preHandler: [fastify.authenticate]
+        preHandler: [authenticate]
     }, async (request, reply) => {
         try {
             if (request.user.role !== 'admin') {

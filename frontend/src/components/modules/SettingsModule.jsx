@@ -5,7 +5,7 @@ import { useCollaborators } from '../../hooks/useCollaborators';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAccentColor } from '../../contexts/AccentColorContext';
-import api from '../../services/api';
+import api from '../../config/api';
 import { Building, Layers, Users, Database, RefreshCw, Globe, Search, Plus, X, Edit2, Save, Trash2, Upload, FileSpreadsheet, Palette, Settings, Download, HardDrive, BarChart3, Info, Moon, Sun, Monitor } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmationDialog, Toast } from '../ui';
 import { formatCNPJ } from '../../utils/formatters';
@@ -240,8 +240,8 @@ const SettingsModule = () => {
         <button
           onClick={() => setActiveTab('general')}
           className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'general'
-              ? 'text-white shadow-md'
-              : 'text-text-secondary hover:bg-border hover:text-text-primary'
+            ? 'text-white shadow-md'
+            : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
           style={activeTab === 'general' ? { backgroundColor: accentColor } : {}}
         >
@@ -252,8 +252,8 @@ const SettingsModule = () => {
         <button
           onClick={() => setActiveTab('appearance')}
           className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'appearance'
-              ? 'text-white shadow-md'
-              : 'text-text-secondary hover:bg-border hover:text-text-primary'
+            ? 'text-white shadow-md'
+            : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
           style={activeTab === 'appearance' ? { backgroundColor: accentColor } : {}}
         >
@@ -267,8 +267,8 @@ const SettingsModule = () => {
         <button
           onClick={() => setActiveTab('companies')}
           className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'companies'
-              ? 'text-white shadow-md'
-              : 'text-text-secondary hover:bg-border hover:text-text-primary'
+            ? 'text-white shadow-md'
+            : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
           style={activeTab === 'companies' ? { backgroundColor: accentColor } : {}}
         >
@@ -279,8 +279,8 @@ const SettingsModule = () => {
         <button
           onClick={() => setActiveTab('groups')}
           className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'groups'
-              ? 'text-white shadow-md'
-              : 'text-text-secondary hover:bg-border hover:text-text-primary'
+            ? 'text-white shadow-md'
+            : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
           style={activeTab === 'groups' ? { backgroundColor: accentColor } : {}}
         >
@@ -291,8 +291,8 @@ const SettingsModule = () => {
         <button
           onClick={() => setActiveTab('collaborators')}
           className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'collaborators'
-              ? 'text-white shadow-md'
-              : 'text-text-secondary hover:bg-border hover:text-text-primary'
+            ? 'text-white shadow-md'
+            : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
           style={activeTab === 'collaborators' ? { backgroundColor: accentColor } : {}}
         >
@@ -307,8 +307,8 @@ const SettingsModule = () => {
             <button
               onClick={() => setActiveTab('database')}
               className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'database'
-                  ? 'text-white shadow-md'
-                  : 'text-text-secondary hover:bg-border hover:text-text-primary'
+                ? 'text-white shadow-md'
+                : 'text-text-secondary hover:bg-border hover:text-text-primary'
                 }`}
               style={activeTab === 'database' ? { backgroundColor: accentColor } : {}}
             >
@@ -400,8 +400,8 @@ const SettingsModule = () => {
                       key={t.id}
                       onClick={() => setTheme(t.id)}
                       className={`p-4 rounded-xl border-2 transition-all text-left ${theme === t.id
-                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                          : 'border-border hover:border-primary-300'
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                        : 'border-border hover:border-primary-300'
                         }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
