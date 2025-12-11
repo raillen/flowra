@@ -4,6 +4,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useChatContext } from '../../contexts/ChatContext';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useAccentColor } from '../../contexts/AccentColorContext';
 import {
   LayoutDashboard,
   Bell,
@@ -35,6 +36,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const { unreadTotal } = useChatContext();
   const { unreadCount: notificationUnreadCount } = useNotificationContext();
   const { logout } = useAuthContext();
+  const { accentColor } = useAccentColor();
   const [searchFocused, setSearchFocused] = useState(false);
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
@@ -44,34 +46,34 @@ const Sidebar = ({ isOpen, onToggle }) => {
       id: 'principal',
       label: 'Principal',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, gradient: 'from-blue-500 to-cyan-400' },
-        { id: 'notifications', label: 'Notificações', icon: Bell, badge: notificationUnreadCount > 0 ? notificationUnreadCount : null, gradient: 'from-amber-500 to-orange-400' },
-        { id: 'chat', label: 'Mensagens', icon: MessageSquare, badge: unreadTotal > 0 ? unreadTotal : null, gradient: 'from-violet-500 to-purple-400' },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'notifications', label: 'Notificações', icon: Bell, badge: notificationUnreadCount > 0 ? notificationUnreadCount : null },
+        { id: 'chat', label: 'Mensagens', icon: MessageSquare, badge: unreadTotal > 0 ? unreadTotal : null },
       ]
     },
     {
       id: 'gestao',
       label: 'Gestão',
       items: [
-        { id: 'projects', label: 'Projetos', icon: Folder, gradient: 'from-emerald-500 to-teal-400' },
-        { id: 'calendar', label: 'Calendário', icon: CalendarIcon, gradient: 'from-rose-500 to-pink-400' },
+        { id: 'projects', label: 'Projetos', icon: Folder },
+        { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
       ]
     },
     {
       id: 'ferramentas',
       label: 'Ferramentas',
       items: [
-        { id: 'notes', label: 'Anotações', icon: StickyNote, gradient: 'from-yellow-500 to-amber-400' },
-        { id: 'docs', label: 'Documentação', icon: FileText, gradient: 'from-slate-500 to-slate-400' },
-        { id: 'briefings', label: 'Briefings', icon: Sparkles, gradient: 'from-indigo-500 to-blue-400' },
-        { id: 'transfer', label: 'Transferência', icon: ArrowRightLeft, gradient: 'from-cyan-500 to-blue-400' },
+        { id: 'notes', label: 'Anotações', icon: StickyNote },
+        { id: 'docs', label: 'Documentação', icon: FileText },
+        { id: 'briefings', label: 'Briefings', icon: Sparkles },
+        { id: 'transfer', label: 'Transferência', icon: ArrowRightLeft },
       ]
     },
     {
       id: 'sistema',
       label: 'Sistema',
       items: [
-        { id: 'settings', label: 'Configurações', icon: Settings, gradient: 'from-slate-600 to-slate-500' },
+        { id: 'settings', label: 'Configurações', icon: Settings },
       ]
     }
   ];
@@ -167,10 +169,11 @@ const Sidebar = ({ isOpen, onToggle }) => {
                       className={`
                         w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative overflow-hidden
                         ${isActive
-                          ? 'bg-gradient-to-r ' + item.gradient + ' text-white shadow-md'
+                          ? 'text-white shadow-md'
                           : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                         }
                       `}
+                      style={isActive ? { backgroundColor: accentColor } : {}}
                     >
                       <div className="flex items-center gap-3 relative z-10">
                         <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-surface-hover group-hover:bg-border'}`}>

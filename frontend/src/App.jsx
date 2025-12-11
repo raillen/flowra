@@ -97,14 +97,17 @@ const ProtectedApp = () => {
  * @module App
  */
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AccentColorProvider } from './contexts/AccentColorContext';
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ProtectedApp />
-      </AuthProvider>
-    </ThemeProvider>
+    <AccentColorProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ProtectedApp />
+        </AuthProvider>
+      </ThemeProvider>
+    </AccentColorProvider>
   );
 }
 

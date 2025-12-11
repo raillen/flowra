@@ -49,6 +49,7 @@ model Company {
   city         String?
   state        String?
   segment      String?
+  accentColor  String    @default("#6366f1")
   contactName  String?
   contactEmail String?
   contactPhone String?

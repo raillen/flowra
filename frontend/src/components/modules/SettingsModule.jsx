@@ -23,7 +23,7 @@ const SettingsModule = () => {
   // Company state
   const [companyForm, setCompanyForm] = useState({
     name: '', legalName: '', cnpj: '', city: '', state: '',
-    segment: '', contactName: '', contactEmail: '', contactPhone: ''
+    segment: '', contactName: '', contactEmail: '', contactPhone: '', accentColor: '#6366f1'
   });
   const [isLoadingCnpj, setIsLoadingCnpj] = useState(false);
   const [viewCompany, setViewCompany] = useState(null);
@@ -36,6 +36,7 @@ const SettingsModule = () => {
     city: '',
     state: '',
     segment: '',
+    accentColor: '#6366f1',
     contactName: '',
     contactEmail: '',
     contactPhone: '',
@@ -106,7 +107,7 @@ const SettingsModule = () => {
       await addCompany(companyForm);
       setCompanyForm({
         name: '', legalName: '', cnpj: '', city: '', state: '',
-        segment: '', contactName: '', contactEmail: '', contactPhone: ''
+        segment: '', contactName: '', contactEmail: '', contactPhone: '', accentColor: '#6366f1'
       });
     } catch (error) {
       setToast({ isOpen: true, message: error.response?.data?.message || 'Erro ao criar empresa', type: 'error' });
@@ -324,6 +325,33 @@ const SettingsModule = () => {
                 />
               </div>
 
+              {/* Accent Color Picker */}
+              <h5 className="font-bold text-indigo-900 text-xs uppercase mb-3 border-b border-indigo-200 pb-1 mt-4">
+                Cor de Destaque
+              </h5>
+              <div className="mb-4">
+                <p className="text-xs text-indigo-600 mb-2">Esta cor será usada nos menus e destaques do painel</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setCompanyForm({ ...companyForm, accentColor: color })}
+                      className={`w-8 h-8 rounded-lg transition-all ${companyForm.accentColor === color ? 'ring-2 ring-offset-2 ring-indigo-400 scale-110' : 'hover:scale-105'}`}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={companyForm.accentColor}
+                    onChange={(e) => setCompanyForm({ ...companyForm, accentColor: e.target.value })}
+                    className="w-8 h-8 rounded-lg cursor-pointer border-0"
+                    title="Cor personalizada"
+                  />
+                </div>
+              </div>
+
               <Button onClick={handleAddCompany} icon={Plus} className="w-full">
                 Adicionar Empresa
               </Button>
@@ -345,6 +373,7 @@ const SettingsModule = () => {
                       city: c.city || '',
                       state: c.state || '',
                       segment: c.segment || '',
+                      accentColor: c.accentColor || '#6366f1',
                       contactName: c.contactName || '',
                       contactEmail: c.contactEmail || '',
                       contactPhone: c.contactPhone || '',
@@ -354,6 +383,10 @@ const SettingsModule = () => {
                 >
                   <div>
                     <div className="flex items-center gap-2">
+                      <div
+                        className="w-4 h-4 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: c.accentColor || '#6366f1' }}
+                      />
                       <span className="font-bold text-slate-700 group-hover:text-indigo-700">
                         {c.name}
                       </span>

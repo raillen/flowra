@@ -252,46 +252,6 @@ const GlobalDashboard = () => {
                     {/* Right Column - Widgets */}
                     <div className="space-y-6">
 
-                        {/* Time Tracking Widget */}
-                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-xl">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-bold flex items-center gap-2">
-                                    <Timer size={18} className="text-primary-400" />
-                                    Tempo Rastreado
-                                </h3>
-                                <button className="p-1 hover:bg-white/10 rounded">
-                                    <MoreVertical size={16} />
-                                </button>
-                            </div>
-                            <p className="text-sm text-slate-400 mb-2">{trackingTask}</p>
-                            <p className="text-4xl font-bold font-mono mb-4">{formatTime(trackingTime)}</p>
-                            <div className="flex gap-2">
-                                {isTracking ? (
-                                    <>
-                                        <button
-                                            onClick={() => setIsTracking(false)}
-                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl font-medium transition-colors"
-                                        >
-                                            <Square size={16} /> Parar
-                                        </button>
-                                        <button
-                                            onClick={() => setIsTracking(false)}
-                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition-colors"
-                                        >
-                                            <Pause size={16} /> Pausar
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button
-                                        onClick={() => setIsTracking(true)}
-                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary-500 hover:bg-primary-600 rounded-xl font-medium transition-colors"
-                                    >
-                                        <Play size={16} /> Iniciar
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
                         {/* Today's Meetings */}
                         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
