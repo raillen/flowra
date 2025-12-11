@@ -1,0 +1,79 @@
+{
+    "title": "Documentação de Uso",
+    "sections": [
+        {
+            "title": "Primeiros Passos",
+            "icon": "rocket",
+            "items": [
+                {
+                    "title": "Introdução",
+                    "path": "getting-started/introduction"
+                },
+                {
+                    "title": "Primeiro Acesso",
+                    "path": "getting-started/first-login"
+                },
+                {
+                    "title": "Navegação",
+                    "path": "getting-started/navigation"
+                }
+            ]
+        },
+        {
+            "title": "Projetos",
+            "icon": "folder",
+            "items": [
+                {
+                    "title": "Criando Projetos",
+                    "path": "projects/creating-projects"
+                },
+                {
+                    "title": "Gerenciando Equipes",
+                    "path": "projects/managing-teams"
+                },
+                {
+                    "title": "Boards",
+                    "path": "projects/boards"
+                }
+            ]
+        },
+        {
+            "title": "Tarefas",
+            "icon": "check-square",
+            "items": [
+                {
+                    "title": "Criando Tarefas",
+                    "path": "tasks/creating-tasks"
+                },
+                {
+                    "title": "Workflow Kanban",
+                    "path": "tasks/kanban-workflow"
+                }
+            ]
+        },
+        {
+            "title": "Calendário",
+            "icon": "calendar",
+            "items": [
+                {
+                    "title": "Eventos",
+                    "path": "calendar/events"
+                }
+            ]
+        },
+        {
+            "title": "Briefings",
+            "icon": "file-text",
+            "items": [
+                {
+                    "title": "Criando Formulários",
+                    "path": "briefings/creating-forms"
+                },
+                {
+                    "title": "Recebendo Respostas",
+                    "path": "briefings/receiving-responses"
+                }
+            ]
+        }
+    ]
+}

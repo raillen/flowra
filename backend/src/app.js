@@ -28,6 +28,7 @@ import { chatRoutes } from './routes/chat.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import briefingRoutes from './routes/briefing.routes.js';
+import docsRoutes from './routes/docs.routes.js';
 import { initializeSocket } from './config/socket.js';
 
 /**
@@ -158,6 +159,7 @@ async function createApp() {
   await app.register(chatRoutes, { prefix: '/api' });
   await app.register(dashboardRoutes, { prefix: '/api/dashboard' });
   await app.register(briefingRoutes, { prefix: '/api/briefing' });
+  await app.register(docsRoutes, { prefix: '/api' });
 
   // Error handling
   app.setErrorHandler(errorHandler);

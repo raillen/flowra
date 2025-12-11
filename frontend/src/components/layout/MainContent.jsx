@@ -7,7 +7,7 @@ import ProjectsListView from '../modules/ProjectsListView';
 // KanbanHub removed as it was redundant
 import SettingsModule from '../modules/SettingsModule';
 import NotesModule from '../modules/NotesModule';
-import ProjectDocs from '../modules/ProjectDocs';
+import DocumentationView from '../modules/DocumentationView';
 import TransferManager from '../modules/TransferManager';
 import ProjectCalendar from '../modules/ProjectCalendar';
 import ProjectChat from '../modules/ProjectChat';
@@ -64,7 +64,7 @@ const MainContent = () => {
       case 'chat':
         return <ProjectChat />;
       case 'docs':
-        return <ProjectDocs />;
+        return <DocumentationView />;
       case 'briefings':
         return <BriefingTemplatesView />;
       case 'settings':

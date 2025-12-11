@@ -1,0 +1,97 @@
+{
+    "title": "Documentação Técnica",
+    "sections": [
+        {
+            "title": "Arquitetura",
+            "icon": "layers",
+            "items": [
+                {
+                    "title": "Visão Geral",
+                    "path": "architecture/overview"
+                },
+                {
+                    "title": "Backend",
+                    "path": "architecture/backend"
+                },
+                {
+                    "title": "Frontend",
+                    "path": "architecture/frontend"
+                },
+                {
+                    "title": "Banco de Dados",
+                    "path": "architecture/database"
+                }
+            ]
+        },
+        {
+            "title": "Deploy",
+            "icon": "cloud",
+            "items": [
+                {
+                    "title": "Configuração VPS",
+                    "path": "deployment/vps-setup"
+                },
+                {
+                    "title": "Docker",
+                    "path": "deployment/docker"
+                },
+                {
+                    "title": "Variáveis de Ambiente",
+                    "path": "deployment/environment"
+                }
+            ]
+        },
+        {
+            "title": "Módulos",
+            "icon": "puzzle",
+            "items": [
+                {
+                    "title": "Autenticação",
+                    "path": "modules/auth"
+                },
+                {
+                    "title": "Projetos",
+                    "path": "modules/projects"
+                },
+                {
+                    "title": "Kanban",
+                    "path": "modules/kanban"
+                },
+                {
+                    "title": "Calendário",
+                    "path": "modules/calendar"
+                },
+                {
+                    "title": "Briefings",
+                    "path": "modules/briefing"
+                },
+                {
+                    "title": "Chat",
+                    "path": "modules/chat"
+                },
+                {
+                    "title": "Notificações",
+                    "path": "modules/notifications"
+                }
+            ]
+        },
+        {
+            "title": "Manutenção",
+            "icon": "wrench",
+            "items": [
+                {
+                    "title": "Backup",
+                    "path": "maintenance/backup"
+                },
+                {
+                    "title": "Monitoramento",
+                    "path": "maintenance/monitoring"
+                },
+                {
+                    "title": "Troubleshooting",
+                    "path": "maintenance/troubleshooting"
+                }
+            ]
+        }
+    ]
+}
