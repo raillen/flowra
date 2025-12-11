@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import MainContent from './MainContent';
+import { useNavigation } from '../../contexts/NavigationContext';
+import { useApp } from '../../contexts/AppContext';
+import { useAccentColor } from '../../contexts/AccentColorContext';
 
 import BubbleChat from '../modules/chat/BubbleChat';
 
@@ -13,6 +16,22 @@ import BubbleChat from '../modules/chat/BubbleChat';
  */
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { activeProjectId } = useNavigation();
+  const { projects, companies } = useApp();
+  const { setAccentColor } = useAccentColor();
+
+  // Sync accent color when active project changes
+  useEffect(() => {
+    if (activeProjectId) {
+      const project = projects.find(p => p.id === activeProjectId);
+      if (project?.companyId) {
+        const company = companies.find(c => c.id === project.companyId);
+        if (company?.accentColor) {
+          setAccentColor(company.accentColor);
+        }
+      }
+    }
+  }, [activeProjectId, projects, companies, setAccentColor]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
