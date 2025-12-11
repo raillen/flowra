@@ -291,8 +291,8 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
     if (!isOpen) return null;
 
     return (
-        <Modal isOpen={isOpen} onClose={handleCancel} title={`Configuração do Quadro: ${boardName || ''}`} size="lg">
-            <div className="flex flex-col h-[650px]">
+        <Modal isOpen={isOpen} onClose={handleCancel} title={`Configuração do Quadro: ${boardName || ''}`} size="2xl">
+            <div className="flex flex-col h-[700px]">
                 {/* Tabs */}
                 <div className="flex space-x-1 border-b border-secondary-200 mb-4 px-1">
                     {['general', 'lists', 'custom', 'automation', 'access'].map(tab => (

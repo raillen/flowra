@@ -38,6 +38,7 @@ import {
   BarChart3,
   Layers,
   GitBranch,
+  ChevronLeft
 } from 'lucide-react';
 import CalendarView from './CalendarView';
 import { TimelineView, GanttView, SwimlanesView, HierarchyView, ViewModeSelector, FilterPanel } from './views';
@@ -764,12 +765,29 @@ const KanbanBoardView = () => {
     <div className="h-full flex flex-col animate-in fade-in p-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setActiveBoardId(null);
+            }}
+            icon={ChevronLeft}
+            className="mr-2"
+          >
+            Voltar
+          </Button>
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
             <Layout size={20} className="text-primary" /> {activeBoard.name}
           </h2>
           <Badge color="bg-primary/10 text-primary">
             {cards.length} {cards.length === 1 ? 'card' : 'cards'}
           </Badge>
+          <div className="w-px h-6 bg-gray-200 mx-2"></div>
+          <ViewModeSelector
+            currentMode={viewMode}
+            onModeChange={setViewMode}
+          />
+        </div>
+        <div className="flex items-center gap-2">
           <MemberAvatarGroup
             members={[
               ...(activeBoard.project?.user && !activeBoard.members?.some(m => m.user.id === activeBoard.project.user.id) ? [activeBoard.project.user] : []),
@@ -778,62 +796,41 @@ const KanbanBoardView = () => {
             limit={4}
             size="md"
           />
-        </div>
-        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={() => setIsMemberModalOpen(true)}
             icon={UserPlus}
-            className="mr-2"
           >
-            Convidar / Membros
+            Membros
           </Button>
           <Button
             variant="ghost"
             onClick={() => setIsSettingsModalOpen(true)}
             icon={Settings}
-            title="Configurações do board"
           >
-            Configurar Board
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setActiveBoardId(null);
-              // Keep in kanban module to show KanbanHub
-            }}
-          >
-            Voltar aos Boards
+            Configurar
           </Button>
         </div>
       </div>
 
-      {/* Toolbar with View Mode and Actions */}
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <ViewModeSelector
-          currentMode={viewMode}
-          onModeChange={setViewMode}
-          size="md"
-        />
-
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => {
-              setPresentationIndex(0);
-              setIsPresentationMode(true);
-            }}
-            icon={Presentation}
-            variant="outline"
-            size="sm"
-            disabled={filteredCards.length === 0}
-            title="Modo apresentação para standups"
-          >
-            Apresentar
-          </Button>
-          <Button onClick={handleAddColumn} icon={Plus} size="sm">
-            Nova Coluna
-          </Button>
-        </div>
+      {/* Toolbar with Actions */}
+      <div className="mb-4 flex items-center justify-end gap-2">
+        <Button
+          onClick={() => {
+            setPresentationIndex(0);
+            setIsPresentationMode(true);
+          }}
+          icon={Presentation}
+          variant="outline"
+          size="sm"
+          disabled={filteredCards.length === 0}
+          title="Modo apresentação para standups"
+        >
+          Apresentar
+        </Button>
+        <Button onClick={handleAddColumn} icon={Plus} size="sm">
+          Nova Coluna
+        </Button>
       </div>
 
       {/* Filter Panel */}
