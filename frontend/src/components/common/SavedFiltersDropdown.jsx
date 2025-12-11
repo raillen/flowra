@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, ChevronDown, Trash2, Star, Bookmark, Plus, Check } from 'lucide-react';
-import api from '../../../config/api';
+import api from '../../config/api';
 
 /**
  * SavedFiltersDropdown component
