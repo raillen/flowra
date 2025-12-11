@@ -31,6 +31,7 @@ import briefingRoutes from './routes/briefing.routes.js';
 import docsRoutes from './routes/docs.routes.js';
 import statsRoutes from './routes/stats.routes.js';
 import filterRoutes from './routes/filter.routes.js';
+import auditRoutes from './routes/audit.routes.js';
 import { initializeSocket } from './config/socket.js';
 
 /**
@@ -164,6 +165,7 @@ async function createApp() {
   await app.register(docsRoutes, { prefix: '/api' });
   await app.register(statsRoutes, { prefix: '/api' });
   await app.register(filterRoutes, { prefix: '/api' });
+  await app.register(auditRoutes, { prefix: '/api' });
 
   // Error handling
   app.setErrorHandler(errorHandler);

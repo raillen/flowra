@@ -681,3 +681,31 @@ model SavedFilter {
   @@map("saved_filters")
 }
 
+// Audit Log for tracking all changes
+model AuditLog {
+  id          String   @id @default(uuid())
+  
+  // Action details
+  action      String   // create, update, delete, move, attach, download, comment, status_change
+  entityType  String   // card, board, project, column, attachment, comment
+  entityId    String
+  entityTitle String?  // Snapshot of title for reference
+  
+  // What changed
+  changes     String?  // JSON: { field: { from: x, to: y } }
+  metadata    String?  // JSON: additional context
+  
+  // Who and when
+  userId      String
+  userName    String?  // Snapshot for deleted users
+  ipAddress   String?
+  userAgent   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
