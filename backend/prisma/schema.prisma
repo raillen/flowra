@@ -15,9 +15,11 @@ model User {
   role      String    @default("user")
   avatar    String?   // Base64 or URL
   bio       String?
+  companyId String?   // Optional company association
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   
+  company         Company?  @relation(fields: [companyId], references: [id])
   projects        Project[]
   collaborators   Collaborator[]
   assignedCards   Card[]          @relation("CardAssignedUser")
@@ -39,6 +41,7 @@ model User {
   projectMemberships ProjectMember[]
   boardMemberships   BoardMember[]
   
+  @@index([companyId])
   @@map("users")
 }
 
@@ -57,6 +60,7 @@ model Company {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   
+  users         User[]    // Users belonging to this company
   projects      Project[]
   collaborators CollaboratorCompany[]
   
