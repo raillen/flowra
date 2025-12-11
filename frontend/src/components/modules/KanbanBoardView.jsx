@@ -56,7 +56,8 @@ import BoardSettingsModal from './modals/BoardSettingsModal';
 import { useBoardConfig } from '../../hooks/useBoardConfig';
 import ExtendedCardFields from './cards/ExtendedCardFields';
 import MemberManagementModal from './modals/MemberManagementModal';
-import { UserPlus } from 'lucide-react';
+import PresentationMode from '../common/PresentationMode';
+import { UserPlus, Presentation } from 'lucide-react';
 
 
 /**
@@ -315,6 +316,8 @@ const KanbanBoardView = () => {
   const [deleteCardConfirm, setDeleteCardConfirm] = useState({ isOpen: false, cardId: null });
   const [deleteColumnConfirm, setDeleteColumnConfirm] = useState({ isOpen: false, columnId: null, columnName: '' });
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [presentationIndex, setPresentationIndex] = useState(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -814,6 +817,19 @@ const KanbanBoardView = () => {
         />
 
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => {
+              setPresentationIndex(0);
+              setIsPresentationMode(true);
+            }}
+            icon={Presentation}
+            variant="outline"
+            size="sm"
+            disabled={filteredCards.length === 0}
+            title="Modo apresentação para standups"
+          >
+            Apresentar
+          </Button>
           <Button onClick={handleAddColumn} icon={Plus} size="sm">
             Nova Coluna
           </Button>
@@ -999,6 +1015,15 @@ const KanbanBoardView = () => {
           </DndContext>
         </div>
       )}
+
+      {/* Presentation Mode */}
+      <PresentationMode
+        isOpen={isPresentationMode}
+        onClose={() => setIsPresentationMode(false)}
+        cards={filteredCards}
+        currentIndex={presentationIndex}
+        onIndexChange={setPresentationIndex}
+      />
 
       {/* Card Modal */}
       <CardModal
