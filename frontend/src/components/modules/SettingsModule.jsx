@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCompanies } from '../../hooks/useCompanies';
 import { useGroups } from '../../hooks/useGroups';
 import { useCollaborators } from '../../hooks/useCollaborators';
-import { Building, Layers, Users, Database, RefreshCw, Globe, Search, Plus, X, Edit2, Save, Trash2, Upload, FileSpreadsheet } from 'lucide-react';
+import { useAuthContext } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useAccentColor } from '../../contexts/AccentColorContext';
+import api from '../../services/api';
+import { Building, Layers, Users, Database, RefreshCw, Globe, Search, Plus, X, Edit2, Save, Trash2, Upload, FileSpreadsheet, Palette, Settings, Download, HardDrive, BarChart3, Info, Moon, Sun, Monitor } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmationDialog, Toast } from '../ui';
 import { formatCNPJ } from '../../utils/formatters';
 import { fetchCompanyByCNPJ } from '../../services/companyService';
@@ -19,6 +23,57 @@ const SettingsModule = () => {
   const { companies, addCompany, updateCompany, deleteCompany } = useCompanies();
   const { groups, addGroup, deleteGroup } = useGroups();
   const { collaborators, addCollaborator, updateCollaborator, deleteCollaborator } = useCollaborators();
+  const { user } = useAuthContext();
+  const { theme, setTheme, themes } = useTheme();
+  const { accentColor, setAccentColor } = useAccentColor();
+
+  // Database stats state
+  const [dbStats, setDbStats] = useState(null);
+  const [dbStatsLoading, setDbStatsLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(null);
+
+  // Fetch database stats
+  const fetchDbStats = async () => {
+    setDbStatsLoading(true);
+    try {
+      const response = await api.get('/stats/database');
+      setDbStats(response.data.data);
+    } catch (error) {
+      console.error('Error fetching db stats:', error);
+      setToast({ isOpen: true, message: 'Erro ao carregar estatísticas', type: 'error' });
+    } finally {
+      setDbStatsLoading(false);
+    }
+  };
+
+  // Export entity data
+  const handleExport = async (entity) => {
+    setExportLoading(entity);
+    try {
+      const response = await api.get(`/stats/export/${entity}`);
+      const dataStr = JSON.stringify(response.data.data, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${entity}_export_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setToast({ isOpen: true, message: `${entity} exportado com sucesso!`, type: 'success' });
+    } catch (error) {
+      console.error('Error exporting:', error);
+      setToast({ isOpen: true, message: 'Erro ao exportar dados', type: 'error' });
+    } finally {
+      setExportLoading(null);
+    }
+  };
+
+  // Load db stats when tab changes to database
+  useEffect(() => {
+    if (activeTab === 'database' && !dbStats && user?.role === 'admin') {
+      fetchDbStats();
+    }
+  }, [activeTab, dbStats, user?.role]);
 
   // Company state
   const [companyForm, setCompanyForm] = useState({
@@ -173,49 +228,314 @@ const SettingsModule = () => {
   };
 
   return (
-    <div className="flex h-full bg-white rounded-xl border border-slate-200 overflow-hidden animate-in fade-in m-6 shadow-sm">
+    <div className="flex h-full bg-surface rounded-xl border border-border overflow-hidden animate-in fade-in m-6 shadow-sm">
       {/* Sidebar */}
-      <div className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col p-4 space-y-1">
-        <h3 className="font-bold text-slate-700 mb-4 px-2">Configurações</h3>
+      <div className="w-64 bg-surface-hover border-r border-border flex flex-col p-4 space-y-1">
+        <h3 className="font-bold text-text-primary mb-4 px-2 flex items-center gap-2">
+          <Settings size={18} className="text-text-secondary" />
+          Configurações
+        </h3>
+
+        {/* General */}
         <button
           onClick={() => setActiveTab('general')}
-          className={`text-left px-3 py-2 rounded-lg text-sm font-medium ${activeTab === 'general' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+          className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'general'
+              ? 'text-white shadow-md'
+              : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
+          style={activeTab === 'general' ? { backgroundColor: accentColor } : {}}
         >
-          Geral
+          <Info size={16} /> Geral
         </button>
+
+        {/* Appearance */}
+        <button
+          onClick={() => setActiveTab('appearance')}
+          className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'appearance'
+              ? 'text-white shadow-md'
+              : 'text-text-secondary hover:bg-border hover:text-text-primary'
+            }`}
+          style={activeTab === 'appearance' ? { backgroundColor: accentColor } : {}}
+        >
+          <Palette size={16} /> Aparência
+        </button>
+
+        <div className="!my-3 border-t border-border" />
+        <span className="text-xs font-semibold text-text-secondary uppercase px-2 mb-1">Cadastros</span>
+
+        {/* Companies */}
         <button
           onClick={() => setActiveTab('companies')}
-          className={`text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${activeTab === 'companies' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+          className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'companies'
+              ? 'text-white shadow-md'
+              : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
+          style={activeTab === 'companies' ? { backgroundColor: accentColor } : {}}
         >
           <Building size={16} /> Empresas
         </button>
+
+        {/* Groups */}
         <button
           onClick={() => setActiveTab('groups')}
-          className={`text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${activeTab === 'groups' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+          className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'groups'
+              ? 'text-white shadow-md'
+              : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
+          style={activeTab === 'groups' ? { backgroundColor: accentColor } : {}}
         >
           <Layers size={16} /> Grupos
         </button>
+
+        {/* Collaborators */}
         <button
           onClick={() => setActiveTab('collaborators')}
-          className={`text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${activeTab === 'collaborators' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+          className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'collaborators'
+              ? 'text-white shadow-md'
+              : 'text-text-secondary hover:bg-border hover:text-text-primary'
             }`}
+          style={activeTab === 'collaborators' ? { backgroundColor: accentColor } : {}}
         >
           <Users size={16} /> Colaboradores
         </button>
+
+        {/* Database - Admin only */}
+        {user?.role === 'admin' && (
+          <>
+            <div className="!my-3 border-t border-border" />
+            <span className="text-xs font-semibold text-text-secondary uppercase px-2 mb-1">Administração</span>
+            <button
+              onClick={() => setActiveTab('database')}
+              className={`text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'database'
+                  ? 'text-white shadow-md'
+                  : 'text-text-secondary hover:bg-border hover:text-text-primary'
+                }`}
+              style={activeTab === 'database' ? { backgroundColor: accentColor } : {}}
+            >
+              <Database size={16} /> Banco de Dados
+            </button>
+          </>
+        )}
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-background">
+
+        {/* General Tab */}
         {activeTab === 'general' && (
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">Configurações Gerais</h2>
-            <p className="text-slate-500 mb-6">Ajustes globais do sistema.</p>
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-              <p className="text-sm text-slate-600">Sistema: <strong>KBSys v1.0</strong></p>
+            <h2 className="text-2xl font-bold text-text-primary mb-2 flex items-center gap-2">
+              <Info size={24} style={{ color: accentColor }} />
+              Configurações Gerais
+            </h2>
+            <p className="text-text-secondary mb-6">Informações e ajustes globais do sistema.</p>
+
+            <div className="space-y-4">
+              {/* System Info */}
+              <div className="bg-surface p-5 rounded-xl border border-border">
+                <h3 className="font-bold text-text-primary mb-4">Informações do Sistema</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-text-secondary uppercase mb-1">Versão</p>
+                    <p className="font-mono font-bold text-text-primary">KBSys v1.0.0</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-secondary uppercase mb-1">Ambiente</p>
+                    <Badge color="bg-emerald-100 text-emerald-700">Produção</Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-secondary uppercase mb-1">Usuário Atual</p>
+                    <p className="font-medium text-text-primary">{user?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-secondary uppercase mb-1">Permissão</p>
+                    <Badge color={user?.role === 'admin' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-700'}>
+                      {user?.role === 'admin' ? 'Administrador' : 'Usuário'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="bg-surface p-5 rounded-xl border border-border">
+                <h3 className="font-bold text-text-primary mb-4">Resumo Rápido</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-surface-hover rounded-lg">
+                    <p className="text-2xl font-bold" style={{ color: accentColor }}>{companies.length}</p>
+                    <p className="text-xs text-text-secondary">Empresas</p>
+                  </div>
+                  <div className="text-center p-3 bg-surface-hover rounded-lg">
+                    <p className="text-2xl font-bold" style={{ color: accentColor }}>{groups.length}</p>
+                    <p className="text-xs text-text-secondary">Grupos</p>
+                  </div>
+                  <div className="text-center p-3 bg-surface-hover rounded-lg">
+                    <p className="text-2xl font-bold" style={{ color: accentColor }}>{collaborators.length}</p>
+                    <p className="text-xs text-text-secondary">Colaboradores</p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Appearance Tab */}
+        {activeTab === 'appearance' && (
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-bold text-text-primary mb-2 flex items-center gap-2">
+              <Palette size={24} style={{ color: accentColor }} />
+              Aparência
+            </h2>
+            <p className="text-text-secondary mb-6">Personalize a interface do sistema.</p>
+
+            <div className="space-y-6">
+              {/* Theme Selector */}
+              <div className="bg-surface p-5 rounded-xl border border-border">
+                <h3 className="font-bold text-text-primary mb-4 flex items-center gap-2">
+                  <Moon size={18} />
+                  Tema do Sistema
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {themes.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTheme(t.id)}
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${theme === t.id
+                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                          : 'border-border hover:border-primary-300'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        {t.id === 'light' && <Sun size={18} className="text-amber-500" />}
+                        {t.id === 'dark' && <Moon size={18} className="text-indigo-400" />}
+                        {t.id === 'system' && <Monitor size={18} className="text-text-secondary" />}
+                        {!['light', 'dark', 'system'].includes(t.id) && (
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: t.preview || accentColor }}
+                          />
+                        )}
+                        <span className="font-medium text-text-primary">{t.name}</span>
+                      </div>
+                      {theme === t.id && (
+                        <Badge color="bg-primary-100 text-primary-700">Ativo</Badge>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Accent Color */}
+              <div className="bg-surface p-5 rounded-xl border border-border">
+                <h3 className="font-bold text-text-primary mb-4">Cor de Destaque Pessoal</h3>
+                <p className="text-sm text-text-secondary mb-4">
+                  Esta cor é sobrescrita pela cor da empresa quando você seleciona um projeto.
+                </p>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setAccentColor(color)}
+                      className={`w-10 h-10 rounded-xl transition-all ${accentColor === color ? 'ring-2 ring-offset-2 ring-text-secondary scale-110' : 'hover:scale-105'
+                        }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-10 h-10 rounded-xl cursor-pointer border-0"
+                    title="Cor personalizada"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Database Tab */}
+        {activeTab === 'database' && user?.role === 'admin' && (
+          <div className="max-w-4xl">
+            <h2 className="text-2xl font-bold text-text-primary mb-2 flex items-center gap-2">
+              <Database size={24} style={{ color: accentColor }} />
+              Database Explorer
+            </h2>
+            <p className="text-text-secondary mb-6">Visualização e estatísticas do banco de dados (somente leitura).</p>
+
+            {dbStatsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <RefreshCw className="animate-spin text-text-secondary" size={32} />
+              </div>
+            ) : dbStats ? (
+              <div className="space-y-6">
+                {/* Storage Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-surface p-5 rounded-xl border border-border">
+                    <div className="flex items-center gap-3 mb-2">
+                      <HardDrive size={20} style={{ color: accentColor }} />
+                      <h3 className="font-bold text-text-primary">Armazenamento</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-text-primary">{dbStats.storage.databaseMB} MB</p>
+                    <p className="text-xs text-text-secondary">Tamanho do banco</p>
+                  </div>
+                  <div className="bg-surface p-5 rounded-xl border border-border">
+                    <div className="flex items-center gap-3 mb-2">
+                      <BarChart3 size={20} style={{ color: accentColor }} />
+                      <h3 className="font-bold text-text-primary">Total de Registros</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-text-primary">{dbStats.totals.entities.toLocaleString()}</p>
+                    <p className="text-xs text-text-secondary">Entidades no sistema</p>
+                  </div>
+                </div>
+
+                {/* Entity Counts */}
+                <div className="bg-surface p-5 rounded-xl border border-border">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-text-primary">Contadores por Entidade</h3>
+                    <Button variant="ghost" onClick={fetchDbStats} className="!p-2">
+                      <RefreshCw size={16} />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    {Object.entries(dbStats.entities).map(([key, value]) => (
+                      <div key={key} className="p-3 bg-surface-hover rounded-lg text-center">
+                        <p className="text-lg font-bold text-text-primary">{value}</p>
+                        <p className="text-xs text-text-secondary capitalize">{key}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Export Section */}
+                <div className="bg-surface p-5 rounded-xl border border-border">
+                  <h3 className="font-bold text-text-primary mb-4 flex items-center gap-2">
+                    <Download size={18} />
+                    Exportar Dados
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {['users', 'companies', 'projects', 'boards', 'cards', 'notes', 'collaborators', 'tags'].map((entity) => (
+                      <Button
+                        key={entity}
+                        variant="secondary"
+                        onClick={() => handleExport(entity)}
+                        loading={exportLoading === entity}
+                        className="!py-2 !px-3 !text-sm"
+                      >
+                        <Download size={14} className="mr-1" />
+                        {entity}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-text-secondary">
+                <Database size={48} className="mx-auto mb-4 opacity-50" />
+                <p>Erro ao carregar estatísticas</p>
+                <Button onClick={fetchDbStats} className="mt-4">Tentar Novamente</Button>
+              </div>
+            )}
           </div>
         )}
 
