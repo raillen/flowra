@@ -19,7 +19,6 @@ import {
   Code2,
   LogOut,
   ChevronRight,
-  Search,
   Plus,
   Sparkles
 } from 'lucide-react';
@@ -37,7 +36,6 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const { unreadCount: notificationUnreadCount } = useNotificationContext();
   const { logout } = useAuthContext();
   const { accentColor } = useAccentColor();
-  const [searchFocused, setSearchFocused] = useState(false);
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
 
@@ -130,23 +128,6 @@ const Sidebar = ({ isOpen, onToggle }) => {
           >
             <X size={20} />
           </button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="px-4 py-3">
-          <div className={`relative transition-all duration-200 ${searchFocused ? 'scale-[1.02]' : ''}`}>
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              className={`w-full pl-9 pr-4 py-2.5 bg-surface-hover border rounded-xl text-sm text-text-primary placeholder:text-text-secondary outline-none transition-all
-                ${searchFocused ? 'border-primary bg-surface shadow-md' : 'border-border hover:border-border'}
-              `}
-            />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-secondary bg-surface-hover px-1.5 py-0.5 rounded">⌘K</kbd>
-          </div>
         </div>
 
         {/* Navigation Items */}

@@ -3,6 +3,7 @@ import { ChevronRight, Search, LogOut, User, Menu } from 'lucide-react';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { useApp } from '../../contexts/AppContext';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useCommandPalette } from '../../contexts/CommandPaletteContext';
 import NotificationCenter from '../common/NotificationCenter';
 import Breadcrumbs from '../common/Breadcrumbs';
 import ThemeToggle from '../common/ThemeToggle';
@@ -11,8 +12,8 @@ const Header = ({ onMenuClick }) => {
   const { activeModule, activeProjectId, navigateTo } = useNavigation();
   const { projects } = useApp();
   const { user, logout } = useAuthContext();
+  const { openCommandPalette } = useCommandPalette();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
   const userMenuRef = useRef(null);
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
@@ -41,25 +42,21 @@ const Header = ({ onMenuClick }) => {
 
       {/* Right section: Search + Actions */}
       <div className="flex items-center gap-2 lg:gap-3">
-        {/* Search */}
-        <div className={`relative hidden md:block transition-all duration-200 ${searchFocused ? 'w-80' : 'w-64'}`}>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={16} />
-          <input
-            placeholder="Buscar..."
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            className={`w-full pl-10 pr-12 py-2.5 bg-surface-hover/50 border-2 border-transparent rounded-xl text-sm transition-all outline-none text-text-primary ${searchFocused
-              ? 'bg-surface border-primary ring-4 ring-primary/10'
-              : 'hover:bg-surface-hover'
-              }`}
-          />
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-secondary bg-background/50 px-1.5 py-0.5 rounded font-mono">
-            ⌘K
-          </kbd>
-        </div>
+        {/* Search Button - triggers command palette */}
+        <button
+          onClick={openCommandPalette}
+          className="hidden md:flex items-center gap-3 w-64 px-4 py-2.5 bg-surface-hover/50 hover:bg-surface-hover border border-transparent hover:border-border rounded-xl text-sm transition-all text-text-secondary"
+        >
+          <Search size={16} />
+          <span className="flex-1 text-left">Buscar...</span>
+          <kbd className="text-[10px] bg-background/50 px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
+        </button>
 
         {/* Mobile search button */}
-        <button className="md:hidden p-2 text-text-secondary hover:text-text-primary hover:bg-surface-hover rounded-xl transition-colors">
+        <button
+          onClick={openCommandPalette}
+          className="md:hidden p-2 text-text-secondary hover:text-text-primary hover:bg-surface-hover rounded-xl transition-colors"
+        >
           <Search size={18} />
         </button>
 

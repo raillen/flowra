@@ -6,6 +6,7 @@ import { NavigationProvider } from './contexts/NavigationContext';
 import { ChatProvider } from './contexts/ChatContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { CommandPaletteProvider, useCommandPalette } from './contexts/CommandPaletteContext';
 import { useAuthContext } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
@@ -21,14 +22,14 @@ import PublicBriefingView from './components/modules/views/PublicBriefingView';
 const ProtectedApp = () => {
   const { isAuthenticated, loading, setUser, setToken } = useAuthContext();
   const [showRegister, setShowRegister] = useState(false);
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const { isOpen: isCommandPaletteOpen, toggleCommandPalette, closeCommandPalette } = useCommandPalette();
 
   // Global keyboard shortcut for Command Palette (Cmd+K / Ctrl+K)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsCommandPaletteOpen(prev => !prev);
+        toggleCommandPalette();
       }
     };
 
@@ -80,7 +81,7 @@ const ProtectedApp = () => {
               <Layout />
               <CommandPalette
                 isOpen={isCommandPaletteOpen}
-                onClose={() => setIsCommandPaletteOpen(false)}
+                onClose={closeCommandPalette}
               />
             </NotificationProvider>
           </ChatProvider>
@@ -104,7 +105,9 @@ function App() {
     <AccentColorProvider>
       <ThemeProvider>
         <AuthProvider>
-          <ProtectedApp />
+          <CommandPaletteProvider>
+            <ProtectedApp />
+          </CommandPaletteProvider>
         </AuthProvider>
       </ThemeProvider>
     </AccentColorProvider>
