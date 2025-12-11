@@ -17,7 +17,12 @@ import { logger } from '../config/logger.js';
  */
 export async function createProject(request, reply) {
   const userId = request.user.id;
-  const projectData = request.body;
+  const companyId = request.user.companyId;
+  const projectData = {
+    ...request.body,
+    // Auto-assign user's company if not specified and user has one
+    companyId: request.body.companyId || companyId || null
+  };
 
   const project = await projectService.createProject(projectData, userId);
 
@@ -49,9 +54,11 @@ export async function getProject(request, reply) {
  */
 export async function listProjects(request, reply) {
   const userId = request.user.id;
+  const companyId = request.user.companyId;
   const { page = 1, limit = 10 } = request.query;
 
-  const result = await projectService.listProjects(userId, { page, limit });
+  // Pass companyId for multi-empresa filtering
+  const result = await projectService.listProjects(userId, { page, limit, companyId });
 
   return reply.send(
     paginatedResponse(

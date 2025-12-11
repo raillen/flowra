@@ -16,6 +16,15 @@ import { logger } from '../config/logger.js';
 export async function findByEmail(email) {
   return prisma.user.findUnique({
     where: { email },
+    include: {
+      company: {
+        select: {
+          id: true,
+          name: true,
+          accentColor: true
+        }
+      }
+    }
   });
 }
 
@@ -34,8 +43,16 @@ export async function findById(id) {
       role: true,
       bio: true,
       avatar: true,
+      companyId: true,
       createdAt: true,
       updatedAt: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          accentColor: true
+        }
+      }
     },
   });
 }

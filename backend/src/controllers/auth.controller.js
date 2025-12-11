@@ -23,7 +23,7 @@ export async function register(request, reply) {
 
   // Generate JWT token
   const token = request.server.jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, companyId: user.companyId || null },
     { expiresIn: config.jwtExpiresIn }
   );
 
@@ -43,9 +43,9 @@ export async function login(request, reply) {
 
   const user = await authService.login(email, password);
 
-  // Generate JWT token
+  // Generate JWT token with companyId for multi-tenant support
   const token = request.server.jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, companyId: user.companyId || null },
     { expiresIn: config.jwtExpiresIn }
   );
 
