@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Settings, Check, X, ChevronDown, ChevronRight, Plus, Trash,
-    Hash, Type, List, Calendar, CheckSquare, Palette, Layout, Search, Flag, Shield, Users, Lock, Unlock
+    Hash, Type, List, Calendar, CheckSquare, Palette, Layout, Search, Flag, Shield, Users, Lock, Unlock, Archive, Zap
 } from 'lucide-react';
 import { Modal, Button } from '../../ui';
 import { useBoardConfig } from '../../../hooks/useBoardConfig';
@@ -77,6 +77,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
     const [members, setMembers] = useState([]);
     const [showMemberModal, setShowMemberModal] = useState(false);
     const [loadingBoard, setLoadingBoard] = useState(false);
+    const [autoArchive, setAutoArchive] = useState(false);
 
     useEffect(() => {
         if (isOpen && projectId && boardId) {
@@ -89,6 +90,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
             setLoadingBoard(true);
             const board = await getBoardById(projectId, boardId);
             setIsPrivate(board.isPrivate || false);
+            setAutoArchive(board.autoArchiveCompleted || false);
             setMembers(board.members || []);
         } catch (error) {
             console.error('Failed to load board data:', error);
@@ -104,6 +106,18 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
             setIsPrivate(newPrivacy);
         } catch (error) {
             console.error('Failed to update privacy:', error);
+        }
+    };
+
+    const handleToggleAutoArchive = async () => {
+        try {
+            const newValue = !autoArchive;
+            // Optimistic update
+            setAutoArchive(newValue);
+            await updateBoard(projectId, boardId, { autoArchiveCompleted: newValue });
+        } catch (error) {
+            console.error('Failed to update auto-archive:', error);
+            setAutoArchive(!autoArchive); // Revert on error
         }
     };
 
@@ -281,7 +295,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
             <div className="flex flex-col h-[650px]">
                 {/* Tabs */}
                 <div className="flex space-x-1 border-b border-secondary-200 mb-4 px-1">
-                    {['general', 'lists', 'custom', 'access'].map(tab => (
+                    {['general', 'lists', 'custom', 'automation', 'access'].map(tab => (
                         <button
                             key={tab}
                             className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors capitalize ${activeTab === tab ? 'border-primary-600 text-primary-600' : 'border-transparent text-secondary-500 hover:text-secondary-700'
@@ -290,7 +304,8 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
                         >
                             {tab === 'general' ? 'Campos Padrão' :
                                 tab === 'lists' ? 'Listas & Opções' :
-                                    tab === 'custom' ? 'Campos Personalizados' : 'Acesso & Membros'}
+                                    tab === 'custom' ? 'Campos Personalizados' :
+                                        tab === 'automation' ? 'Automação' : 'Acesso & Membros'}
                         </button>
                     ))}
                 </div>
@@ -602,6 +617,46 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
                                     </div>
                                 </div>
                             )}
+
+
+                            {/* AUTOMATION TAB */}
+                            {activeTab === 'automation' && (
+                                <div className="space-y-6">
+                                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                                                <Archive size={20} />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">Arquivamento Automático</h4>
+                                                <p className="text-sm text-gray-500">
+                                                    Gerencie como os cards concluídos são tratados.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                            <div className="flex-1">
+                                                <p className="font-medium text-gray-900">Arquivar itens concluídos</p>
+                                                <p className="text-sm text-gray-500 mt-1">
+                                                    Quando ativado, cards movidos para "Concluído" serão automaticamente arquivados.
+                                                    Eles não aparecerão mais no quadro, mas podem ser acessados no menu Arquivo.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={autoArchive}
+                                                    onChange={handleToggleAutoArchive}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* ACCESS TAB */}
                             {activeTab === 'access' && (
                                 <div className="space-y-6">
@@ -697,7 +752,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
                 onAddMember={handleAddMember}
                 onRemoveMember={handleRemoveMember}
             />
-        </Modal>
+        </Modal >
     );
 };
 
