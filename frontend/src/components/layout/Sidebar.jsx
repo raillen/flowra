@@ -105,25 +105,25 @@ const Sidebar = ({ isOpen, onToggle }) => {
 
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/50
+        w-72 bg-surface/80 backdrop-blur-xl border-r border-border
         transform transition-all duration-300 ease-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         flex flex-col h-full shadow-xl lg:shadow-none
       `}>
 
         {/* Logo Area */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-gradient-to-br from-primary-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
               <Code2 className="text-white" size={20} />
             </div>
             <div>
-              <span className="font-bold text-lg text-slate-800 tracking-tight">KBSys</span>
-              <span className="text-[10px] text-slate-400 block -mt-1">Project Manager</span>
+              <span className="font-bold text-lg text-text-primary tracking-tight">KBSys</span>
+              <span className="text-[10px] text-text-secondary block -mt-1">Project Manager</span>
             </div>
           </div>
           <button
-            className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+            className="lg:hidden p-2 hover:bg-surface-hover rounded-lg text-text-secondary hover:text-text-primary transition-colors"
             onClick={onToggle}
           >
             <X size={20} />
@@ -139,11 +139,11 @@ const Sidebar = ({ isOpen, onToggle }) => {
               placeholder="Buscar..."
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              className={`w-full pl-9 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all
-                ${searchFocused ? 'border-primary-300 bg-white shadow-md' : 'border-slate-200 hover:border-slate-300'}
+              className={`w-full pl-9 pr-4 py-2.5 bg-surface-hover border rounded-xl text-sm text-text-primary placeholder:text-text-secondary outline-none transition-all
+                ${searchFocused ? 'border-primary bg-surface shadow-md' : 'border-border hover:border-border'}
               `}
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">⌘K</kbd>
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-secondary bg-surface-hover px-1.5 py-0.5 rounded">⌘K</kbd>
           </div>
         </div>
 
@@ -152,7 +152,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
           {menuGroups.map((group) => (
             <div key={group.id}>
               {group.label && (
-                <h3 className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider mb-2">
                   {group.label}
                 </h3>
               )}
@@ -168,15 +168,15 @@ const Sidebar = ({ isOpen, onToggle }) => {
                         w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative overflow-hidden
                         ${isActive
                           ? 'bg-gradient-to-r ' + item.gradient + ' text-white shadow-md'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                         }
                       `}
                     >
                       <div className="flex items-center gap-3 relative z-10">
-                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-surface-hover group-hover:bg-border'}`}>
                           <item.icon
                             size={16}
-                            className={isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}
+                            className={isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'}
                           />
                         </div>
                         <span className="text-sm font-medium">{item.label}</span>
@@ -195,7 +195,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                       ) : (
                         <ChevronRight
                           size={14}
-                          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-white/70' : 'text-slate-400'}`}
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-white/70' : 'text-text-secondary'}`}
                         />
                       )}
                     </button>
@@ -207,7 +207,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
         </div>
 
         {/* Bottom Section */}
-        <div className="p-4 border-t border-slate-100 bg-gradient-to-t from-slate-50 to-transparent">
+        <div className="p-4 border-t border-border bg-gradient-to-t from-surface-hover to-transparent">
 
           {/* Active Project Card */}
           {activeProject && (
@@ -218,7 +218,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-medium text-primary-600 uppercase tracking-wide">Projeto Ativo</p>
-                  <p className="text-sm font-bold text-slate-800 truncate">{activeProject.name}</p>
+                  <p className="text-sm font-bold text-text-primary truncate">{activeProject.name}</p>
                 </div>
               </div>
               <button
@@ -232,7 +232,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
           )}
 
           {/* User Profile */}
-          <div className="flex items-center gap-3 p-2 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer group">
+          <div className="flex items-center gap-3 p-2 hover:bg-surface-hover rounded-xl transition-colors cursor-pointer group">
             <div className="relative">
               {user?.avatar ? (
                 <img
@@ -249,17 +249,17 @@ const Sidebar = ({ isOpen, onToggle }) => {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800 truncate">
+              <p className="text-sm font-semibold text-text-primary truncate">
                 {user?.name || 'Usuário'}
               </p>
-              <p className="text-xs text-slate-400 truncate">
+              <p className="text-xs text-text-secondary truncate">
                 {user?.email}
               </p>
             </div>
 
             <button
               onClick={handleLogout}
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+              className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
               title="Sair"
             >
               <LogOut size={16} />

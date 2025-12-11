@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css';
+import 'highlight.js/styles/github.css';
 import { useApp } from '../../contexts/AppContext';
 import api from '../../config/api';
 import {
@@ -154,8 +154,8 @@ const DocumentationView = () => {
                         <button
                             onClick={() => setActiveSection('usage')}
                             className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all ${activeSection === 'usage'
-                                    ? 'bg-white text-primary-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                ? 'bg-white text-primary-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             📘 Uso
@@ -164,8 +164,8 @@ const DocumentationView = () => {
                             <button
                                 onClick={() => setActiveSection('technical')}
                                 className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1 ${activeSection === 'technical'
-                                        ? 'bg-white text-primary-600 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white text-primary-600 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 <Lock size={12} /> Técnica
@@ -235,8 +235,8 @@ const DocumentationView = () => {
                                                 key={item.path}
                                                 onClick={() => setCurrentPath(item.path)}
                                                 className={`w-full text-left p-2 text-sm rounded-lg transition-colors ${currentPath === item.path
-                                                        ? 'bg-primary-50 text-primary-600 font-medium'
-                                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                                                    ? 'bg-primary-50 text-primary-600 font-medium'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                                                     }`}
                                             >
                                                 {item.title}
@@ -307,7 +307,7 @@ const DocumentationView = () => {
                                     pre: ({ children, ...props }) => (
                                         <div className="relative group">
                                             <CopyButton content={children?.props?.children || ''} />
-                                            <pre className="!bg-slate-900 !rounded-xl !p-4 !my-4 overflow-x-auto" {...props}>
+                                            <pre className="!bg-slate-100 !rounded-xl !p-4 !my-4 overflow-x-auto border border-slate-200" {...props}>
                                                 {children}
                                             </pre>
                                         </div>
@@ -431,7 +431,7 @@ const CopyButton = ({ content }) => {
     return (
         <button
             onClick={handleCopy}
-            className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 p-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
             title="Copiar código"
         >
             {copied ? <Check size={14} /> : <Copy size={14} />}
