@@ -17,9 +17,9 @@ import { logger } from '../config/logger.js';
  * @returns {Promise<FastifyReply>} Response with created user and token
  */
 export async function register(request, reply) {
-  const { name, email, password } = request.body;
+  const { name, email, password, companyName } = request.body;
 
-  const user = await authService.register({ name, email, password });
+  const user = await authService.register({ name, email, password, companyName });
 
   // Generate JWT token
   const token = request.server.jwt.sign(

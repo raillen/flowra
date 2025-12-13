@@ -127,4 +127,46 @@ export async function noteRoutes(fastify) {
         },
         handler: noteController.searchReferences,
     });
+
+
+    // POST /api/notes/:id/share - Share a note
+    fastify.post('/notes/:id/share', {
+        schema: {
+            description: 'Share a note with another user',
+            tags: ['Notes'],
+            params: {
+                type: 'object',
+                required: ['id'],
+                properties: {
+                    id: { type: 'string' },
+                },
+            },
+            body: {
+                type: 'object',
+                required: ['userId'],
+                properties: {
+                    userId: { type: 'string' },
+                    permission: { type: 'string', enum: ['viewer', 'editor'], default: 'viewer' },
+                },
+            },
+        },
+        handler: noteController.shareNote,
+    });
+
+    // DELETE /api/notes/:id/share/:userId - Unshare a note
+    fastify.delete('/notes/:id/share/:userId', {
+        schema: {
+            description: 'Remove a user from note shares',
+            tags: ['Notes'],
+            params: {
+                type: 'object',
+                required: ['id', 'userId'],
+                properties: {
+                    id: { type: 'string' },
+                    userId: { type: 'string' },
+                },
+            },
+        },
+        handler: noteController.unshareNote,
+    });
 }

@@ -25,13 +25,15 @@ export const getAttachments = async (projectId, boardId, cardId) => {
  * @param {string} projectId - Project ID
  * @param {string} boardId - Board ID
  * @param {string} cardId - Card ID
- * @param {Object} attachmentData - Attachment data
+ * @param {Object|FormData} attachmentData - Attachment data or FormData for file upload
  * @returns {Promise<Object>} Created attachment
  */
 export const createAttachment = async (projectId, boardId, cardId, attachmentData) => {
+  const isFormData = attachmentData instanceof FormData;
   const response = await api.post(
     `/projects/${projectId}/boards/${boardId}/cards/${cardId}/attachments`,
-    attachmentData
+    attachmentData,
+    isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
   );
   return response.data.data || response.data;
 };

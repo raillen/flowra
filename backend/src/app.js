@@ -1,10 +1,14 @@
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
+import multipart from '@fastify/multipart';
 import { config } from './config/environment.js';
 import { logger } from './config/logger.js';
 import { testConnection } from './config/database.js';
@@ -33,6 +37,9 @@ import statsRoutes from './routes/stats.routes.js';
 import filterRoutes from './routes/filter.routes.js';
 import auditRoutes from './routes/audit.routes.js';
 import archiveRoutes from './routes/archive.routes.js';
+import { analyticsRoutes } from './routes/analytics.routes.js';
+import { importRoutes } from './routes/import.routes.js';
+import { auditLogRoutes } from './routes/auditLog.routes.js';
 import { initializeSocket } from './config/socket.js';
 
 /**
@@ -58,6 +65,43 @@ async function createApp() {
     contentSecurityPolicy: false, // Adjust for Swagger UI
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     crossOriginEmbedderPolicy: false,
+  });
+
+  // Rate limiting (100 req/min)
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
+    errorResponseBuilder: function (request, context) {
+      return {
+        statusCode: 429,
+        error: 'Too Many Requests',
+        message: 'Rate limit exceeded, please try again later.',
+        date: Date.now(),
+        expiresIn: context.ttl // milliseconds
+      }
+    }
+  });
+
+  // Multipart support
+  await app.register(multipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    }
+  });
+
+  // Trigger restart for schema update
+  // Last restart: Automation Schema Update 2
+  // Static file serving for uploads
+  const fastifyStatic = await import('@fastify/static');
+  const uploadsPath = path.join(process.cwd(), 'uploads');
+  // Ensure uploads directory exists
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+  }
+  await app.register(fastifyStatic.default, {
+    root: uploadsPath,
+    prefix: '/uploads/',
+    decorateReply: false,
   });
 
   await app.register(cors, {
@@ -168,6 +212,12 @@ async function createApp() {
   await app.register(filterRoutes, { prefix: '/api' });
   await app.register(auditRoutes, { prefix: '/api' });
   await app.register(archiveRoutes, { prefix: '/api' });
+  await app.register(analyticsRoutes, { prefix: '/api/analytics' });
+  await app.register(importRoutes, { prefix: '/api/import' });
+  await app.register(auditLogRoutes, { prefix: '/api/audit-logs' });
+  // Dashboard route already registered at line 179
+  // Removing duplicate at line 189
+
 
   // Error handling
   app.setErrorHandler(errorHandler);
@@ -208,6 +258,8 @@ async function start() {
       host: config.host,
     });
 
+
+
     // Initialize Socket.io after server is listening
     initializeSocket(app);
 
@@ -222,6 +274,7 @@ async function start() {
   }
 }
 
+// Start application
 // Start application
 start();
 

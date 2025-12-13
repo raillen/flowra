@@ -4,6 +4,7 @@ import { boardRepository } from '../repositories/board.repository.js';
 import { columnRepository } from '../repositories/column.repository.js';
 import { prisma } from '../config/database.js';
 import { logger } from '../config/logger.js';
+import { sanitizeHtml } from '../utils/sanitizer.js';
 
 /**
  * Card service layer
@@ -41,6 +42,11 @@ export async function createCard(boardId, columnId, cardData) {
   // Handle custom fields serialization
   if (cardData.customFields && typeof cardData.customFields === 'object') {
     cardData.customFields = JSON.stringify(cardData.customFields);
+  }
+
+  // Sanitize description
+  if (cardData.description) {
+    cardData.description = sanitizeHtml(cardData.description);
   }
 
   const card = await cardRepository.create({
@@ -247,7 +253,8 @@ export async function updateCard(boardId, cardId, updateData) {
     'projectPhase', 'budget', 'billable', 'storyPoints', 'externalUrl',
     'customFields',
     'assignedUserId', 'reporterId', 'reviewerId', 'parentCardId',
-    'columnId'
+    'columnId',
+    'keepVisibleOnComplete'
   ];
 
   fields.forEach(field => {
@@ -259,6 +266,11 @@ export async function updateCard(boardId, cardId, updateData) {
       }
     }
   });
+
+  // Sanitize description if present
+  if (updatePayload.description) {
+    updatePayload.description = sanitizeHtml(updatePayload.description);
+  }
 
   const updated = await cardRepository.update(cardId, updatePayload);
 
@@ -338,22 +350,36 @@ export async function moveCard(boardId, cardId, columnId, order) {
  * @param {string[]} userIds - Array of user IDs
  */
 export async function updateCardAssignees(boardId, cardId, userIds) {
-  // Verify card exists
-  const card = await cardRepository.findById(cardId);
-  if (!card || card.boardId !== boardId) {
-    throw new NotFoundError('Card not found');
+  try {
+    // Verify card exists
+    const card = await prisma.card.findUnique({ where: { id: cardId } });
+    if (!card || card.boardId !== boardId) {
+      throw new NotFoundError('Card not found');
+    }
+
+    // Ensure userIds is an array of valid strings
+    const idsToAdd = Array.isArray(userIds) ? userIds.filter(id => id && typeof id === 'string') : [];
+
+    // Delete existing assignees first
+    await prisma.cardAssignee.deleteMany({ where: { cardId } });
+
+    // Create assignees one by one (SQLite doesn't support createMany well)
+    for (const userId of idsToAdd) {
+      try {
+        await prisma.cardAssignee.create({
+          data: { cardId, userId }
+        });
+      } catch (createErr) {
+        // Skip if duplicate (user doesn't exist or already added)
+        logger.warn({ cardId, userId, error: createErr.message }, 'Could not add assignee');
+      }
+    }
+
+    logger.info({ cardId, userIds: idsToAdd }, 'Card assignees updated');
+  } catch (error) {
+    logger.error({ error: error.message, cardId, boardId, userIds }, 'Error updating card assignees');
+    throw error;
   }
-
-  // Delete existing assignees and create new ones
-  await prisma.$transaction([
-    prisma.cardAssignee.deleteMany({ where: { cardId } }),
-    prisma.cardAssignee.createMany({
-      data: userIds.map(userId => ({ cardId, userId })),
-      skipDuplicates: true,
-    }),
-  ]);
-
-  logger.info({ cardId, userIds }, 'Card assignees updated');
 }
 
 /**

@@ -211,5 +211,66 @@ export async function cardRoutes(fastify) {
     },
     cardController.getSubtasks
   );
+
+  // ============================================
+  // Direct Card Routes (without project/board)
+  // For simpler operations like archive/delete
+  // ============================================
+
+  // Direct update card (for archive)
+  fastify.put(
+    '/cards/:cardId',
+    {
+      schema: {
+        description: 'Direct update card',
+        tags: ['cards'],
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const { cardId } = request.params;
+      const updateData = request.body;
+
+      // Get card to find its board
+      const card = await fastify.prisma.card.findUnique({
+        where: { id: cardId },
+        select: { boardId: true }
+      });
+
+      if (!card) {
+        return reply.status(404).send({ success: false, message: 'Card not found' });
+      }
+
+      // Update the card
+      const updated = await fastify.prisma.card.update({
+        where: { id: cardId },
+        data: updateData
+      });
+
+      return reply.send({ success: true, data: updated, message: 'Card updated successfully' });
+    }
+  );
+
+  // Direct delete card
+  fastify.delete(
+    '/cards/:cardId',
+    {
+      schema: {
+        description: 'Direct delete card',
+        tags: ['cards'],
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const { cardId } = request.params;
+
+      // Delete the card
+      await fastify.prisma.card.delete({
+        where: { id: cardId }
+      });
+
+      return reply.status(204).send();
+    }
+  );
 }
 

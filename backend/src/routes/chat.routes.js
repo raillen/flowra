@@ -136,6 +136,21 @@ export async function chatRoutes(fastify) {
         handler: chatController.removeReaction,
     });
 
+    // DELETE /api/chat/conversations/:id - Delete a conversation
+    fastify.delete('/chat/conversations/:id', {
+        schema: {
+            description: 'Delete a conversation',
+            tags: ['Chat'],
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                },
+            },
+        },
+        handler: chatController.deleteConversation,
+    });
+
     // ============================================
     // PROJECT GROUP CHAT ROUTES
     // ============================================

@@ -438,3 +438,14 @@ export const getUserProjects = async (userId) => {
         orderBy: { name: 'asc' },
     });
 };
+
+/**
+ * Delete a conversation
+ * @param {string} conversationId - Conversation ID
+ */
+export const deleteConversation = async (conversationId) => {
+    return prisma.conversation.delete({
+        where: { id: conversationId },
+    });
+};
+

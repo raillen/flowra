@@ -1,13 +1,35 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 /**
  * Navigation context for managing application navigation state
  * Tracks active module, project, and board
+ * Persists state to localStorage for refresh persistence
  * 
  * @module contexts/NavigationContext
  */
 
 const NavigationContext = createContext(null);
+
+const STORAGE_KEY = 'kbsys_navigation';
+
+/**
+ * Get initial state from localStorage or defaults
+ */
+const getInitialState = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn('Failed to parse navigation state from localStorage');
+  }
+  return {
+    activeModule: 'projects',
+    activeProjectId: null,
+    activeBoardId: null,
+  };
+};
 
 /**
  * NavigationProvider component
@@ -15,9 +37,22 @@ const NavigationContext = createContext(null);
  * @param {React.ReactNode} props.children
  */
 export const NavigationProvider = ({ children }) => {
-  const [activeProjectId, setActiveProjectId] = useState(null);
-  const [activeModule, setActiveModule] = useState('projects');
-  const [activeBoardId, setActiveBoardId] = useState(null);
+  const initialState = getInitialState();
+
+  const [activeProjectId, setActiveProjectId] = useState(initialState.activeProjectId);
+  const [activeModule, setActiveModule] = useState(initialState.activeModule);
+  const [activeBoardId, setActiveBoardId] = useState(initialState.activeBoardId);
+  const [activeCardId, setActiveCardId] = useState(null);
+
+  // Persist navigation state to localStorage whenever it changes
+  useEffect(() => {
+    const state = {
+      activeModule,
+      activeProjectId,
+      activeBoardId,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [activeModule, activeProjectId, activeBoardId]);
 
   /**
    * Navigates to a specific module
@@ -29,6 +64,7 @@ export const NavigationProvider = ({ children }) => {
     // This allows staying in a board when clicking "Kanban" menu item
     if (module !== 'kanban') {
       setActiveBoardId(null);
+      setActiveCardId(null);
     }
   };
 
@@ -40,6 +76,7 @@ export const NavigationProvider = ({ children }) => {
     setActiveProjectId(projectId);
     setActiveModule('projects');
     setActiveBoardId(null);
+    setActiveCardId(null);
   };
 
   /**
@@ -59,6 +96,18 @@ export const NavigationProvider = ({ children }) => {
     setActiveProjectId(projectId);
     setActiveModule('kanban');
     setActiveBoardId(boardId);
+    setActiveCardId(null);
+  };
+
+  /**
+   * Navigates to a specific card
+   */
+  const navigateToCard = (projectId, boardId, cardId) => {
+    console.log('Navigating to card:', cardId, 'in board:', boardId);
+    setActiveProjectId(projectId);
+    setActiveModule('kanban');
+    setActiveBoardId(boardId);
+    setActiveCardId(cardId);
   };
 
   /**
@@ -68,19 +117,23 @@ export const NavigationProvider = ({ children }) => {
     setActiveProjectId(null);
     setActiveModule('projects');
     setActiveBoardId(null);
+    setActiveCardId(null);
   };
 
   const value = {
     activeProjectId,
     activeModule,
     activeBoardId,
+    activeCardId,
     setActiveProjectId,
     setActiveModule,
     setActiveBoardId,
+    setActiveCardId,
     navigateTo,
     selectProject,
     activateProjectContext,
     goToBoard,
+    navigateToCard,
     exitProject,
   };
 

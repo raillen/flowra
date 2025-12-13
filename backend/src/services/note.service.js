@@ -125,6 +125,65 @@ export const searchReferences = async (query, userId) => {
 };
 
 /**
+ * Share a note with a user
+ * @param {string} id - Note ID
+ * @param {string} targetUserId - User ID to share with
+ * @param {string} permission - Permission level (viewer/editor)
+ * @param {string} ownerId - Current user ID (owner)
+ * @returns {Promise<Object>} Updated note share
+ */
+export const shareNote = async (id, targetUserId, permission, ownerId) => {
+    const note = await noteRepository.findById(id);
+
+    if (!note) {
+        throw new NotFoundError('Note not found');
+    }
+
+    if (note.userId !== ownerId) {
+        throw new ForbiddenError('Only the owner can share the note');
+    }
+
+    if (note.userId === targetUserId) {
+        throw new Error('Cannot share note with yourself');
+    }
+
+    // Check if valid permission
+    if (!['viewer', 'editor'].includes(permission)) {
+        throw new Error('Invalid permission');
+    }
+
+    // Add or update share
+    const existingShare = note.shares?.find(s => s.userId === targetUserId);
+    if (existingShare) {
+        return noteRepository.updateShare(id, targetUserId, permission);
+    }
+
+    return noteRepository.addShare(id, targetUserId, permission);
+};
+
+/**
+ * Remove a user from note shares
+ * @param {string} id - Note ID
+ * @param {string} targetUserId - User ID to remove
+ * @param {string} ownerId - Current user ID (owner)
+ * @returns {Promise<void>}
+ */
+export const unshareNote = async (id, targetUserId, ownerId) => {
+    const note = await noteRepository.findById(id);
+
+    if (!note) {
+        throw new NotFoundError('Note not found');
+    }
+
+    // Allow owner to remove anyone, or user to remove themselves
+    if (note.userId !== ownerId && ownerId !== targetUserId) {
+        throw new ForbiddenError('Access denied');
+    }
+
+    return noteRepository.removeShare(id, targetUserId);
+};
+
+/**
  * Strip HTML tags from content
  * @param {string} html - HTML content
  * @returns {string} Plain text

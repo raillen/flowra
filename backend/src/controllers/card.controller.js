@@ -94,6 +94,8 @@ export async function moveCard(request, reply) {
   const { projectId, boardId, cardId } = request.params;
   const { columnId, order } = request.body;
 
+  console.log('>>> card.controller.moveCard called:', { boardId, cardId, columnId, order });
+
   const card = await cardService.moveCard(boardId, cardId, columnId, order);
 
   return reply.send(successResponse(card, 'Card moved successfully'));

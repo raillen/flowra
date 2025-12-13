@@ -77,7 +77,8 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
     const [members, setMembers] = useState([]);
     const [showMemberModal, setShowMemberModal] = useState(false);
     const [loadingBoard, setLoadingBoard] = useState(false);
-    const [autoArchive, setAutoArchive] = useState(false);
+    const [columns, setColumns] = useState([]);
+
 
     useEffect(() => {
         if (isOpen && projectId && boardId) {
@@ -90,8 +91,8 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
             setLoadingBoard(true);
             const board = await getBoardById(projectId, boardId);
             setIsPrivate(board.isPrivate || false);
-            setAutoArchive(board.autoArchiveCompleted || false);
             setMembers(board.members || []);
+            setColumns(board.columns || []);
         } catch (error) {
             console.error('Failed to load board data:', error);
         } finally {
@@ -109,17 +110,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
         }
     };
 
-    const handleToggleAutoArchive = async () => {
-        try {
-            const newValue = !autoArchive;
-            // Optimistic update
-            setAutoArchive(newValue);
-            await updateBoard(projectId, boardId, { autoArchiveCompleted: newValue });
-        } catch (error) {
-            console.error('Failed to update auto-archive:', error);
-            setAutoArchive(!autoArchive); // Revert on error
-        }
-    };
+
 
     const handleAddMember = async (userId) => {
         await addMember(projectId, boardId, userId);
@@ -130,9 +121,34 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
         await removeMember(projectId, boardId, userId);
         loadBoardData();
     };
+    // Default Options
+    const DEFAULT_LIST_OPTIONS = {
+        type: [
+            { value: 'tarefa', label: 'Tarefa', icon: 'check-square' },
+            { value: 'bug', label: 'Bug', icon: 'bug' },
+            { value: 'feature', label: 'Feature', icon: 'star' },
+        ],
+        status: [
+            { value: 'novo', label: 'Novo', color: 'bg-slate-100 text-slate-700' },
+            { value: 'em_progresso', label: 'Em Progresso', color: 'bg-blue-100 text-blue-700' },
+            { value: 'concluido', label: 'Concluído', color: 'bg-green-100 text-green-700' },
+        ],
+        priority: [
+            { value: 'baixa', label: 'Baixa', color: 'bg-green-100 text-green-700' },
+            { value: 'media', label: 'Média', color: 'bg-yellow-100 text-yellow-700' },
+            { value: 'alta', label: 'Alta', color: 'bg-red-100 text-red-700' },
+        ]
+    };
+
     useEffect(() => {
         if (fields) {
-            setLocalFields(JSON.parse(JSON.stringify(fields))); // Deep copy
+            const initial = JSON.parse(JSON.stringify(fields));
+            // Ensure options exist for lists
+            ['type', 'status', 'priority'].forEach(key => {
+                if (!initial[key]) initial[key] = { enabled: true };
+                if (!initial[key].options) initial[key].options = DEFAULT_LIST_OPTIONS[key];
+            });
+            setLocalFields(initial);
         }
     }, [fields]);
 
@@ -268,24 +284,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
 
     // Helper to get current options
     const getCurrentListOptions = () => {
-        const defaultOptions = {
-            type: [
-                { value: 'tarefa', label: 'Tarefa', icon: 'check-square' },
-                { value: 'bug', label: 'Bug', icon: 'bug' },
-                { value: 'feature', label: 'Feature', icon: 'star' },
-            ],
-            status: [
-                { value: 'novo', label: 'Novo', color: 'bg-slate-100 text-slate-700' },
-                { value: 'em_progresso', label: 'Em Progresso', color: 'bg-blue-100 text-blue-700' },
-                { value: 'concluido', label: 'Concluído', color: 'bg-green-100 text-green-700' },
-            ],
-            priority: [
-                { value: 'baixa', label: 'Baixa', color: 'bg-green-100 text-green-700' },
-                { value: 'media', label: 'Média', color: 'bg-yellow-100 text-yellow-700' },
-                { value: 'alta', label: 'Alta', color: 'bg-red-100 text-red-700' },
-            ]
-        };
-        return localFields[activeListType]?.options || defaultOptions[activeListType];
+        return localFields[activeListType]?.options || [];
     };
 
     if (!isOpen) return null;
@@ -295,17 +294,18 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
             <div className="flex flex-col h-[700px]">
                 {/* Tabs */}
                 <div className="flex space-x-1 border-b border-secondary-200 mb-4 px-1">
-                    {['general', 'lists', 'custom', 'automation', 'access'].map(tab => (
+                    {['general', 'lists', 'custom', 'access'].map(tab => (
                         <button
                             key={tab}
-                            className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors capitalize ${activeTab === tab ? 'border-primary-600 text-primary-600' : 'border-transparent text-secondary-500 hover:text-secondary-700'
+                            className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors capitalize ${activeTab === tab
+                                ? 'border-primary-600 text-primary-600'
+                                : 'border-transparent text-secondary-500 hover:text-secondary-700'
                                 }`}
                             onClick={() => setActiveTab(tab)}
                         >
                             {tab === 'general' ? 'Campos Padrão' :
                                 tab === 'lists' ? 'Listas & Opções' :
-                                    tab === 'custom' ? 'Campos Personalizados' :
-                                        tab === 'automation' ? 'Automação' : 'Acesso & Membros'}
+                                    tab === 'custom' ? 'Campos Personalizados' : 'Acesso & Membros'}
                         </button>
                     ))}
                 </div>
@@ -622,36 +622,148 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
                             {/* AUTOMATION TAB */}
                             {activeTab === 'automation' && (
                                 <div className="space-y-6">
-                                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
-                                                <Archive size={20} />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">Arquivamento Automático</h4>
-                                                <p className="text-sm text-gray-500">
-                                                    Gerencie como os cards concluídos são tratados.
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-medium text-gray-900">Regras de Automação</h4>
+                                        <div className="text-xs text-gray-400">Total: {rules.length}</div>
+                                    </div>
 
-                                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-900">Arquivar itens concluídos</p>
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    Quando ativado, cards movidos para "Concluído" serão automaticamente arquivados.
-                                                    Eles não aparecerão mais no quadro, mas podem ser acessados no menu Arquivo.
-                                                </p>
+                                    {/* List Rules */}
+                                    <div className="space-y-3">
+                                        {rules.length === 0 && !loadingRules && (
+                                            <p className="text-center text-sm text-gray-400 py-4 italic">Nenhuma regra configurada.</p>
+                                        )}
+                                        {rules.map(rule => (
+                                            <div key={rule.id} className="p-3 bg-white border border-gray-200 rounded-lg flex justify-between items-center shadow-sm">
+                                                <div>
+                                                    <p className="font-medium text-sm text-gray-800">{rule.name}</p>
+                                                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                                        <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] ${rule.triggerType === 'CARD_ROUTINE' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                            {rule.triggerType === 'CARD_ROUTINE' ? '🕒 Agendado' : rule.triggerType}
+                                                        </span>
+                                                        <span>→</span>
+                                                        <span>{rule.actions && JSON.parse(rule.actions)[0]?.type}</span>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => handleDeleteRule(rule.id)} className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded transition-colors">
+                                                    <Trash size={14} />
+                                                </button>
                                             </div>
-                                            <label className="relative inline-flex items-center cursor-pointer ml-4">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={autoArchive}
-                                                    onChange={handleToggleAutoArchive}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                            </label>
+                                        ))}
+                                    </div>
+
+                                    {/* Create Form */}
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200/60 mt-6">
+                                        <h5 className="font-bold text-xs text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <Plus size={12} /> Nova Regra
+                                        </h5>
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-500">Quando (Gatilho)</label>
+                                                    <select
+                                                        className="w-full text-sm border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-100 outline-none"
+                                                        value={newRule.triggerType}
+                                                        onChange={e => setNewRule({ ...newRule, triggerType: e.target.value, triggerValue: '' })}
+                                                    >
+                                                        <option value="CARD_MOVE">Card for movido</option>
+                                                        <option value="CARD_ROUTINE">Agendamento (Tempo)</option>
+                                                    </select>
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-500">Então (Ação)</label>
+                                                    <select
+                                                        className="w-full text-sm border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-100 outline-none"
+                                                        value={newRule.actionType}
+                                                        onChange={e => setNewRule({ ...newRule, actionType: e.target.value })}
+                                                    >
+                                                        <option value="ARCHIVE_CARD">Arquivar Card</option>
+                                                        <option value="MOVE_CARD">Mover Card</option>
+                                                        <option value="ASSIGN_USER">Atribuir Membro</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Dynamic Inputs based on Trigger */}
+                                            {newRule.triggerType === 'CARD_MOVE' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-500">Para a Coluna</label>
+                                                    <select
+                                                        className="w-full text-sm border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-100 outline-none"
+                                                        value={newRule.triggerValue}
+                                                        onChange={e => setNewRule({ ...newRule, triggerValue: e.target.value })}
+                                                    >
+                                                        <option value="">Selecione uma coluna...</option>
+                                                        {columns.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {newRule.triggerType === 'CARD_ROUTINE' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-500">Frequência</label>
+                                                    <select
+                                                        className="w-full text-sm border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-100 outline-none bg-purple-50 border-purple-100 text-purple-700"
+                                                        value={newRule.cronExpression || ''}
+                                                        onChange={e => setNewRule({ ...newRule, cronExpression: e.target.value })}
+                                                    >
+                                                        <option value="">Selecione a frequência...</option>
+                                                        <option value="* * * * *">A cada minuto (Teste)</option>
+                                                        <option value="0 * * * *">A cada hora</option>
+                                                        <option value="0 9 * * *">Todo dia às 09:00</option>
+                                                        <option value="0 18 * * FRI">Toda Sexta às 18:00</option>
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {/* Dynamic Inputs based on Action */}
+                                            {newRule.actionType === 'MOVE_CARD' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-500">Mover para Coluna</label>
+                                                    <select
+                                                        className="w-full text-sm border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-100 outline-none"
+                                                        value={newRule.actionValue || ''}
+                                                        onChange={e => setNewRule({ ...newRule, actionValue: e.target.value })}
+                                                    >
+                                                        <option value="">Selecione o destino...</option>
+                                                        {columns.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {newRule.actionType === 'ASSIGN_USER' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-500">Atribuir para</label>
+                                                    <select
+                                                        className="w-full text-sm border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-100 outline-none"
+                                                        value={newRule.actionValue || ''}
+                                                        onChange={e => setNewRule({ ...newRule, actionValue: e.target.value })}
+                                                    >
+                                                        <option value="">Selecione o membro...</option>
+                                                        {members.map(m => (
+                                                            <option key={m.userId} value={m.userId}>
+                                                                {m.user?.name || m.user?.email || 'Membro'}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            <div className="pt-2">
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleCreateRule}
+                                                    disabled={
+                                                        (newRule.triggerType === 'CARD_MOVE' && !newRule.triggerValue) ||
+                                                        (newRule.triggerType === 'CARD_ROUTINE' && !newRule.cronExpression) ||
+                                                        (newRule.actionType === 'MOVE_CARD' && !newRule.actionValue) ||
+                                                        (newRule.actionType === 'ASSIGN_USER' && !newRule.actionValue)
+                                                    }
+                                                    className="w-full justify-center"
+                                                >
+                                                    Adicionar Automação
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

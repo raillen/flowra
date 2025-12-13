@@ -14,18 +14,19 @@ import { config } from './environment.js';
  */
 export function createLogger() {
   const isDevelopment = config.nodeEnv === 'development';
-  
+
   return pino({
     level: config.logLevel,
+    redact: ['req.headers.authorization', 'req.body.password', 'req.body.token', 'req.body.refreshToken'],
     transport: isDevelopment
       ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname',
-          },
-        }
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss Z',
+          ignore: 'pid,hostname',
+        },
+      }
       : undefined,
     formatters: {
       level: (label) => {

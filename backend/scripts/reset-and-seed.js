@@ -26,6 +26,7 @@ async function main() {
   logger.info('🗑️  Deleting all existing data...');
 
   // Delete in correct order (respecting foreign keys)
+  await prisma.automationRule.deleteMany(); // Added automation rules
   await prisma.cardTag.deleteMany();
   await prisma.attachment.deleteMany();
   await prisma.comment.deleteMany();
@@ -63,8 +64,8 @@ async function main() {
       id: uuid(),
       name: 'Empresa Teste',
       cnpj: '12345678000190',
-      email: 'contato@empresateste.com',
-      phone: '11999999999',
+      contactEmail: 'contato@empresateste.com',
+      contactPhone: '11999999999',
     },
   });
 
@@ -75,7 +76,6 @@ async function main() {
     data: {
       id: uuid(),
       name: 'Grupo Desenvolvimento',
-      description: 'Equipe de desenvolvimento de software',
     },
   });
 
@@ -89,7 +89,7 @@ async function main() {
       description: 'Projeto de teste com board completo',
       companyId: company.id,
       groupId: group.id,
-      status: 'active',
+      userId: adminUser.id,
     },
   });
 
@@ -266,7 +266,7 @@ async function main() {
       id: uuid(),
       content: 'Vou começar a implementar isso hoje',
       cardId: firstCard.id,
-      authorId: adminUser.id,
+      userId: adminUser.id,
     },
   });
 
@@ -275,7 +275,7 @@ async function main() {
       id: uuid(),
       content: 'Lembrar de incluir refresh tokens',
       cardId: firstCard.id,
-      authorId: adminUser.id,
+      userId: adminUser.id,
     },
   });
 
@@ -296,7 +296,8 @@ async function main() {
 
 main()
   .catch((e) => {
-    logger.error({ error: e }, '❌ Error resetting and seeding database');
+    console.error('FULL ERROR:', e);
+    logger.error({ error: e, message: e.message, stack: e.stack }, '❌ Error resetting and seeding database');
     process.exit(1);
   })
   .finally(async () => {

@@ -82,10 +82,10 @@ export const deleteCard = async (projectId, boardId, cardId) => {
  * @param {string} columnId - New column ID
  * @returns {Promise<Object>} Updated card
  */
-export const moveCard = async (projectId, boardId, cardId, columnId) => {
+export const moveCard = async (projectId, boardId, cardId, columnId, order) => {
   const response = await api.patch(
     `/projects/${projectId}/boards/${boardId}/cards/${cardId}/move`,
-    { columnId }
+    { columnId, order }
   );
   return response.data.data || response.data;
 };

@@ -39,7 +39,7 @@ const NotificationCenter = () => {
         markAllAsRead,
         deleteNotification,
     } = useNotifications();
-    const { navigateTo, setActiveBoardId, setActiveProjectId } = useNavigation();
+    const { navigateTo, setActiveBoardId, setActiveProjectId, navigateToCard } = useNavigation();
 
     // Close on click outside
     useEffect(() => {
@@ -56,7 +56,24 @@ const NotificationCenter = () => {
     const handleClick = (notification) => {
         markAsRead(notification.id);
 
-        if (notification.refType === 'card') {
+        if (notification.type === 'briefing_submission' || notification.refType === 'card') {
+            if (notification.metadata) {
+                try {
+                    const meta = typeof notification.metadata === 'string'
+                        ? JSON.parse(notification.metadata)
+                        : notification.metadata;
+
+                    if (meta.projectId && meta.boardId && notification.refId) {
+                        navigateToCard(meta.projectId, meta.boardId, notification.refId);
+                        setIsOpen(false);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Failed to parse notification metadata", e);
+                }
+            }
+
+            // Fallback
             navigateTo('kanban');
         } else if (notification.refType === 'note') {
             navigateTo('notes');

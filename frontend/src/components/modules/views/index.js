@@ -5,6 +5,7 @@ export { default as SwimlanesView, SWIMLANE_GROUPS } from './SwimlanesView';
 export { default as HierarchyView } from './HierarchyView';
 export { default as ViewModeSelector, VIEW_MODES } from './ViewModeSelector';
 export { default as FilterPanel } from './FilterPanel';
+export { default as AnalyticsView } from './AnalyticsView';
 
 // Shared components
 export { default as TimeScale, calculateTaskPosition, getDateRangeFromCards } from './shared/TimeScale';

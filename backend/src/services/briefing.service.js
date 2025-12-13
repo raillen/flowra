@@ -1,6 +1,7 @@
 import { prisma } from '../config/database.js';
 import { logger } from '../config/logger.js';
 import { NotFoundError, ValidationError } from '../utils/errors.js';
+import { createNotification } from './notification.service.js';
 import crypto from 'crypto';
 
 /**
@@ -181,6 +182,17 @@ export async function submitPublicBriefing(token, data) {
     const titleField = Object.keys(data)[0]; // Use first field as title guess? Or "New Briefing"
     const title = `Briefing: ${template.name}`;
 
+    // 1. Create Submission Record
+    const submission = await prisma.briefingSubmission.create({
+        data: {
+            templateId: template.id,
+            data: dataString,
+            status: 'converted',
+            submittedAt: new Date()
+        }
+    });
+
+    // 2. Create Card
     const card = await prisma.card.create({
         data: {
             title,
@@ -194,7 +206,13 @@ export async function submitPublicBriefing(token, data) {
         }
     });
 
-    // Create initial version
+    // 3. Link Submission to Card
+    await prisma.briefingSubmission.update({
+        where: { id: submission.id },
+        data: { cardId: card.id }
+    });
+
+    // 4. Create initial version
     await prisma.briefingVersion.create({
         data: {
             cardId: card.id,
@@ -203,6 +221,36 @@ export async function submitPublicBriefing(token, data) {
             createdBy: 'system' // or 'guest'
         }
     });
+
+    // 5. Notify Project Owner
+    try {
+        const boardInfo = await prisma.board.findUnique({
+            where: { id: boardId },
+            include: {
+                project: {
+                    select: { userId: true }
+                }
+            }
+        });
+
+        if (boardInfo?.project?.userId) {
+            await createNotification({
+                type: 'briefing_submission',
+                title: 'Novo Briefing Recebido',
+                message: `Novo briefing submetido para: "${template.name}"`,
+                userId: boardInfo.project.userId, // Notify Project Owner
+                refType: 'card',
+                refId: card.id,
+                priority: 'normal',
+                metadata: JSON.stringify({ projectId: boardInfo.project.id, boardId: boardId })
+            });
+
+            // Email Notification (Stub)
+            // await notificationService.sendEmailNotification(user.email, 'New Briefing', ...);
+        }
+    } catch (notifyError) {
+        logger.error(`Failed to send notification for briefing submission: ${notifyError.message}`);
+    }
 
     return card;
 }

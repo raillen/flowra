@@ -25,6 +25,11 @@ export const registerSchema = z.object({
       .string()
       .min(6, 'Password must be at least 6 characters')
       .max(100, 'Password must not exceed 100 characters'),
+    companyName: z
+      .string()
+      .min(3, 'Company Name must be at least 3 characters')
+      .max(100)
+      .optional(),
   }),
 });
 

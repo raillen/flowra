@@ -1,22 +1,14 @@
 import React from 'react';
-import PlaceholderView from '../common/PlaceholderView';
-import { FileText } from 'lucide-react';
+import DocumentationView from './DocumentationView';
 
 /**
  * Project documentation module component
- * Placeholder for docs functionality
+ * Renders the full documentation view with Markdown support
  * 
  * @module components/modules/ProjectDocs
  */
 const ProjectDocs = () => {
-  return (
-    <PlaceholderView
-      title="Documentação"
-      icon={FileText}
-      description="Módulo de documentação em desenvolvimento."
-    />
-  );
+  return <DocumentationView />;
 };
 
 export default ProjectDocs;
-

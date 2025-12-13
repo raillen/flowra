@@ -6,22 +6,23 @@ import {
     Clock,
     GitBranch,
     Layers,
-    ChevronDown
+    ChevronDown,
+    BarChart
 } from 'lucide-react';
 
-const ViewModeSelector = ({ currentMode, onModeChange }) => {
+export const VIEW_MODES = [
+    { id: 'kanban', label: 'Kanban', icon: Layout },
+    { id: 'list', label: 'Lista', icon: List },
+    { id: 'calendar', label: 'Calendário', icon: Calendar },
+    { id: 'timeline', label: 'Timeline', icon: Clock },
+    { id: 'gantt', label: 'Gantt', icon: GitBranch },
+    { id: 'swimlanes', label: 'Swimlanes', icon: Layers },
+    { id: 'analytics', label: 'Relatórios', icon: BarChart },
+];
+
+const ViewModeDropdown = ({ currentMode, onModeChange, modes }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
-
-    const modes = [
-        { id: 'kanban', label: 'Kanban', icon: Layout },
-        { id: 'list', label: 'Lista', icon: List },
-        { id: 'calendar', label: 'Calendário', icon: Calendar },
-        { id: 'timeline', label: 'Timeline', icon: Clock },
-        { id: 'gantt', label: 'Gantt', icon: GitBranch },
-        { id: 'swimlanes', label: 'Swimlanes', icon: Layers },
-        // { id: 'hierarchy', label: 'Hierarquia', icon: Grid3x3 },
-    ];
 
     const currentModeData = modes.find(m => m.id === currentMode) || modes[0];
 
@@ -59,8 +60,8 @@ const ViewModeSelector = ({ currentMode, onModeChange }) => {
                                 setIsOpen(false);
                             }}
                             className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${currentMode === mode.id
-                                    ? 'bg-primary-50 dark:bg-indigo-900/20 text-primary-600 dark:text-indigo-400'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                ? 'bg-primary-50 dark:bg-indigo-900/20 text-primary-600 dark:text-indigo-400'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {React.createElement(mode.icon, { size: 16 })}
@@ -71,6 +72,10 @@ const ViewModeSelector = ({ currentMode, onModeChange }) => {
             )}
         </div>
     );
+};
+
+const ViewModeSelector = ({ currentMode, onModeChange }) => {
+    return <ViewModeDropdown currentMode={currentMode} onModeChange={onModeChange} modes={VIEW_MODES} />;
 };
 
 export default ViewModeSelector;

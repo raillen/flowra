@@ -41,7 +41,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import CalendarView from './CalendarView';
-import { TimelineView, GanttView, SwimlanesView, HierarchyView, ViewModeSelector, FilterPanel } from './views';
+import { TimelineView, GanttView, SwimlanesView, HierarchyView, ViewModeSelector, FilterPanel, AnalyticsView } from './views';
 import KanbanCard from './cards/KanbanCard';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { useBoards } from '../../hooks/useBoards';
@@ -52,6 +52,7 @@ import ErrorMessage from '../common/ErrorMessage';
 import * as cardService from '../../services/cardService';
 import * as columnService from '../../services/columnService';
 import * as tagService from '../../services/tagService';
+import * as boardService from '../../services/boardService';
 import CardModal from './modals/CardModal';
 import BoardSettingsModal from './modals/BoardSettingsModal';
 import { useBoardConfig } from '../../hooks/useBoardConfig';
@@ -293,7 +294,7 @@ const SortableColumn = ({
  * @module components/modules/KanbanBoardView
  */
 const KanbanBoardView = () => {
-  const { activeProjectId, activeBoardId, setActiveBoardId } = useNavigation();
+  const { activeProjectId, activeBoardId, setActiveBoardId, activeCardId, setActiveCardId } = useNavigation();
   const { fetchBoard, addMember, removeMember } = useBoards();
   const { fields: enabledFields, fetchConfig: fetchBoardConfig } = useBoardConfig(activeBoardId);
   const [activeBoard, setActiveBoard] = useState(null);
@@ -379,6 +380,18 @@ const KanbanBoardView = () => {
     }
   }, [activeProjectId, activeBoardId]);
 
+
+  // Handle deep linking to card
+  useEffect(() => {
+    if (activeCardId && cards.length > 0) {
+      const cardTarget = cards.find((c) => c.id === activeCardId);
+      if (cardTarget) {
+        handleCardClick(cardTarget);
+        // We clear the activeCardId so it doesn't keep reopening
+        setActiveCardId(null);
+      }
+    }
+  }, [activeCardId, cards]);
 
   // Filter cards
   const filteredCards = cards.filter((card) => {
@@ -544,8 +557,14 @@ const KanbanBoardView = () => {
               return [...otherCards, ...reorderedCards];
             });
 
-            // TODO: Implement backend endpoint to update card order within column
-            // For now, we just update the UI optimistically
+            // Persist new order to backend
+            try {
+              await cardService.moveCard(activeProjectId, activeBoardId, activeCard.id, targetColumnId, newIndex);
+            } catch (err) {
+              console.error("Failed to reorder card", err);
+              // We might want to revert logic here if strict, but for now we log
+              setError('Erro ao salvar ordem do card');
+            }
           }
         }
         return;
@@ -608,8 +627,46 @@ const KanbanBoardView = () => {
   };
 
   const handleSaveCard = async (cardData) => {
+    console.log('handleSaveCard called with:', cardData);
+    console.log('Current editingCard state:', editingCard);
+
     try {
       setError(null);
+
+      // Handle Delete (signaled by null or _deleted flag)
+      if (cardData === null || cardData._deleted) {
+        console.log('Processing DELETE action');
+        const targetId = cardData?._deleted ? cardData.id : editingCard?.id;
+
+        if (targetId) {
+          console.log('Removing card from state:', targetId);
+          setCards((prev) => prev.filter((c) => c.id !== targetId));
+        } else {
+          console.warn('DELETE called but could not determine card ID!');
+        }
+        setIsCardModalOpen(false);
+        setEditingCard(null);
+        setSelectedColumnId(null);
+        return;
+      }
+
+      // Handle Archive (signaled by archivedAt property)
+      // We assume the API call was already handled by the modal for archive actions
+      if (cardData.archivedAt) {
+        console.log('Processing ARCHIVE action');
+        const targetId = cardData.id || editingCard?.id;
+
+        if (targetId) {
+          console.log('Removing card from state (Archive):', targetId);
+          setCards((prev) => prev.filter((c) => c.id !== targetId));
+        } else {
+          console.warn('ARCHIVE called but could not determine card ID!');
+        }
+        setIsCardModalOpen(false);
+        setEditingCard(null);
+        setSelectedColumnId(null);
+        return;
+      }
 
       if (editingCard) {
         const updated = await cardService.updateCard(
@@ -632,13 +689,14 @@ const KanbanBoardView = () => {
       setEditingCard(null);
       setSelectedColumnId(null);
     } catch (err) {
-      const errorMessage = err.response?.data?.message ||
-        err.response?.data?.errors ||
-        err.message ||
-        'Erro ao salvar card';
-      setError(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      console.error('Error in handleSaveCard:', err);
+      // Only set error if it's a real API error we initiated
+      if (!cardData?.archivedAt && cardData !== null) {
+        setError(err.response?.data?.message || 'Erro ao salvar card');
+      }
     }
   };
+
 
   const handleDeleteCard = (cardId) => {
     setDeleteCardConfirm({ isOpen: true, cardId });
@@ -868,6 +926,11 @@ const KanbanBoardView = () => {
             <p className="text-slate-500">Carregando board...</p>
           </div>
         </div>
+      ) : viewMode === 'analytics' ? (
+        <AnalyticsView
+          boardId={activeBoardId}
+          projectId={activeProjectId}
+        />
       ) : viewMode === 'calendar' ? (
         <CalendarView
           cards={filteredCards}
@@ -1077,7 +1140,6 @@ const KanbanBoardView = () => {
         variant="danger"
       />
 
-      {/* Board Settings Modal */}
       <BoardSettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
@@ -1085,6 +1147,25 @@ const KanbanBoardView = () => {
         projectId={activeProjectId}
         boardName={activeBoard?.name}
         onUpdate={fetchBoardConfig}
+      />
+
+      {/* Member Management Modal */}
+      <MemberManagementModal
+        isOpen={isMemberModalOpen}
+        onClose={() => setIsMemberModalOpen(false)}
+        entityType="board"
+        entityId={activeBoardId}
+        projectId={activeProjectId}
+        currentMembers={activeBoard?.members || []}
+        onAddMember={async (userId) => {
+          await boardService.addMember(activeProjectId, activeBoardId, userId);
+          fetchBoardConfig();
+        }}
+        onRemoveMember={async (userId) => {
+          await boardService.removeMember(activeProjectId, activeBoardId, userId);
+          fetchBoardConfig();
+        }}
+        title={`Membros do Quadro: ${activeBoard?.name}`}
       />
     </div>
   );

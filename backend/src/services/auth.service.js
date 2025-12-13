@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { UnauthorizedError, ConflictError } from '../utils/errors.js';
 import { userRepository } from '../repositories/user.repository.js';
+import { companyRepository } from '../repositories/company.repository.js';
 import { logger } from '../config/logger.js';
 
 /**
@@ -16,6 +17,7 @@ import { logger } from '../config/logger.js';
  * @param {string} userData.name - User name
  * @param {string} userData.email - User email
  * @param {string} userData.password - Plain text password
+ * @param {string} [userData.companyName] - Optional company name to create
  * @returns {Promise<Object>} Created user (without password)
  * @throws {ConflictError} If email already exists
  */
@@ -28,16 +30,37 @@ export async function register(userData) {
     throw new ConflictError('Email already registered');
   }
 
+  let companyId = null;
+
+  // Create company if provided
+  if (userData.companyName) {
+    try {
+      const company = await companyRepository.create({
+        name: userData.companyName,
+        cnpj: null // Allow creation without CNPJ initially
+      });
+      companyId = company.id;
+      logger.info({ companyId, name: userData.companyName }, 'Auto-created company for new user');
+    } catch (error) {
+      logger.error({ error }, 'Failed to auto-create company during registration');
+      // Continue without company? or throw? 
+      // User expects company. throwing is better.
+      throw new Error('Failed to create company');
+    }
+  }
+
   // Hash password
   const hashedPassword = await bcrypt.hash(userData.password, 10);
 
   // Create user
   const user = await userRepository.create({
-    ...userData,
+    name: userData.name,
+    email: userData.email,
     password: hashedPassword,
+    companyId: companyId
   });
 
-  logger.info({ userId: user.id }, 'User registered successfully');
+  logger.info({ userId: user.id, companyId }, 'User registered successfully');
   return user;
 }
 

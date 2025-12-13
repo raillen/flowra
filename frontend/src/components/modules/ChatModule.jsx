@@ -12,6 +12,7 @@ import {
     Check,
     CheckCheck,
     Folder,
+    Trash,
 } from 'lucide-react';
 import { useChatContext } from '../../contexts/ChatContext';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -33,6 +34,7 @@ const ChatModule = () => {
         loading,
         openConversation,
         closeConversation,
+        deleteConversation,
         sendMessage,
         sendTyping,
         addReaction,
@@ -440,12 +442,25 @@ const ChatModule = () => {
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                onClick={closeConversation}
-                                className="p-2 hover:bg-secondary-100 rounded-lg"
-                            >
-                                <X size={18} />
-                            </button>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm('Tem certeza que deseja apagar esta conversa?')) {
+                                            deleteConversation(activeConversation.id);
+                                        }
+                                    }}
+                                    className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                                    title="Excluir conversa"
+                                >
+                                    <Trash size={18} />
+                                </button>
+                                <button
+                                    onClick={closeConversation}
+                                    className="p-2 hover:bg-secondary-100 rounded-lg"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Messages */}
@@ -509,7 +524,7 @@ const ChatModule = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

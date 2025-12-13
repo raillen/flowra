@@ -205,7 +205,30 @@ const ProjectDashboard = () => {
                     >
                       <MoreVertical size={16} />
                     </button>
-                    {/* Menu logic remains same */}
+                    {showMenu[board.id] && (
+                      <div className="absolute right-0 top-8 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-10 py-1 animation-scale-in origin-top-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMenu({});
+                            openBoardModal(board);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 flex items-center gap-2"
+                        >
+                          <Edit2 size={14} /> Editar
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMenu({});
+                            setDeleteConfirm({ isOpen: true, board });
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 size={14} /> Excluir
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -219,7 +242,7 @@ const ProjectDashboard = () => {
                       {board.columns?.length || 0} colunas
                     </span>
                     <span className="bg-slate-100 px-2 py-1 rounded-md text-slate-600">
-                      {board.cards?.length || 0} cards
+                      {board._count?.cards || board.cards?.length || 0} cards
                     </span>
                   </div>
                   <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />

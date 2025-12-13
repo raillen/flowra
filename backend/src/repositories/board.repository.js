@@ -57,6 +57,7 @@ export async function findById(id) {
         orderBy: { order: 'asc' },
         include: {
           cards: {
+            where: { archivedAt: null }, // Only show non-archived cards
             include: {
               assignedUser: {
                 select: {

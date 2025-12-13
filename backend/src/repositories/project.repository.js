@@ -139,6 +139,12 @@ export async function findByUserId(userId, options = {}) {
     take: limit,
     orderBy: { createdAt: 'desc' },
     include: {
+      boards: { // [NEW] Fetch boards for Sidebar navigation
+        select: {
+          id: true,
+          name: true
+        }
+      },
       company: {
         select: {
           id: true,

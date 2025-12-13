@@ -2,6 +2,7 @@ import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { commentRepository } from '../repositories/comment.repository.js';
 import { cardRepository } from '../repositories/card.repository.js';
 import { logger } from '../config/logger.js';
+import { sanitizeHtml } from '../utils/sanitizer.js';
 
 /**
  * Comment service layer
@@ -28,7 +29,7 @@ export async function createComment(boardId, cardId, commentData, userId) {
   }
 
   const comment = await commentRepository.create({
-    content: commentData.content,
+    content: sanitizeHtml(commentData.content),
     cardId,
     userId,
   });
@@ -80,7 +81,10 @@ export async function updateComment(boardId, cardId, commentId, updateData, user
     throw new ForbiddenError('You can only edit your own comments');
   }
 
-  const updated = await commentRepository.update(commentId, updateData);
+  const updated = await commentRepository.update(commentId, {
+    ...updateData,
+    content: updateData.content ? sanitizeHtml(updateData.content) : undefined
+  });
 
   logger.info({ commentId, cardId }, 'Comment updated successfully');
   return updated;

@@ -13,10 +13,12 @@ import * as commentService from '../../../services/commentService';
 import * as tagService from '../../../services/tagService';
 import * as attachmentService from '../../../services/attachmentService';
 import * as collaboratorService from '../../../services/collaboratorService';
+import api from '../../../config/api';
 import { useAuthContext } from '../../../contexts/AuthContext';
 import BriefingRenderer from '../briefing/BriefingRenderer';
 import { getTemplateById, submitBriefing } from '../../../services/briefingService'; // Create this frontend service next if not exists
 import { FileText, Layout } from 'lucide-react';
+import UserMultiSelect from '../../ui/UserMultiSelect';
 
 /**
  * CardModal - Professional Unified Card View
@@ -65,6 +67,7 @@ const CardModal = ({
     const [briefingData, setBriefingData] = useState({});
     const [briefingTemplate, setBriefingTemplate] = useState(null);
     const [templateId, setTemplateId] = useState('');
+    const [isBriefingEditing, setIsBriefingEditing] = useState(false);
 
     // -- Checklist State --
     const [checklist, setChecklist] = useState([]);
@@ -77,6 +80,7 @@ const CardModal = ({
     const [comments, setComments] = useState([]); // Threaded/Nested
     const [attachments, setAttachments] = useState([]);
     const [projectUsers, setProjectUsers] = useState([]);
+    const [selectedAssigneeIds, setSelectedAssigneeIds] = useState([]); // Array of user IDs
 
     // -- Interactions State (Comments) --
     const [newComment, setNewComment] = useState('');
@@ -196,6 +200,11 @@ const CardModal = ({
             setAttachments(attachmentsData);
             setProjectUsers(collaboratorsData.map(c => c.user || c)); // Handle pop/obj structure
 
+            // Load assignees from card - just extract IDs
+            if (card.assignees && Array.isArray(card.assignees)) {
+                setSelectedAssigneeIds(card.assignees.map(a => a.id || a.userId));
+            }
+
             if (card.tags && Array.isArray(card.tags)) {
                 setTags(card.tags.map(t => t.tag || t));
             }
@@ -257,6 +266,7 @@ const CardModal = ({
             budget: budget ? parseFloat(budget) : null, billable,
             externalUrl: externalUrl || null, projectPhase: projectPhase || null,
             checklist: JSON.stringify(checklist), customFields: customFieldsData,
+            assigneeIds: selectedAssigneeIds, // Multiple assignees
         };
         if (!card) payload.columnId = columnId;
         await onSave(payload);
@@ -307,6 +317,81 @@ const CardModal = ({
             setNewComment('');
             setReplyingTo(null);
         } catch (e) { console.error(e); }
+    };
+
+    const handleDelete = async () => {
+        console.log('CardModal: handleDelete clicked');
+        if (!card) return;
+        if (window.confirm('Tem certeza que deseja excluir este card permanentemente?')) {
+            try {
+                console.log('CardModal: Deleting card...', card.id);
+                try {
+                    await cardService.deleteCard(projectId, boardId, card.id);
+                } catch (e) {
+                    await api.delete(`/cards/${card.id}`);
+                }
+
+                console.log('CardModal: Delete API success, calling onSave');
+                if (onSave) onSave({ id: card.id, _deleted: true });
+
+                alert('Card excluído com sucesso!');
+            } catch (e) {
+                console.error('Erro ao excluir:', e);
+                alert('Erro ao excluir card: ' + (e.response?.data?.message || e.message));
+            }
+        }
+    };
+
+    // -- Handlers: Attachments (File & Link) --
+    // New state for attachment modal
+    const [isAttachmentModalOpen, setAttachmentModalOpen] = useState(false);
+    const [attachmentTab, setAttachmentTab] = useState('file'); // 'file' | 'link'
+    const [linkUrl, setLinkUrl] = useState('');
+    const [linkName, setLinkName] = useState('');
+    const fileInputRef = useRef(null);
+
+    const handleFileSelect = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !card) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            await attachmentService.createAttachment(projectId, boardId, card.id, formData);
+            setAttachmentModalOpen(false);
+            loadSubData();
+        } catch (e) { console.error(e); }
+    };
+
+    const handleLinkAdd = async () => {
+        if (!linkUrl.trim() || !card) return;
+        const name = linkName.trim() || linkUrl;
+
+        try {
+            await attachmentService.createAttachment(projectId, boardId, card.id, {
+                filename: `link_${Date.now()}`,
+                url: linkUrl,
+                originalName: name,
+                mimeType: 'link/url',
+                size: 0
+            });
+            setAttachmentModalOpen(false);
+            setLinkUrl('');
+            setLinkName('');
+            loadSubData();
+        } catch (e) { console.error(e); }
+    };
+
+    const handleDeleteAttachment = async (attachmentId) => {
+        if (!card || !attachmentId) return;
+        if (!window.confirm("Excluir anexo?")) return;
+        try {
+            await attachmentService.deleteAttachment(projectId, boardId, card.id, attachmentId);
+            setAttachments(prev => prev.filter(a => a.id !== attachmentId));
+        } catch (e) {
+            console.error("Error deleting attachment", e);
+        }
     };
 
     // 3. Reactions
@@ -510,13 +595,55 @@ const CardModal = ({
 
                                     {/* Attachments Block */}
                                     <div className="pt-8 border-t border-gray-100">
-                                        <div className="flex items-center justify-between mb-4"><label className="flex items-center gap-2 text-sm font-bold text-gray-400 uppercase tracking-wider"><Paperclip size={14} /> Anexos ({attachments.length})</label><Button type="button" size="sm" variant="ghost" disabled={!card}><Plus size={14} /> Add</Button></div>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <label className="flex items-center gap-2 text-sm font-bold text-gray-400 uppercase tracking-wider">
+                                                <Paperclip size={14} /> Anexos ({attachments.length})
+                                            </label>
+                                            <div className="relative">
+                                                <Button type="button" size="sm" variant="ghost" disabled={!card} onClick={() => setAttachmentModalOpen(!isAttachmentModalOpen)}>
+                                                    <Plus size={14} /> Add
+                                                </Button>
+                                                {/* Attachment Popover */}
+                                                {isAttachmentModalOpen && (
+                                                    <div className="absolute right-0 top-10 w-72 bg-white border border-gray-200 shadow-xl rounded-xl p-4 z-50">
+                                                        <div className="flex bg-gray-100 p-1 rounded-lg mb-3">
+                                                            <button type="button" onClick={() => setAttachmentTab('file')} className={`flex-1 py-1 text-xs font-medium rounded ${attachmentTab === 'file' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500'}`}>Arquivo</button>
+                                                            <button type="button" onClick={() => setAttachmentTab('link')} className={`flex-1 py-1 text-xs font-medium rounded ${attachmentTab === 'link' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500'}`}>Link</button>
+                                                        </div>
+                                                        {attachmentTab === 'file' ? (
+                                                            <div className="text-center p-4 border-2 border-dashed border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                                                <Upload size={24} className="mx-auto text-gray-400 mb-2" />
+                                                                <p className="text-xs text-gray-500">Clique para upload</p>
+                                                                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="space-y-3">
+                                                                <input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." className="w-full text-sm border border-gray-200 rounded p-2" autoFocus />
+                                                                <input value={linkName} onChange={e => setLinkName(e.target.value)} placeholder="Nome do link (opcional)" className="w-full text-sm border border-gray-200 rounded p-2" />
+                                                                <Button type="button" size="sm" className="w-full" onClick={handleLinkAdd} disabled={!linkUrl.trim()}>Adicionar Link</Button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                         {attachments.length > 0 ? (
                                             <div className="grid grid-cols-2 gap-4">
                                                 {attachments.map(att => (
-                                                    <div key={att.id} className="p-3 border border-gray-200 rounded-lg flex items-center justify-between hover:shadow-sm bg-white">
-                                                        <div className="flex items-center gap-3 truncate"><div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-500 font-bold text-xs">{att.mimeType?.split('/')[1] || 'FILE'}</div><div className="truncate"><p className="text-sm font-medium text-gray-700 truncate">{att.originalName}</p><p className="text-xs text-gray-400">{(att.size / 1024).toFixed(0)}KB</p></div></div>
-                                                        <a href={att.url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-primary-600"><LinkIcon size={14} /></a>
+                                                    <div key={att.id} className="p-3 border border-gray-200 rounded-lg flex items-center justify-between hover:shadow-sm bg-white group">
+                                                        <div className="flex items-center gap-3 truncate">
+                                                            <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-xs ${att.mimeType === 'link/url' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                                {att.mimeType === 'link/url' ? <LinkIcon size={16} /> : (att.mimeType?.split('/')[1] || 'FILE').slice(0, 4).toUpperCase()}
+                                                            </div>
+                                                            <div className="truncate">
+                                                                <p className="text-sm font-medium text-gray-700 truncate">{att.originalName}</p>
+                                                                <p className="text-xs text-gray-400">{att.mimeType === 'link/url' ? 'Link Externo' : `${(att.size / 1024).toFixed(0)}KB`}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <a href={att.url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-primary-600"><LinkIcon size={14} /></a>
+                                                            <button type="button" onClick={() => handleDeleteAttachment(att.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={14} /></button>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -586,37 +713,86 @@ const CardModal = ({
                                 </div>
                             </div>
 
-                            {/* RIGHT (SIDEBAR) - Keeping it identical */}
+                            {/* RIGHT (SIDEBAR) */}
                             <div className="w-80 bg-gray-50/50 border-l border-gray-100 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                                 {/* Status */}
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Status</h4>
                                     <div className="space-y-3">
-                                        <div className="space-y-1"><label className="text-xs text-gray-500">Coluna</label><select value={columnId} onChange={(e) => setColumnId(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">{columns.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}</select></div>
-                                        {isEnabled('priority') && (<div className="space-y-1"><label className="text-xs text-gray-500">Prioridade</label><select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">{[{ value: 'baixa', label: 'Baixa' }, { value: 'media', label: 'Média' }, { value: 'alta', label: 'Alta' }].map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>)}
-                                        {isEnabled('type') && (<div className="space-y-1"><label className="text-xs text-gray-500">Tipo</label><select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">{[{ value: 'tarefa', label: 'Tarefa' }, { value: 'bug', label: 'Bug' }, { value: 'feature', label: 'Feature' }].map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>)}
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-gray-500">Coluna</label>
+                                            <select value={columnId} onChange={(e) => setColumnId(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">
+                                                {columns.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-gray-500">Prioridade</label>
+                                            <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">
+                                                {(enabledFields?.priority?.options || [{ value: 'baixa', label: 'Baixa' }, { value: 'media', label: 'Média' }, { value: 'alta', label: 'Alta' }])
+                                                    .map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                            </select>
+                                        </div>
+
+                                        {isEnabled('type') && (
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-gray-500">Tipo</label>
+                                                <select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">
+                                                    {(enabledFields?.type?.options || [{ value: 'tarefa', label: 'Tarefa' }, { value: 'bug', label: 'Bug' }, { value: 'feature', label: 'Feature' }])
+                                                        .map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                                </select>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                {/* Dates/Effort/Actions sections kept clean */}
-                                <div className="pt-8 mt-auto"><label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Ações</label><button type="button" className="w-full flex items-center gap-2 p-2 text-sm text-gray-600 hover:bg-white rounded transition-colors text-left border border-transparent hover:border-gray-200"><Archive size={14} /> Arquivar</button><button type="button" className="w-full flex items-center gap-2 p-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors text-left mt-1 border border-transparent hover:border-red-100"><Trash size={14} /> Excluir Card</button></div>
+
+                                {/* Assignees Section - Multi Select */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Responsáveis</h4>
+                                    <UserMultiSelect
+                                        users={projectUsers}
+                                        selectedIds={selectedAssigneeIds}
+                                        onChange={setSelectedAssigneeIds}
+                                        placeholder="Selecionar responsáveis..."
+                                    />
+                                </div>
+
+                                <div className="pt-8 mt-auto">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Ações</label>
+                                    <button type="button" onClick={handleDelete} className="w-full flex items-center gap-2 p-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors text-left mt-1 border border-transparent hover:border-red-100">
+                                        <Trash size={14} /> Excluir Card
+                                    </button>
+                                </div>
                             </div>
                         </>
                     ) : activeTab === 'briefing' ? (
                         <div className="flex-1 overflow-y-auto p-8 bg-white custom-scrollbar">
                             {briefingTemplate ? (
                                 <div className="max-w-3xl mx-auto space-y-6">
-                                    <div className="pb-4 border-b border-gray-100 mb-6">
-                                        <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                            <FileText className="text-primary" /> {briefingTemplate.name}
-                                        </h3>
-                                        {briefingTemplate.description && <p className="text-gray-500 mt-1">{briefingTemplate.description}</p>}
+                                    <div className="pb-4 border-b border-gray-100 mb-6 flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                                <FileText className="text-primary" /> {briefingTemplate.name}
+                                            </h3>
+                                            {briefingTemplate.description && <p className="text-gray-500 mt-1">{briefingTemplate.description}</p>}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant={isBriefingEditing ? 'secondary' : 'outline'}
+                                                size="sm"
+                                                onClick={() => setIsBriefingEditing(!isBriefingEditing)}
+                                            >
+                                                {isBriefingEditing ? 'Cancelar Edição' : 'Editar Respostas'}
+                                            </Button>
+                                        </div>
                                     </div>
                                     <BriefingRenderer
                                         template={briefingTemplate}
                                         initialData={briefingData}
+                                        readOnly={!isBriefingEditing}
                                         onSubmit={(data) => {
                                             setBriefingData(data);
                                             submitBriefing(card.id, data).then(() => {
+                                                setIsBriefingEditing(false);
                                                 // Ideally show toast
                                             }).catch(console.error);
                                         }}

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { useApp } from '../../contexts/AppContext';
 import { useChatContext } from '../../contexts/ChatContext';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useAccentColor } from '../../contexts/AccentColorContext';
+import { useCommandPalette } from '../../contexts/CommandPaletteContext';
 import {
   LayoutDashboard,
   Bell,
@@ -19,26 +20,63 @@ import {
   Code2,
   LogOut,
   ChevronRight,
-  Plus,
+  ChevronDown,
   Sparkles,
-  Archive
+  Archive,
+  Command,
+  Layout,
+  Plus
 } from 'lucide-react';
 
 /**
  * Sidebar navigation component
- * Redesigned with modern glassmorphism and gradient accents
+ * Redesigned with modern glassmorphism, gradient accents, and Collapsible Project Tree
  * 
  * @module components/layout/Sidebar
  */
 const Sidebar = ({ isOpen, onToggle }) => {
-  const { activeModule, navigateTo, activeProjectId, exitProject } = useNavigation();
+  const { activeModule, activeProjectId, activeBoardId, navigateTo, goToBoard, exitProject } = useNavigation();
   const { projects, user } = useApp();
   const { unreadTotal } = useChatContext();
   const { unreadCount: notificationUnreadCount } = useNotificationContext();
   const { logout } = useAuthContext();
   const { accentColor } = useAccentColor();
+  const { openCommandPalette } = useCommandPalette();
+
+  // State for expanded projects in the tree
+  const [expandedProjects, setExpandedProjects] = useState({});
+  // State for visibility of the entire projects section
+  const [isProjectsSectionExpanded, setIsProjectsSectionExpanded] = useState(true);
+
+  // Toggle project expansion
+  const toggleProject = (e, projectId) => {
+    e.stopPropagation(); // Prevent navigation when clicking chevron
+    setExpandedProjects(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+  };
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
+
+  // Helper to determine if a project is active (or one of its boards is active)
+  const isProjectActive = (projectId) => {
+    return activeProjectId === projectId;
+  };
+
+  const handleNavigation = (itemId) => {
+    navigateTo(itemId);
+    if (window.innerWidth < 1024 && onToggle) {
+      onToggle();
+    }
+  };
+
+  const handleBoardNavigation = (projectId, boardId) => {
+    goToBoard(projectId, boardId);
+    if (window.innerWidth < 1024 && onToggle) {
+      onToggle();
+    }
+  };
 
   const menuGroups = [
     {
@@ -50,50 +88,33 @@ const Sidebar = ({ isOpen, onToggle }) => {
         { id: 'chat', label: 'Mensagens', icon: MessageSquare, badge: unreadTotal > 0 ? unreadTotal : null },
       ]
     },
+    // Projects Section is handled dynamically
     {
       id: 'gestao',
       label: 'Gestão',
       items: [
-        { id: 'projects', label: 'Projetos', icon: Folder },
-        { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
-      ]
-    },
-    {
-      id: 'ferramentas',
-      label: 'Ferramentas',
-      items: [
-        { id: 'notes', label: 'Anotações', icon: StickyNote },
-        { id: 'docs', label: 'Documentação', icon: FileText },
         { id: 'briefings', label: 'Briefings', icon: Sparkles },
         { id: 'archive', label: 'Arquivo', icon: Archive },
         { id: 'transfer', label: 'Transferência', icon: ArrowRightLeft },
       ]
     },
     {
+      id: 'ferramentas',
+      label: 'Ferramentas',
+      items: [
+        { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
+        { id: 'notes', label: 'Anotações', icon: StickyNote },
+      ]
+    },
+    {
       id: 'sistema',
       label: 'Sistema',
       items: [
+        { id: 'docs', label: 'Documentação', icon: FileText },
         { id: 'settings', label: 'Configurações', icon: Settings },
       ]
     }
   ];
-
-  const handleNavigation = (itemId) => {
-    navigateTo(itemId);
-    if (window.innerWidth < 1024 && onToggle) {
-      onToggle();
-    }
-  };
-
-  const handleLogout = () => {
-    if (logout) {
-      logout();
-    }
-  };
-
-  const handleExitProject = () => {
-    exitProject();
-  };
 
   return (
     <>
@@ -134,7 +155,122 @@ const Sidebar = ({ isOpen, onToggle }) => {
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 custom-scrollbar">
-          {menuGroups.map((group) => (
+
+          {/* Principal Group */}
+          {menuGroups[0].items.map((item) => (
+            <NavItem key={item.id} item={item} activeModule={activeModule} handleNavigation={handleNavigation} accentColor={accentColor} />
+          ))}
+
+          {/* Projects Tree Section */}
+          <div>
+            <div className="flex items-center justify-between px-3 mb-2 group">
+              <button
+                onClick={() => handleNavigation('projects')}
+                className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider hover:text-primary-600 transition-colors flex-1 text-left"
+              >
+                Projetos
+              </button>
+
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleNavigation('projects')}
+                  className="p-1 hover:bg-primary-50 text-text-secondary hover:text-primary-600 rounded-md transition-colors"
+                  title="Ver Todos / Novo Projeto"
+                >
+                  <Plus size={14} />
+                </button>
+                <button
+                  onClick={() => setIsProjectsSectionExpanded(!isProjectsSectionExpanded)}
+                  className="p-1 hover:bg-surface-hover text-text-secondary hover:text-text-primary rounded-md transition-colors"
+                  title={isProjectsSectionExpanded ? "Recolher" : "Expandir"}
+                >
+                  {isProjectsSectionExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </button>
+              </div>
+            </div>
+
+            {isProjectsSectionExpanded && (
+              <div className="space-y-0.5 animate-slide-down">
+                {projects.length === 0 ? (
+                  <p className="px-3 text-sm text-text-secondary italic">Nenhum projeto</p>
+                ) : (
+                  projects.map((project) => {
+                    const isActive = isProjectActive(project.id);
+                    const isExpanded = expandedProjects[project.id];
+                    const hasBoards = project.boards && project.boards.length > 0;
+
+                    return (
+                      <div key={project.id} className="mb-0.5">
+                        {/* Project Item */}
+                        <div
+                          className={`
+                          w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer group select-none
+                          ${isActive && !activeBoardId ? 'bg-surface-hover' : 'hover:bg-surface-hover'}
+                        `}
+                          onClick={() => {
+                            if (hasBoards && !isExpanded) {
+                              toggleProject({ stopPropagation: () => { } }, project.id);
+                            } else {
+                              // Just navigate to project
+                              navigateTo('projects');
+                              // Actually, we might want to set active project context?
+                              // Since we don't have a specific "Project View" other than the list,
+                              // we just toggle unless user wants to go to board.
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
+                            {hasBoards ? (
+                              <div
+                                onClick={(e) => toggleProject(e, project.id)}
+                                className="p-0.5 rounded-md hover:bg-black/5 text-text-secondary transition-colors"
+                              >
+                                {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              </div>
+                            ) : (
+                              <div className="w-4.5" /> /* Spacer */
+                            )}
+                            <Folder size={15} className={`${isActive ? 'text-primary-600' : 'text-text-secondary'} shrink-0`} />
+                            <span className={`text-sm font-medium truncate ${isActive ? 'text-primary-700' : 'text-text-secondary'}`}>
+                              {project.name}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Boards List (Nested) */}
+                        {isExpanded && hasBoards && (
+                          <div className="ml-4 pl-3 border-l-2 border-border/50 space-y-0.5 mt-0.5 mb-1.5 animate-slide-down">
+                            {project.boards.map(board => {
+                              const isBoardActive = activeBoardId === board.id;
+                              return (
+                                <button
+                                  key={board.id}
+                                  onClick={() => handleBoardNavigation(project.id, board.id)}
+                                  className={`
+                                  w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors text-left
+                                  ${isBoardActive
+                                      ? 'bg-primary-50 text-primary-700 font-medium'
+                                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                                    }
+                                `}
+                                >
+                                  <Layout size={13} className={isBoardActive ? 'text-primary-500' : 'opacity-70'} />
+                                  <span className="truncate">{board.name}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Other Tools */}
+          {menuGroups.slice(1).map((group) => (
             <div key={group.id}>
               {group.label && (
                 <h3 className="px-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider mb-2">
@@ -142,82 +278,17 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 </h3>
               )}
               <div className="space-y-1">
-                {group.items.map((item) => {
-                  const isActive = activeModule === item.id;
-
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavigation(item.id)}
-                      className={`
-                        w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative overflow-hidden
-                        ${isActive
-                          ? 'text-white shadow-md'
-                          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
-                        }
-                      `}
-                      style={isActive ? { backgroundColor: accentColor } : {}}
-                    >
-                      <div className="flex items-center gap-3 relative z-10">
-                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-surface-hover group-hover:bg-border'}`}>
-                          <item.icon
-                            size={16}
-                            className={isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'}
-                          />
-                        </div>
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </div>
-
-                      {item.badge ? (
-                        <span className={`
-                          text-[10px] font-bold px-2 py-0.5 rounded-full relative z-10
-                          ${isActive
-                            ? 'bg-white/25 text-white'
-                            : 'bg-red-100 text-red-600'
-                          }
-                        `}>
-                          {item.badge}
-                        </span>
-                      ) : (
-                        <ChevronRight
-                          size={14}
-                          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-white/70' : 'text-text-secondary'}`}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
+                {group.items.map((item) => (
+                  <NavItem key={item.id} item={item} activeModule={activeModule} handleNavigation={handleNavigation} accentColor={accentColor} />
+                ))}
               </div>
             </div>
           ))}
+
         </div>
 
-        {/* Bottom Section */}
+        {/* User Profile Section */}
         <div className="p-4 border-t border-border bg-gradient-to-t from-surface-hover to-transparent">
-
-          {/* Active Project Card */}
-          {activeProject && (
-            <div className="mb-4 p-3 bg-gradient-to-br from-primary-50 to-indigo-50 rounded-xl border border-primary-100">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-white rounded-lg shadow-sm">
-                  <Folder size={14} className="text-primary-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-medium text-primary-600 uppercase tracking-wide">Projeto Ativo</p>
-                  <p className="text-sm font-bold text-text-primary truncate">{activeProject.name}</p>
-                </div>
-              </div>
-              <button
-                onClick={handleExitProject}
-                className="w-full text-xs flex items-center justify-center gap-1.5 py-2 text-slate-500 hover:text-red-600 bg-white/80 hover:bg-white rounded-lg transition-all shadow-sm"
-              >
-                <ArrowRightLeft size={12} />
-                <span>Trocar Projeto</span>
-              </button>
-            </div>
-          )}
-
-          {/* User Profile */}
           <div className="flex items-center gap-3 p-2 hover:bg-surface-hover rounded-xl transition-colors cursor-pointer group">
             <div className="relative">
               {user?.avatar ? (
@@ -244,7 +315,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
             </div>
 
             <button
-              onClick={handleLogout}
+              onClick={() => logout && logout()}
               className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
               title="Sair"
             >
@@ -254,6 +325,50 @@ const Sidebar = ({ isOpen, onToggle }) => {
         </div>
       </aside>
     </>
+  );
+};
+
+// Helper component for regular menu items
+const NavItem = ({ item, activeModule, handleNavigation, accentColor }) => {
+  const isActive = activeModule === item.id;
+  const Icon = item.icon;
+
+  return (
+    <button
+      onClick={() => handleNavigation(item.id)}
+      className={`
+        w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative overflow-hidden
+        ${isActive
+          ? 'text-white shadow-md'
+          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+        }
+      `}
+      style={isActive ? { backgroundColor: accentColor } : {}}
+    >
+      <div className="flex items-center gap-3 relative z-10">
+        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-surface-hover group-hover:bg-border'}`}>
+          <Icon size={16} className={isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'} />
+        </div>
+        <span className="text-sm font-medium">{item.label}</span>
+      </div>
+
+      {item.badge ? (
+        <span className={`
+          text-[10px] font-bold px-2 py-0.5 rounded-full relative z-10
+          ${isActive
+            ? 'bg-white/25 text-white'
+            : 'bg-red-100 text-red-600'
+          }
+        `}>
+          {item.badge}
+        </span>
+      ) : (
+        <ChevronRight
+          size={14}
+          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-white/70' : 'text-text-secondary'}`}
+        />
+      )}
+    </button>
   );
 };
 

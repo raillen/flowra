@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Copy, Inbox, Grid, List, Trash2, Edit2, ExternalLink, Calendar } from 'lucide-react';
+import { Plus, FileText, Copy, Inbox, Grid, List, Trash2, Edit2, ExternalLink, Calendar, Eye, Layers } from 'lucide-react';
 import { Button, Modal } from '../../ui';
 import TemplateBuilder from '../briefing/TemplateBuilder';
 import BriefingSubmissionsTab from '../briefing/BriefingSubmissionsTab';
+import PreviewModal from '../briefing/PreviewModal';
+import TemplateGallery from '../briefing/TemplateGallery';
 import { listTemplates, createTemplate, updateTemplate } from '../../../services/briefingService';
 import api from '../../../config/api';
 import { useToast } from '../../../contexts/ToastContext';
@@ -16,6 +18,8 @@ export default function BriefingTemplatesView() {
     const [activeTab, setActiveTab] = useState('modelos');
     const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
     const [deleting, setDeleting] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
     const { confirm, success, error: showError, info } = useToast();
 
     useEffect(() => {
@@ -37,6 +41,20 @@ export default function BriefingTemplatesView() {
     const handleCreate = () => {
         setCurrentTemplate(null);
         setNewTemplateData({ name: 'Novo Formulário', description: '', fields: [], isPublic: false, defaultBoardId: null, defaultColumnId: null, projectId: null });
+        setIsBuilderOpen(true);
+    };
+
+    const handleUseTemplate = (fields) => {
+        setCurrentTemplate(null);
+        setNewTemplateData({
+            name: 'Novo Formulário',
+            description: '',
+            fields: fields,
+            isPublic: false,
+            defaultBoardId: null,
+            defaultColumnId: null,
+            projectId: null
+        });
         setIsBuilderOpen(true);
     };
 
@@ -298,6 +316,9 @@ export default function BriefingTemplatesView() {
                                 <List size={18} />
                             </button>
                         </div>
+                        <Button variant="outline" onClick={() => setIsGalleryOpen(true)}>
+                            <Layers size={16} className="mr-2" /> Templates
+                        </Button>
                         <Button onClick={handleCreate}>
                             <Plus size={16} className="mr-2" /> Novo Formulário
                         </Button>
@@ -349,7 +370,7 @@ export default function BriefingTemplatesView() {
                         onIsPublicChange={(val) => setNewTemplateData(prev => ({ ...prev, isPublic: val }))}
                     />
                     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 flex justify-between gap-3 z-50">
-                        <div>
+                        <div className="flex gap-2">
                             {currentTemplate && (
                                 <Button
                                     variant="danger"
@@ -363,12 +384,30 @@ export default function BriefingTemplatesView() {
                             )}
                         </div>
                         <div className="flex gap-3">
+                            <Button variant="outline" onClick={() => setIsPreviewOpen(true)}>
+                                <Eye size={16} className="mr-2" /> Preview
+                            </Button>
                             <Button variant="outline" onClick={() => setIsBuilderOpen(false)}>Cancelar</Button>
                             <Button onClick={handleSave}>Salvar Modelo</Button>
                         </div>
                     </div>
                 </div>
             </Modal>
+
+            {/* Preview Modal */}
+            <PreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                template={newTemplateData}
+                fields={newTemplateData.fields}
+            />
+
+            {/* Template Gallery */}
+            <TemplateGallery
+                isOpen={isGalleryOpen}
+                onClose={() => setIsGalleryOpen(false)}
+                onSelectTemplate={handleUseTemplate}
+            />
         </div>
     );
 }

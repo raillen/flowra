@@ -8,22 +8,31 @@ import { prisma } from '../config/database.js';
  */
 
 /**
- * Find all notes for a user
+ * Find all notes for a user (owned + shared)
  * @param {string} userId - User ID
  * @param {Object} options - Query options
  * @returns {Promise<Array>} Notes
  */
 export const findByUserId = async (userId, { search, projectId, limit = 50, offset = 0 } = {}) => {
-    const where = { userId };
+    const where = {
+        OR: [
+            { userId },
+            { shares: { some: { userId } } }
+        ]
+    };
 
     if (projectId) {
         where.projectId = projectId;
     }
 
     if (search) {
-        where.OR = [
-            { title: { contains: search } },
-            { rawContent: { contains: search } },
+        where.AND = [
+            {
+                OR: [
+                    { title: { contains: search } },
+                    { rawContent: { contains: search } },
+                ]
+            }
         ];
     }
 
@@ -31,6 +40,16 @@ export const findByUserId = async (userId, { search, projectId, limit = 50, offs
         where,
         include: {
             references: true,
+            user: {
+                select: { id: true, name: true, avatar: true }
+            },
+            shares: {
+                include: {
+                    user: {
+                        select: { id: true, name: true, avatar: true, email: true }
+                    }
+                }
+            }
         },
         orderBy: { updatedAt: 'desc' },
         take: limit,
@@ -39,7 +58,7 @@ export const findByUserId = async (userId, { search, projectId, limit = 50, offs
 };
 
 /**
- * Find note by ID
+ * Find note by ID (with authorization check helper implicit in logic)
  * @param {string} id - Note ID
  * @returns {Promise<Object|null>} Note or null
  */
@@ -49,8 +68,15 @@ export const findById = async (id) => {
         include: {
             references: true,
             user: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true, email: true, avatar: true },
             },
+            shares: {
+                include: {
+                    user: {
+                        select: { id: true, name: true, email: true, avatar: true }
+                    }
+                }
+            }
         },
     });
 };
@@ -71,6 +97,10 @@ export const create = async (data) => {
         },
         include: {
             references: true,
+            user: {
+                select: { id: true, name: true, avatar: true }
+            },
+            shares: true
         },
     });
 };
@@ -92,6 +122,16 @@ export const update = async (id, data) => {
         },
         include: {
             references: true,
+            user: {
+                select: { id: true, name: true, avatar: true }
+            },
+            shares: {
+                include: {
+                    user: {
+                        select: { id: true, name: true, email: true, avatar: true }
+                    }
+                }
+            }
         },
     });
 };
@@ -133,6 +173,61 @@ export const addReferences = async (noteId, references) => {
 
     return prisma.noteReference.findMany({
         where: { noteId },
+    });
+};
+
+/**
+ * Add a user to share list
+ * @param {string} noteId 
+ * @param {string} userId 
+ * @param {string} permission 
+ */
+export const addShare = async (noteId, userId, permission = 'viewer') => {
+    return prisma.noteShare.create({
+        data: {
+            noteId,
+            userId,
+            permission
+        },
+        include: {
+            user: {
+                select: { id: true, name: true, email: true, avatar: true }
+            }
+        }
+    });
+};
+
+/**
+ * Remove a user from share list
+ * @param {string} noteId 
+ * @param {string} userId 
+ */
+export const removeShare = async (noteId, userId) => {
+    return prisma.noteShare.delete({
+        where: {
+            noteId_userId: {
+                noteId,
+                userId
+            }
+        }
+    });
+};
+
+/**
+ * Update share permission
+ * @param {string} noteId 
+ * @param {string} userId 
+ * @param {string} permission 
+ */
+export const updateShare = async (noteId, userId, permission) => {
+    return prisma.noteShare.update({
+        where: {
+            noteId_userId: {
+                noteId,
+                userId
+            }
+        },
+        data: { permission }
     });
 };
 

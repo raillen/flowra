@@ -29,6 +29,7 @@ model User {
   cardAssignees   CardAssignee[]
   comments        Comment[]
   notes           Note[]
+  sharedNotes     NoteShare[]
   calendarEvents  CalendarEvent[]
   notifications   Notification[]
   savedFilters    SavedFilter[]
@@ -49,7 +50,7 @@ model Company {
   id           String    @id @default(uuid())
   name         String
   legalName    String?
-  cnpj         String    @unique
+  cnpj         String?    @unique
   city         String?
   state        String?
   segment      String?
@@ -113,15 +114,15 @@ model Board {
   
   title     String?   // Optional title for the board (if different from name)
   isPrivate Boolean   @default(false)
-  autoArchiveCompleted Boolean @default(false) // Auto-archive cards when completed
   
-  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  columns      Column[]
-  cards        Card[]
-  tags         Tag[]
-  fieldConfig  BoardFieldConfig?
-  members      BoardMember[]
-  savedFilters SavedFilter[]
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columns         Column[]
+  cards           Card[]
+  tags            Tag[]
+  fieldConfig     BoardFieldConfig?
+  members         BoardMember[]
+  savedFilters    SavedFilter[]
+  automationRules AutomationRule[]
   
   @@index([projectId])
   @@map("boards")
@@ -138,6 +139,25 @@ model BoardFieldConfig {
   board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
   
   @@map("board_field_configs")
+}
+
+model AutomationRule {
+  id          String   @id @default(uuid())
+  boardId     String
+  name        String
+  triggerType String   // e.g., 'CARD_MOVE', 'CARD_UPDATE', 'CARD_CREATE'
+  conditions  String   // JSON: { "columnId": "...", "status": "..." }
+  actions     String   // JSON: [ { "type": "ASSIGN_USER", "value": "..." } ]
+  cronExpression String? // Non-null for time-based rules (e.g., "0 * * * *" for hourly)
+  lastRunAt   DateTime? // Tracks last execution for time-based rules
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  @@index([boardId])
+  @@map("automation_rules")
 }
 
 model Column {
@@ -220,6 +240,7 @@ model Card {
   briefingTemplate   BriefingTemplate? @relation(fields: [briefingTemplateId], references: [id])
   briefingData       String?           // JSON string with form answers
   briefingVersions   BriefingVersion[]
+  briefingSubmission BriefingSubmission?
   
   // Self relations
   parentCard    Card?       @relation("CardSubtasks", fields: [parentCardId], references: [id], onDelete: SetNull)
@@ -432,11 +453,26 @@ model Note {
   
   user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   references NoteReference[]
+  shares     NoteShare[]
   
   @@index([userId])
   @@index([projectId])
   @@index([reminderDate])
   @@map("notes")
+}
+
+model NoteShare {
+  id        String   @id @default(uuid())
+  noteId    String
+  userId    String   // User shared with
+  permission String  @default("viewer") // viewer, editor
+  createdAt DateTime @default(now())
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([noteId, userId])
+  @@map("note_shares")
 }
 
 // References/mentions within notes
@@ -486,6 +522,7 @@ model Notification {
   refType   String?  // card, event, note, comment
   refId     String?
   priority  String   @default("normal") // urgent, high, normal, low
+  metadata  String?  // JSON context (e.g. { projectId, boardId })
   createdAt DateTime @default(now())
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -641,11 +678,33 @@ model BriefingTemplate {
   defaultColumnId String?
   
   cards       Card[]
+  submissions BriefingSubmission[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   @@map("briefing_templates")
+}
+
+model BriefingSubmission {
+  id          String   @id @default(uuid())
+  templateId  String
+  template    BriefingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  
+  data        String   // JSON: Form answers
+  metadata    String?  // JSON: IP, UserAgent, etc.
+  
+  // Status
+  status      String   @default("new") // new, converted, archived
+  
+  // Link if converted
+  cardId      String?  @unique
+  card        Card?    @relation(fields: [cardId], references: [id])
+
+  submittedAt DateTime @default(now())
+  
+  @@index([templateId])
+  @@map("briefing_submissions")
 }
 
 model BriefingVersion {

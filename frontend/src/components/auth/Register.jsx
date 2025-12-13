@@ -11,6 +11,7 @@ import { register } from '../../services/authService';
  */
 const Register = ({ onBackToLogin, onRegisterSuccess }) => {
     const [name, setName] = useState('');
+    const [companyName, setCompanyName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,13 +24,18 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
         setError('');
 
         // Validation
-        if (!name || !email || !password || !confirmPassword) {
+        if (!name || !email || !password || !confirmPassword || !companyName) {
             setError('Por favor, preencha todos os campos');
             return;
         }
 
         if (name.length < 3) {
             setError('O nome deve ter pelo menos 3 caracteres');
+            return;
+        }
+
+        if (companyName.length < 3) {
+            setError('O nome da empresa deve ter pelo menos 3 caracteres');
             return;
         }
 
@@ -46,10 +52,10 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
         setLoading(true);
 
         try {
-            const result = await register({ name, email, password });
+            const result = await register({ name, email, password, companyName });
             setToast({
                 isOpen: true,
-                message: 'Conta criada com sucesso!',
+                message: 'Conta e empresa criadas com sucesso!',
                 type: 'success'
             });
 
@@ -70,7 +76,7 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
             <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-slate-800 mb-2">Criar Conta</h1>
-                    <p className="text-slate-500">Cadastre-se no KBSys</p>
+                    <p className="text-slate-500">Cadastre-se e crie sua empresa no KBSys</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -96,6 +102,23 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
                                 onChange={(e) => setName(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                                 placeholder="Seu nome completo"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Nome da Empresa
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-3 text-slate-400">🏢</span>
+                            <input
+                                type="text"
+                                value={companyName}
+                                onChange={(e) => setCompanyName(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                                placeholder="Nome da sua empresa"
                                 required
                             />
                         </div>

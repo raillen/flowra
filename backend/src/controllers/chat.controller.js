@@ -150,3 +150,17 @@ export const getUserProjects = async (request, reply) => {
         data: projects,
     });
 };
+
+/**
+ * Delete a conversation
+ */
+export const deleteConversation = async (request, reply) => {
+    const { id } = request.params;
+
+    await chatService.deleteConversation(id, request.user.id);
+
+    return reply.send({
+        success: true,
+        message: 'Conversation deleted',
+    });
+};

@@ -16,21 +16,35 @@ export default async function archiveRoutes(fastify) {
         try {
             const userId = request.user.id;
             const companyId = request.user.companyId;
+            const isAdmin = request.user.role === 'admin';
+
+            // Build where clause - admins see all
+            const whereClause = {
+                archivedAt: { not: null },
+                ...(isAdmin ? {} : {
+                    OR: [
+                        // 1. Direct Access (Card Owner/Assignee)
+                        { assignedUserId: userId },
+                        { assignees: { some: { userId } } },
+
+                        // 2. Board/Project Context
+                        {
+                            board: {
+                                OR: [
+                                    { project: { userId } }, // Project Owner
+                                    { project: { members: { some: { userId } } } }, // Project Member
+                                    ...(companyId ? [{ project: { companyId } }] : []), // Company
+                                    { members: { some: { userId } } } // Board Member
+                                ]
+                            }
+                        }
+                    ]
+                })
+            };
 
             // Get archived cards from user's projects/boards
             const archivedCards = await prisma.card.findMany({
-                where: {
-                    archivedAt: { not: null },
-                    board: {
-                        project: {
-                            OR: [
-                                { userId },
-                                { members: { some: { userId } } },
-                                ...(companyId ? [{ companyId }] : [])
-                            ]
-                        }
-                    }
-                },
+                where: whereClause,
                 include: {
                     board: {
                         select: {

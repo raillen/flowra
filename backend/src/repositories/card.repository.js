@@ -115,7 +115,7 @@ export async function findById(id) {
 export async function findByBoardId(boardId) {
   try {
     const cards = await prisma.card.findMany({
-      where: { boardId },
+      where: { boardId, archivedAt: null },
       orderBy: { createdAt: 'asc' },
     });
 

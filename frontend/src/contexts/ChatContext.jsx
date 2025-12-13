@@ -362,6 +362,20 @@ export const ChatProvider = ({ children }) => {
         }
     };
 
+    // Delete conversation
+    const deleteConversation = async (conversationId) => {
+        try {
+            await api.delete(`/chat/conversations/${conversationId}`);
+            setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+            if (activeConversation?.id === conversationId) {
+                setActiveConversation(null);
+            }
+        } catch (error) {
+            console.error('Error deleting conversation:', error);
+            throw error;
+        }
+    };
+
     const value = {
         socket,
         connected,
@@ -383,6 +397,7 @@ export const ChatProvider = ({ children }) => {
         getAvailableUsers,
         getUserProjects,
         openProjectChat,
+        deleteConversation,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

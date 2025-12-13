@@ -92,3 +92,38 @@ export const searchReferences = async (request, reply) => {
         data: results,
     });
 };
+
+/**
+ * Share a note
+ */
+export const shareNote = async (request, reply) => {
+    const { userId, permission } = request.body;
+    const share = await noteService.shareNote(
+        request.params.id,
+        userId,
+        permission,
+        request.user.id
+    );
+
+    return reply.send({
+        success: true,
+        data: share,
+        message: 'Note shared successfully',
+    });
+};
+
+/**
+ * Unshare a note
+ */
+export const unshareNote = async (request, reply) => {
+    await noteService.unshareNote(
+        request.params.id,
+        request.params.userId,
+        request.user.id
+    );
+
+    return reply.send({
+        success: true,
+        message: 'Note unshared successfully',
+    });
+};

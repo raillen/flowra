@@ -133,7 +133,6 @@ const GlobalDashboard = () => {
                         icon={Clock}
                         gradient="from-blue-500 to-cyan-400"
                         iconBg="bg-blue-500/10"
-                        trend="+12%"
                     />
                     <KPICard
                         label="Em Progresso"
@@ -143,12 +142,11 @@ const GlobalDashboard = () => {
                         iconBg="bg-amber-500/10"
                     />
                     <KPICard
-                        label="Concluídas"
+                        label="Concluídas (7 dias)"
                         value={stats.completedWeek}
                         icon={CheckSquare}
                         gradient="from-emerald-500 to-teal-400"
                         iconBg="bg-emerald-500/10"
-                        trend="+8%"
                     />
                 </div>
 
@@ -159,69 +157,66 @@ const GlobalDashboard = () => {
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* Timeline Card */}
-                        <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+                        <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden min-h-[400px]">
                             <div className="flex items-center justify-between p-5 border-b border-border">
                                 <h2 className="font-bold text-text-primary flex items-center gap-2">
                                     <Calendar size={20} className="text-primary-500" />
-                                    Timeline
+                                    Prioridades de Hoje
                                 </h2>
                                 <div className="flex items-center gap-2">
-                                    <button className="px-3 py-1.5 bg-surface-hover text-text-secondary text-sm font-medium rounded-lg hover:bg-border transition-colors">
-                                        Hoje
-                                    </button>
-                                    <button className="p-1.5 hover:bg-surface-hover rounded-lg text-text-secondary">
-                                        <MoreVertical size={18} />
-                                    </button>
+                                    <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-1 rounded-lg">
+                                        {tasks?.dueToday?.length || 0} tarefas
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* Timeline Content */}
+                            {/* Task List Content */}
                             <div className="p-5">
-                                {/* Timeline Header */}
-                                <div className="flex items-center gap-4 mb-4 text-xs font-medium text-text-secondary pl-[140px]">
-                                    {['8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM'].map(time => (
-                                        <span key={time} className="flex-1 text-center">{time}</span>
-                                    ))}
-                                </div>
-
-                                {/* Timeline Rows */}
                                 <div className="space-y-3">
-                                    {tasks.all.slice(0, 5).map((task, idx) => (
-                                        <TimelineRow
+                                    {/* Combine Overdue at top if any */}
+                                    {tasks?.overdue?.map(task => (
+                                        <TaskRow
                                             key={task.id}
                                             task={task}
-                                            color={getTaskColor(idx)}
+                                            status="overdue"
                                             onClick={() => {
                                                 if (task.board?.projectId) {
                                                     setActiveProjectId(task.board.projectId);
-                                                    setActiveBoardId(task.boardId);
+                                                    setActiveBoardId(task.column?.boardId || task.boardId); // Fix board ID mapping
                                                     navigateTo('kanban');
                                                 }
                                             }}
                                         />
                                     ))}
+
+                                    {tasks?.dueToday?.map(task => (
+                                        <TaskRow
+                                            key={task.id}
+                                            task={task}
+                                            status="today"
+                                            onClick={() => {
+                                                if (task.board?.projectId) {
+                                                    setActiveProjectId(task.board.projectId);
+                                                    setActiveBoardId(task.column?.boardId || task.boardId);
+                                                    navigateTo('kanban');
+                                                }
+                                            }}
+                                        />
+                                    ))}
+
+                                    {(!tasks?.overdue?.length && !tasks?.dueToday?.length) && (
+                                        <div className="text-center py-12 text-text-secondary">
+                                            <CheckSquare size={40} className="mx-auto mb-3 opacity-50 text-emerald-500" />
+                                            <p className="font-medium text-slate-800">Tudo limpo por hoje!</p>
+                                            <p className="text-xs mt-1">Nenhuma tarefa atrasada ou para vencer.</p>
+                                        </div>
+                                    )}
                                 </div>
-
-                                {tasks.all.length === 0 && (
-                                    <div className="text-center py-12 text-text-secondary">
-                                        <Calendar size={40} className="mx-auto mb-3 opacity-50" />
-                                        <p>Nenhuma tarefa para exibir</p>
-                                    </div>
-                                )}
-
-                                {tasks.all.length > 5 && (
-                                    <button
-                                        onClick={() => navigateTo('calendar')}
-                                        className="w-full mt-4 py-2.5 text-sm text-primary-600 hover:bg-primary-50 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        Ver todos <ChevronRight size={16} />
-                                    </button>
-                                )}
                             </div>
                         </div>
 
                         {/* Overdue Alert */}
-                        {stats.overdueCount > 0 && (
+                        {(stats?.overdueCount || 0) > 0 && (
                             <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl p-5">
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="p-2 bg-red-500/10 rounded-xl">
@@ -229,11 +224,11 @@ const GlobalDashboard = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-red-800">Atenção Necessária</h3>
-                                        <p className="text-sm text-red-600">{stats.overdueCount} tarefas atrasadas</p>
+                                        <p className="text-sm text-red-600">{stats?.overdueCount} tarefas atrasadas</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    {tasks.overdue.slice(0, 3).map(task => (
+                                    {(tasks?.overdue || []).slice(0, 3).map(task => (
                                         <div key={task.id} className="flex items-center justify-between p-3 bg-white/60 rounded-xl">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-2 h-6 rounded-full bg-red-500" />
@@ -374,61 +369,85 @@ const KPICard = ({ label, value, icon: Icon, gradient, iconBg, trend }) => (
     </div>
 );
 
-const TimelineRow = ({ task, color, onClick }) => {
-    // Simulate time blocks (in real app, use task.startDate/endDate)
-    const startHour = 8 + Math.floor(Math.random() * 4);
-    const duration = 2 + Math.floor(Math.random() * 3);
-    const leftOffset = ((startHour - 8) / 10) * 100;
-    const width = (duration / 10) * 100;
-
+const TaskRow = ({ task, status, onClick }) => {
     return (
-        <div className="flex items-center gap-4 group cursor-pointer" onClick={onClick}>
-            {/* User info */}
-            <div className="w-[140px] flex items-center gap-2 shrink-0">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-xs font-medium text-slate-600">
-                    {task.assignedUser?.name?.slice(0, 2).toUpperCase() || 'TA'}
+        <div
+            onClick={onClick}
+            className={`
+                group flex items-center justify-between p-4 rounded-xl border border-transparent 
+                transition-all duration-200 cursor-pointer
+                ${status === 'overdue'
+                    ? 'bg-red-50 hover:border-red-200'
+                    : 'bg-white border-slate-100 hover:border-indigo-200 hover:shadow-sm'
+                }
+            `}
+        >
+            <div className="flex items-center gap-4">
+                <div className={`
+                    w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold
+                    ${status === 'overdue' ? 'bg-red-100 text-red-600' : 'bg-indigo-50 text-indigo-600'}
+                 `}>
+                    {task.priority === 'high' ? '!!!' : task.priority === 'medium' ? '!!' : '!'}
                 </div>
-                <div className="overflow-hidden">
-                    <p className="text-sm font-medium text-slate-700 truncate">{task.assignedUser?.name || 'Tarefa'}</p>
-                    <p className="text-xs text-slate-400">{task.project?.name?.slice(0, 12) || ''}</p>
+
+                <div>
+                    <h4 className={`font-medium ${status === 'overdue' ? 'text-red-900' : 'text-slate-800'}`}>
+                        {task.title}
+                    </h4>
+                    <p className="text-xs text-slate-500 flex items-center gap-2">
+                        <span>{task.board?.project?.name || 'Projeto'}</span>
+                        <span>•</span>
+                        <span>{task.board?.name || 'Quadro'}</span>
+                    </p>
                 </div>
             </div>
 
-            {/* Timeline bar area */}
-            <div className="flex-1 h-10 bg-slate-50 rounded-lg relative overflow-hidden">
-                {/* Task block */}
-                <div
-                    className={`absolute top-1 bottom-1 ${color} rounded-md flex items-center px-2 text-white text-xs font-medium shadow-sm group-hover:shadow-md transition-shadow`}
-                    style={{ left: `${leftOffset}%`, width: `${Math.min(width, 100 - leftOffset)}%` }}
-                >
-                    <span className="truncate">{task.title}</span>
-                </div>
+            <div className="flex items-center gap-3">
+                <span className={`text-xs px-2 py-1 rounded-md font-medium ${task.column?.color
+                        ? 'bg-opacity-10 text-opacity-100' // Dynamic color logic would be simpler
+                        : 'bg-slate-100 text-slate-600'
+                    }`}>
+                    {task.column?.title || 'Tarefa'}
+                </span>
+                <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
             </div>
         </div>
     );
 };
 
 const ActivityChart = ({ data }) => {
-    const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    // data is expected to be array of { date: 'YYYY-MM-DD', count: number }
+    // We need to ensure we display the last 7 days derived from the data or current date
     const colors = ['bg-pink-400', 'bg-amber-400', 'bg-cyan-400', 'bg-emerald-400', 'bg-violet-400'];
+
+    // If no data, show empty state or placeholders
+    const safeData = data || [];
 
     return (
         <div className="flex justify-between items-end gap-2 h-24">
-            {days.map((day, dayIdx) => {
-                const dayData = data[dayIdx] || { count: Math.floor(Math.random() * 5) };
-                const bubbles = Math.min(dayData.count || Math.floor(Math.random() * 4), 4);
+            {safeData.map((dayData, idx) => {
+                const dateObj = new Date(dayData.date);
+                // Get day name (Seg, Ter...)
+                const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'short' }).slice(0, 3);
+
+                // Max bubbles to show = 4 (to fit UI)
+                const bubbles = Math.min(dayData.count, 4);
 
                 return (
-                    <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                    <div key={dayData.date} className="flex-1 flex flex-col items-center gap-1">
                         <div className="flex flex-col-reverse items-center gap-1 h-16 justify-start">
-                            {Array.from({ length: bubbles }).map((_, i) => (
+                            {/* If count is 0, show a small dot or nothing? Let's show nothing but empty space */}
+                            {bubbles > 0 ? Array.from({ length: bubbles }).map((_, i) => (
                                 <div
                                     key={i}
-                                    className={`w-4 h-4 rounded-full ${colors[(dayIdx + i) % colors.length]} opacity-80`}
+                                    className={`w-4 h-4 rounded-full ${colors[(idx + i) % colors.length]} opacity-80`}
+                                    title={`${dayData.count} tarefas`}
                                 />
-                            ))}
+                            )) : (
+                                <div className="w-1 h-1 rounded-full bg-slate-200" />
+                            )}
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium">{day}</span>
+                        <span className="text-[10px] text-slate-400 font-medium capitalize">{dayName}</span>
                     </div>
                 );
             })}

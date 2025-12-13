@@ -288,3 +288,24 @@ export const removeUserFromProjectChat = async (projectId, userId) => {
 export const getUserProjectsWithChat = async (userId) => {
     return chatRepository.getUserProjects(userId);
 };
+
+/**
+ * Delete a conversation
+ * @param {string} conversationId - Conversation ID
+ * @param {string} userId - User ID requesting deletion
+ */
+export const deleteConversation = async (conversationId, userId) => {
+    // Check if participant
+    const isParticipant = await chatRepository.isParticipant(conversationId, userId);
+    if (!isParticipant) {
+        throw new ForbiddenError('You are not a participant in this conversation');
+    }
+
+    // Optional: Check if user is owner/creator if strictly required. 
+    // For now, allowing any participant to delete for simplicity or based on request "delete option".
+    // Or maybe we treat it as "Leave" if not owner? 
+    // User request was "delete chat", implying removal. 
+    // I will implement HARD delete for now.
+
+    await chatRepository.deleteConversation(conversationId);
+};
