@@ -63,6 +63,17 @@ export default async function archiveRoutes(fastify) {
                     },
                     tags: {
                         include: { tag: true }
+                    },
+                    attachments: {
+                        select: {
+                            id: true,
+                            filename: true,
+                            originalName: true,
+                            url: true,
+                            mimeType: true,
+                            size: true,
+                            createdAt: true
+                        }
                     }
                 },
                 orderBy: { archivedAt: 'desc' }
@@ -100,8 +111,10 @@ export default async function archiveRoutes(fastify) {
                     status: card.status,
                     archivedAt: card.archivedAt,
                     completedAt: card.completedAt,
+                    dueDate: card.dueDate,
                     assignedUser: card.assignedUser,
-                    tags: card.tags.map(t => t.tag)
+                    tags: card.tags.map(t => t.tag),
+                    attachments: card.attachments || []
                 });
             });
 
@@ -125,16 +138,24 @@ export default async function archiveRoutes(fastify) {
         }
     });
 
-    // Restore archived card
+    // Restore archived card to a specific column
     fastify.post('/archive/cards/:cardId/restore', {
         preHandler: [authenticate]
     }, async (request, reply) => {
         try {
             const { cardId } = request.params;
+            const { targetColumnId } = request.body || {};
 
             const card = await prisma.card.findUnique({
                 where: { id: cardId },
-                include: { board: { include: { project: true } } }
+                include: {
+                    board: {
+                        include: {
+                            project: true,
+                            columns: { orderBy: { order: 'asc' } }
+                        }
+                    }
+                }
             });
 
             if (!card || !card.archivedAt) {
@@ -144,14 +165,27 @@ export default async function archiveRoutes(fastify) {
                 });
             }
 
-            // Verify access
-            const hasAccess = card.board.project.userId === request.user.id ||
-                card.board.project.companyId === request.user.companyId;
+            // Determine target column: user's choice, original column, or first column
+            let columnId = targetColumnId;
+            if (!columnId) {
+                // Try original column, fallback to first column
+                const originalExists = card.board.columns.some(c => c.id === card.columnId);
+                columnId = originalExists ? card.columnId : card.board.columns[0]?.id;
+            }
 
-            if (!hasAccess) {
-                return reply.status(403).send({
+            if (!columnId) {
+                return reply.status(400).send({
                     success: false,
-                    message: 'Sem permissão para restaurar este card'
+                    message: 'Nenhuma coluna disponível para restaurar o card'
+                });
+            }
+
+            // Verify target column belongs to board
+            const targetBelongsToBoard = card.board.columns.some(c => c.id === columnId);
+            if (!targetBelongsToBoard) {
+                return reply.status(400).send({
+                    success: false,
+                    message: 'Coluna de destino não pertence ao board do card'
                 });
             }
 
@@ -159,7 +193,7 @@ export default async function archiveRoutes(fastify) {
                 where: { id: cardId },
                 data: {
                     archivedAt: null,
-                    status: 'em_progresso' // Reset status when restoring
+                    columnId: columnId
                 }
             });
 

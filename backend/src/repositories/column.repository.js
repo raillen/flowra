@@ -28,7 +28,7 @@ export async function create(data) {
         },
       },
     });
-    
+
     return column;
   } catch (error) {
     logger.error({ error, data }, 'Failed to create column');
@@ -51,7 +51,7 @@ export async function findById(id) {
         },
       },
     });
-    
+
     return column;
   } catch (error) {
     logger.error({ error, id }, 'Failed to find column');
@@ -75,7 +75,7 @@ export async function findByBoardId(boardId) {
       },
       orderBy: { order: 'asc' },
     });
-    
+
     return columns;
   } catch (error) {
     logger.error({ error, boardId }, 'Failed to find columns by board');
@@ -97,6 +97,8 @@ export async function update(id, data) {
         ...(data.title !== undefined && { title: data.title }),
         ...(data.color !== undefined && { color: data.color }),
         ...(data.order !== undefined && { order: data.order }),
+        ...(data.autoArchive !== undefined && { autoArchive: data.autoArchive }),
+        ...(data.archiveAfterMinutes !== undefined && { archiveAfterMinutes: data.archiveAfterMinutes }),
       },
       include: {
         cards: {
@@ -104,7 +106,7 @@ export async function update(id, data) {
         },
       },
     });
-    
+
     return column;
   } catch (error) {
     logger.error({ error, id, data }, 'Failed to update column');

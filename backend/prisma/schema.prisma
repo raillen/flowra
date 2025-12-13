@@ -161,13 +161,15 @@ model AutomationRule {
 }
 
 model Column {
-  id        String    @id @default(uuid())
-  title     String
-  color     String    @default("bg-slate-100")
-  order     Int
-  boardId   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                  String    @id @default(uuid())
+  title               String
+  color               String    @default("bg-slate-100")
+  order               Int
+  boardId             String
+  autoArchive         Boolean   @default(false)  // Enable auto-archive for this column
+  archiveAfterMinutes Int?      // null = immediate, otherwise minutes to wait
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   
   board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards Card[]

@@ -40,44 +40,17 @@ export const getEnabledFields = async (boardId) => {
 };
 
 /**
- * Default field configuration (all fields disabled)
- * Used as fallback when no config exists
+ * Default field configuration - Essential fields only
+ * Fixed fields (always available): title, description, priority, dueDate, tags, attachments, comments, assignees
+ * Configurable fields: listed below
  */
 export const defaultFieldConfig = {
-    // Time and Progress fields
+    // Essential configurable fields
     startDate: { enabled: false, required: false },
-    completedAt: { enabled: false, required: false },
     estimatedHours: { enabled: false, required: false },
-    actualHours: { enabled: false, required: false },
-    progress: { enabled: false, required: false },
     checklist: { enabled: false, required: false },
-
-    // Collaboration fields
-    assignees: { enabled: false, required: false },
-    reporter: { enabled: false, required: false },
-    reviewer: { enabled: false, required: false },
-    watchers: { enabled: false, required: false },
-
-    // Organization fields
     type: { enabled: false, required: false, options: ['tarefa', 'bug', 'feature', 'melhoria', 'reuniao'] },
-    status: { enabled: false, required: false, options: ['novo', 'em_progresso', 'bloqueado', 'concluido'] },
-    subtasks: { enabled: false, required: false },
-    blockedBy: { enabled: false, required: false },
-    relatedTo: { enabled: false, required: false },
-
-    // Visual fields
-    color: { enabled: false, required: false },
-    icon: { enabled: false, required: false },
-    cover: { enabled: false, required: false },
-
-    // Business fields
-    projectPhase: { enabled: false, required: false, options: ['discovery', 'design', 'development', 'testing', 'deployment'] },
-    budget: { enabled: false, required: false },
-    billable: { enabled: false, required: false },
-    storyPoints: { enabled: false, required: false },
     externalUrl: { enabled: false, required: false },
-
-    // Custom fields
     customFields: { enabled: false, definitions: [] },
 };
 
@@ -86,58 +59,45 @@ export const defaultFieldConfig = {
  */
 export const fieldLabels = {
     startDate: 'Data de Início',
-    completedAt: 'Data de Conclusão',
     estimatedHours: 'Horas Estimadas',
-    actualHours: 'Horas Trabalhadas',
-    progress: 'Progresso',
     checklist: 'Lista de Tarefas',
-    assignees: 'Múltiplos Responsáveis',
-    reporter: 'Responsável pelo Reporte',
-    reviewer: 'Revisor',
-    watchers: 'Seguidores',
     type: 'Tipo do Card',
-    status: 'Status',
-    subtasks: 'Subtarefas',
-    blockedBy: 'Bloqueado Por',
-    relatedTo: 'Relacionado A',
-    customFields: 'Campos Personalizados',
-    color: 'Cor',
-    icon: 'Ícone',
-    cover: 'Imagem de Capa',
-    projectPhase: 'Fase do Projeto',
-    budget: 'Orçamento',
-    billable: 'Faturável',
-    storyPoints: 'Story Points',
     externalUrl: 'Link Externo',
     customFields: 'Campos Personalizados',
 };
 
 /**
- * Field categories for grouping in UI
+ * Field descriptions for tooltips
  */
-export const fieldCategories = {
-    time: {
-        label: 'Tempo e Progresso',
-        fields: ['startDate', 'completedAt', 'estimatedHours', 'actualHours', 'progress', 'checklist'],
-    },
-    collaboration: {
-        label: 'Colaboração',
-        fields: ['assignees', 'reporter', 'reviewer', 'watchers'],
-    },
-    organization: {
-        label: 'Organização',
-        fields: ['type', 'status', 'subtasks', 'blockedBy', 'relatedTo'],
-    },
-    visual: {
-        label: 'Visual',
-        fields: ['color', 'icon', 'cover'],
-    },
-    business: {
-        label: 'Negócios',
-        fields: ['projectPhase', 'budget', 'billable', 'storyPoints', 'externalUrl'],
-    },
-    custom: {
-        label: 'Personalizado',
-        fields: ['customFields'],
-    },
+export const fieldDescriptions = {
+    startDate: 'Define quando o trabalho deve começar',
+    estimatedHours: 'Previsão de horas para conclusão',
+    checklist: 'Lista de subtarefas com checkbox e barra de progresso',
+    type: 'Categorização do card (tarefa, bug, feature...)',
+    externalUrl: 'Link para recurso externo (Figma, Docs...)',
+    customFields: 'Campos personalizados criados por você',
 };
+
+/**
+ * Field icons (lucide-react icon names)
+ */
+export const fieldIcons = {
+    startDate: 'Calendar',
+    estimatedHours: 'Clock',
+    checklist: 'CheckSquare',
+    type: 'Tag',
+    externalUrl: 'ExternalLink',
+    customFields: 'Sliders',
+};
+
+/**
+ * All configurable field IDs in display order
+ */
+export const configurableFields = [
+    'startDate',
+    'estimatedHours',
+    'checklist',
+    'type',
+    'externalUrl',
+    'customFields',
+];

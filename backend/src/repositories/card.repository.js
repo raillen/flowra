@@ -195,6 +195,11 @@ export async function update(id, data) {
       updateData.customFields = data.customFields ? JSON.stringify(data.customFields) : null;
     }
 
+    // Checklist (JSON string)
+    if (data.checklist !== undefined) {
+      updateData.checklist = data.checklist || null;
+    }
+
     // Relations
     if (data.assignedUserId !== undefined) updateData.assignedUserId = data.assignedUserId;
     if (data.reporterId !== undefined) updateData.reporterId = data.reporterId;

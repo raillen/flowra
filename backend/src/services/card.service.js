@@ -251,7 +251,7 @@ export async function updateCard(boardId, cardId, updateData) {
     'estimatedHours', 'actualHours', 'progress',
     'color', 'icon', 'cover',
     'projectPhase', 'budget', 'billable', 'storyPoints', 'externalUrl',
-    'customFields',
+    'customFields', 'checklist',
     'assignedUserId', 'reporterId', 'reviewerId', 'parentCardId',
     'columnId',
     'keepVisibleOnComplete'
@@ -505,4 +505,123 @@ export async function getSubtasks(boardId, cardId) {
   });
 
   return subtasks;
+}
+
+/**
+ * Archives a card (sets archivedAt to current timestamp)
+ * @param {string} boardId - Board ID
+ * @param {string} cardId - Card ID
+ * @returns {Promise<Object>} Archived card
+ */
+export async function archiveCard(boardId, cardId) {
+  // Verify card exists and belongs to board
+  const card = await getCardById(boardId, cardId);
+
+  if (card.archivedAt) {
+    throw new Error('Card is already archived');
+  }
+
+  const archived = await prisma.card.update({
+    where: { id: cardId },
+    data: { archivedAt: new Date() },
+  });
+
+  logger.info({ cardId, boardId }, 'Card archived successfully');
+  return archived;
+}
+
+/**
+ * Unarchives a card (sets archivedAt to null)
+ * @param {string} cardId - Card ID
+ * @param {string} targetColumnId - Column to restore the card to
+ * @returns {Promise<Object>} Unarchived card with full data
+ */
+export async function unarchiveCard(cardId, targetColumnId) {
+  // Find the card
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    include: {
+      column: true,
+      board: {
+        include: { columns: true }
+      }
+    }
+  });
+
+  if (!card) {
+    throw new NotFoundError('Card not found');
+  }
+
+  if (!card.archivedAt) {
+    throw new Error('Card is not archived');
+  }
+
+  // Verify target column exists and belongs to the same board
+  const targetColumn = await columnRepository.findById(targetColumnId);
+  if (!targetColumn) {
+    throw new NotFoundError('Target column not found');
+  }
+  if (targetColumn.boardId !== card.boardId) {
+    throw new Error('Target column must be in the same board');
+  }
+
+  const unarchived = await prisma.card.update({
+    where: { id: cardId },
+    data: {
+      archivedAt: null,
+      columnId: targetColumnId
+    },
+  });
+
+  logger.info({ cardId, columnId: targetColumnId }, 'Card unarchived successfully');
+  return getCardById(card.boardId, cardId);
+}
+
+/**
+ * Gets all archived cards for a board
+ * @param {string} boardId - Board ID
+ * @returns {Promise<Array>} Array of archived cards
+ */
+export async function getArchivedCards(boardId) {
+  const cards = await prisma.card.findMany({
+    where: {
+      boardId,
+      archivedAt: { not: null }
+    },
+    include: {
+      column: { select: { id: true, title: true } },
+      assignedUser: { select: { id: true, name: true, avatar: true } },
+      tags: { include: { tag: true } },
+    },
+    orderBy: { archivedAt: 'desc' }
+  });
+
+  return cards;
+}
+
+/**
+ * Gets all archived cards across all boards the user has access to
+ * @returns {Promise<Array>} Array of archived cards grouped by board
+ */
+export async function getAllArchivedCards() {
+  const cards = await prisma.card.findMany({
+    where: {
+      archivedAt: { not: null }
+    },
+    include: {
+      column: { select: { id: true, title: true } },
+      board: {
+        select: {
+          id: true,
+          name: true,
+          project: { select: { id: true, name: true } }
+        }
+      },
+      assignedUser: { select: { id: true, name: true, avatar: true } },
+      tags: { include: { tag: true } },
+    },
+    orderBy: { archivedAt: 'desc' }
+  });
+
+  return cards;
 }

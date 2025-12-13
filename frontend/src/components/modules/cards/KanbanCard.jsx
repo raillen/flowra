@@ -8,6 +8,8 @@ import {
     CheckCircle,
     MoreHorizontal,
     GripVertical,
+    Archive,
+    CheckSquare,
 } from 'lucide-react';
 import { format, isPast, isToday, isTomorrow, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -149,13 +151,31 @@ const KanbanCard = ({
     isCompact = false,
     onClick,
     onMenuClick,
+    onArchive,
     dragHandleProps = {},
 }) => {
     const priority = PRIORITIES[card.priority] || PRIORITIES.media;
     const cardType = CARD_TYPES[card.type] || CARD_TYPES.tarefa;
     const isCompleted = card.status === 'concluido' || card.completedAt;
     const isBlocked = card.blockedBy?.length > 0;
-    const hasProgress = typeof card.progress === 'number' && card.progress > 0;
+
+    // Parse checklist and calculate progress
+    let checklistItems = [];
+    let checklistProgress = 0;
+    try {
+        if (card.checklist) {
+            checklistItems = typeof card.checklist === 'string' ? JSON.parse(card.checklist) : card.checklist;
+            if (checklistItems.length > 0) {
+                const completed = checklistItems.filter(i => i.done).length;
+                checklistProgress = Math.round((completed / checklistItems.length) * 100);
+            }
+        }
+    } catch (e) {
+        console.error('Error parsing checklist:', e);
+    }
+
+    const hasProgress = (typeof card.progress === 'number' && card.progress > 0) || checklistProgress > 0;
+    const displayProgress = checklistProgress || card.progress || 0;
 
     // Collect all assignees
     const assignees = [];
@@ -207,6 +227,17 @@ const KanbanCard = ({
                         >
                             <GripVertical size={16} />
                         </div>
+
+                        {/* Archive button */}
+                        {onArchive && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onArchive(card.id); }}
+                                className="p-1 text-secondary-400 hover:text-amber-600 hover:bg-amber-50 rounded"
+                                title="Arquivar"
+                            >
+                                <Archive size={16} />
+                            </button>
+                        )}
 
                         {/* Menu button */}
                         {onMenuClick && (
@@ -262,13 +293,21 @@ const KanbanCard = ({
                 {hasProgress && (
                     <div className="mb-3">
                         <div className="flex items-center justify-between text-xs text-secondary-500 mb-1">
-                            <span>Progresso</span>
-                            <span className="font-medium">{card.progress}%</span>
+                            <span className="flex items-center gap-1">
+                                {checklistItems.length > 0 && <CheckSquare size={12} />}
+                                {checklistItems.length > 0 ? 'Tarefas' : 'Progresso'}
+                            </span>
+                            <span className="font-medium">
+                                {checklistItems.length > 0
+                                    ? `${checklistItems.filter(i => i.done).length}/${checklistItems.length}`
+                                    : `${displayProgress}%`
+                                }
+                            </span>
                         </div>
                         <div className="h-1.5 bg-secondary-100 rounded-full overflow-hidden">
                             <div
-                                className={`h-full transition-all duration-300 ${card.progress >= 100 ? 'bg-emerald-500' : 'bg-primary-500'}`}
-                                style={{ width: `${Math.min(card.progress, 100)}%` }}
+                                className={`h-full transition-all duration-300 ${displayProgress >= 100 ? 'bg-emerald-500' : 'bg-primary-500'}`}
+                                style={{ width: `${Math.min(displayProgress, 100)}%` }}
                             />
                         </div>
                     </div>

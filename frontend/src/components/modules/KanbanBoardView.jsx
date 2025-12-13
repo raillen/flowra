@@ -38,7 +38,8 @@ import {
   BarChart3,
   Layers,
   GitBranch,
-  ChevronLeft
+  ChevronLeft,
+  Archive
 } from 'lucide-react';
 import CalendarView from './CalendarView';
 import { TimelineView, GanttView, SwimlanesView, HierarchyView, ViewModeSelector, FilterPanel, AnalyticsView } from './views';
@@ -53,6 +54,7 @@ import * as cardService from '../../services/cardService';
 import * as columnService from '../../services/columnService';
 import * as tagService from '../../services/tagService';
 import * as boardService from '../../services/boardService';
+import * as archiveService from '../../services/archiveService';
 import CardModal from './modals/CardModal';
 import BoardSettingsModal from './modals/BoardSettingsModal';
 import { useBoardConfig } from '../../hooks/useBoardConfig';
@@ -66,7 +68,7 @@ import { UserPlus, Presentation } from 'lucide-react';
  * Sortable Card Component
  * Wraps KanbanCard for drag-and-drop functionality
  */
-const SortableCard = ({ card, onEdit, onDelete, onClick, viewMode }) => {
+const SortableCard = ({ card, onEdit, onDelete, onArchive, onClick, viewMode }) => {
   const {
     attributes,
     listeners,
@@ -143,6 +145,22 @@ const SortableCard = ({ card, onEdit, onDelete, onClick, viewMode }) => {
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
+              if (onArchive) {
+                onArchive(card.id);
+              } else {
+                console.error('onArchive is not defined');
+              }
+            }}
+            className="p-1 text-text-secondary hover:text-amber-600 z-10"
+            type="button"
+            title="Arquivar"
+          >
+            <Archive size={14} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
               onDelete(card.id);
             }}
             className="p-1 text-text-secondary hover:text-red-600 z-10"
@@ -163,6 +181,7 @@ const SortableCard = ({ card, onEdit, onDelete, onClick, viewMode }) => {
         isDragging={isDragging}
         onClick={() => onClick && onClick(card)}
         onMenuClick={onEdit}
+        onArchive={onArchive}
         dragHandleProps={{ ...attributes, ...listeners }}
       />
     </div>
@@ -179,6 +198,7 @@ const SortableColumn = ({
   onAddCard,
   onEditCard,
   onDeleteCard,
+  onArchiveCard,
   onCardClick,
   onEditColumn,
   onDeleteColumn,
@@ -252,6 +272,7 @@ const SortableColumn = ({
                 card={card}
                 onEdit={onEditCard}
                 onDelete={onDeleteCard}
+                onArchive={onArchiveCard}
                 onClick={onCardClick}
                 viewMode={viewMode}
               />
@@ -714,6 +735,18 @@ const KanbanBoardView = () => {
     }
   };
 
+  // Archive card
+  const handleArchiveCard = async (cardId) => {
+    try {
+      setError(null);
+      await archiveService.archiveCard(cardId);
+      setCards((prev) => prev.filter((c) => c.id !== cardId));
+      // Optionally show toast notification here
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao arquivar card');
+    }
+  };
+
   // Column operations
   const handleAddColumn = () => {
     setEditingColumn(null);
@@ -996,6 +1029,7 @@ const KanbanBoardView = () => {
                       onAddCard={handleAddCard}
                       onEditCard={handleEditCard}
                       onDeleteCard={handleDeleteCard}
+                      onArchiveCard={handleArchiveCard}
                       onCardClick={handleCardClick}
                       onEditColumn={handleEditColumn}
                       onDeleteColumn={handleDeleteColumn}
@@ -1050,6 +1084,7 @@ const KanbanBoardView = () => {
                             card={card}
                             onEdit={handleEditCard}
                             onDelete={handleDeleteCard}
+                            onArchive={handleArchiveCard}
                             onClick={handleCardClick}
                             viewMode={viewMode}
                           />
@@ -1094,6 +1129,7 @@ const KanbanBoardView = () => {
           setSelectedColumnId(null);
         }}
         onSave={handleSaveCard}
+        onArchive={handleArchiveCard}
         card={editingCard}
         columns={columns}
         selectedColumnId={selectedColumnId}
@@ -1242,6 +1278,7 @@ const ColumnModal = ({ isOpen, onClose, onSave, column }) => {
             ))}
           </div>
         </div>
+
 
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button type="button" variant="secondary" onClick={onClose}>

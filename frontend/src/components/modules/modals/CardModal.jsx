@@ -28,6 +28,7 @@ const CardModal = ({
     isOpen,
     onClose,
     onSave,
+    onArchive,
     card,
     projectId,
     boardId,
@@ -729,7 +730,7 @@ const CardModal = ({
                                             <label className="text-xs text-gray-500">Prioridade</label>
                                             <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">
                                                 {(enabledFields?.priority?.options || [{ value: 'baixa', label: 'Baixa' }, { value: 'media', label: 'Média' }, { value: 'alta', label: 'Alta' }])
-                                                    .map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                                    .map((o, idx) => <option key={o.value || o || idx} value={o.value || o}>{o.label || o}</option>)}
                                             </select>
                                         </div>
 
@@ -738,7 +739,7 @@ const CardModal = ({
                                                 <label className="text-xs text-gray-500">Tipo</label>
                                                 <select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm">
                                                     {(enabledFields?.type?.options || [{ value: 'tarefa', label: 'Tarefa' }, { value: 'bug', label: 'Bug' }, { value: 'feature', label: 'Feature' }])
-                                                        .map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                                        .map((o, idx) => <option key={o.value || o || idx} value={o.value || o}>{o.label || o}</option>)}
                                                 </select>
                                             </div>
                                         )}
@@ -756,8 +757,60 @@ const CardModal = ({
                                     />
                                 </div>
 
+                                {/* Configurable Fields Section */}
+                                {(isEnabled('startDate') || isEnabled('estimatedHours') || isEnabled('externalUrl')) && (
+                                    <div className="space-y-4 pt-4 border-t border-gray-100">
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Detalhes</h4>
+
+                                        {isEnabled('startDate') && (
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-gray-500 flex items-center gap-1"><Calendar size={12} /> Data de Início</label>
+                                                <input
+                                                    type="date"
+                                                    value={startDate}
+                                                    onChange={(e) => setStartDate(e.target.value)}
+                                                    className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {isEnabled('estimatedHours') && (
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-gray-500 flex items-center gap-1"><Clock size={12} /> Horas Estimadas</label>
+                                                <input
+                                                    type="number"
+                                                    value={estimatedHours}
+                                                    onChange={(e) => setEstimatedHours(e.target.value)}
+                                                    placeholder="0"
+                                                    min="0"
+                                                    step="0.5"
+                                                    className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {isEnabled('externalUrl') && (
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-gray-500 flex items-center gap-1"><LinkIcon size={12} /> Link Externo</label>
+                                                <input
+                                                    type="url"
+                                                    value={externalUrl}
+                                                    onChange={(e) => setExternalUrl(e.target.value)}
+                                                    placeholder="https://..."
+                                                    className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="pt-8 mt-auto">
                                     <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Ações</label>
+                                    {onArchive && (
+                                        <button type="button" onClick={() => { onArchive(card.id); onClose(); }} className="w-full flex items-center gap-2 p-2 text-sm text-amber-600 hover:bg-amber-50 rounded transition-colors text-left border border-transparent hover:border-amber-100">
+                                            <Archive size={14} /> Arquivar Card
+                                        </button>
+                                    )}
                                     <button type="button" onClick={handleDelete} className="w-full flex items-center gap-2 p-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors text-left mt-1 border border-transparent hover:border-red-100">
                                         <Trash size={14} /> Excluir Card
                                     </button>

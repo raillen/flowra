@@ -28,6 +28,8 @@ export const createColumnSchema = z.object({
       .optional()
       .default('bg-slate-100'),
     order: z.number().int().min(0).optional(),
+    autoArchive: z.boolean().optional().default(false),
+    archiveAfterMinutes: z.number().int().min(0).nullable().optional(),
   }),
 });
 
@@ -49,6 +51,8 @@ export const updateColumnSchema = z.object({
       .optional(),
     color: z.string().max(50).optional(),
     order: z.number().int().min(0).optional(),
+    autoArchive: z.boolean().optional(),
+    archiveAfterMinutes: z.number().int().min(0).nullable().optional(),
   }),
 });
 
