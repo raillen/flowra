@@ -28,16 +28,18 @@ export async function authRoutes(fastify) {
             password: { type: 'string', minLength: 6 },
           },
         },
-        response: {
-          201: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              message: { type: 'string' },
-              data: { type: 'object' },
-            },
-          },
-        },
+        /*
+                response: {
+                  201: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean' },
+                      message: { type: 'string' },
+                      data: { type: 'object', additionalProperties: true },
+                    },
+                  },
+                },
+                */
       },
     },
     authController.register

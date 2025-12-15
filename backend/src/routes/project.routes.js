@@ -38,16 +38,18 @@ export async function projectRoutes(fastify) {
             groupId: { type: 'string', format: 'uuid' },
           },
         },
-        response: {
-          201: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              message: { type: 'string' },
-              data: { type: 'object' },
-            },
-          },
-        },
+        /*
+                response: {
+                  201: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean' },
+                      message: { type: 'string' },
+                      data: { type: 'object', additionalProperties: true },
+                    },
+                  },
+                },
+        */
       },
     },
     projectController.createProject

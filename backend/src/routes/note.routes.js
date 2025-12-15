@@ -30,15 +30,17 @@ export async function noteRoutes(fastify) {
                     offset: { type: 'integer', default: 0 },
                 },
             },
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        data: { type: 'array' },
-                    },
-                },
-            },
+            /*
+                        response: {
+                            200: {
+                                type: 'object',
+                                properties: {
+                                    success: { type: 'boolean' },
+                                    data: { type: 'array' },
+                                },
+                            },
+                        },
+            */
         },
         handler: noteController.getNotes,
     });

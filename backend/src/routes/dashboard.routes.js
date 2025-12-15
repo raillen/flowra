@@ -7,24 +7,27 @@ export async function dashboardRoutes(fastify, options) {
             description: 'Get global dashboard statistics',
             tags: ['dashboard'],
             security: [{ bearerAuth: [] }],
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                stats: { type: 'object' },
-                                tasks: { type: 'object' },
-                                metrics: { type: 'object' },
-                                recentActivity: { type: 'array' },
-                                upcomingEvents: { type: 'array' }
+            /*
+                        response: {
+                            200: {
+                                type: 'object',
+                                properties: {
+                                    success: { type: 'boolean' },
+                                    data: {
+                                        type: 'object',
+                                        properties: {
+                                            stats: { type: 'object' },
+                                            tasks: { type: 'object' },
+                                            metrics: { type: 'object' },
+                                            recentActivity: { type: 'array' },
+                                            upcomingEvents: { type: 'array' }
+                                        }
+                                    }
+                                }
+                            }
                             }
                         }
-                    }
-                }
-            }
+            */
         },
         preHandler: [authenticate]
     }, dashboardController.getGlobalStats);

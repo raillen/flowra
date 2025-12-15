@@ -14,23 +14,26 @@ export async function auditLogRoutes(fastify, options) {
                     userId: { type: 'string' }
                 }
             },
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        data: { type: 'array', items: { type: 'object', additionalProperties: true } },
-                        pagination: {
-                            type: 'object',
-                            properties: {
-                                total: { type: 'number' },
-                                page: { type: 'number' },
-                                limit: { type: 'number' },
-                                pages: { type: 'number' }
+            /*
+                        response: {
+                            200: {
+                                type: 'object',
+                                properties: {
+                                    data: { type: 'array', items: { type: 'object', additionalProperties: true } },
+                                    pagination: {
+                                        type: 'object',
+                                        properties: {
+                                            total: { type: 'number' },
+                                            page: { type: 'number' },
+                                            limit: { type: 'number' },
+                                            pages: { type: 'number' }
+                                        }
+                                    }
+                                }
+                            }
                             }
                         }
-                    }
-                }
-            }
+            */
         },
         preHandler: [authenticate] // Protect this route
     }, auditLogsController.getLogs);
