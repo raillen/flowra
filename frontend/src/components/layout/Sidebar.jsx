@@ -135,17 +135,15 @@ const Sidebar = ({ isOpen, onToggle }) => {
       `}>
 
         {/* Logo Area */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 bg-gray-50/50">
           <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm text-white`} style={{ backgroundColor: accentColor || '#4F46E5' }}>
-              <Code2 size={18} />
-            </div>
+            <img src="/flowra-logo.png" alt="Flowra" className="w-8 h-8 rounded-lg" />
             <div>
-              <span className="font-bold text-gray-900 dark:text-white leading-tight">KBSys</span>
+              <span className="font-bold text-gray-900 leading-tight">Flowra</span>
             </div>
           </div>
           <button
-            className="lg:hidden p-2 hover:bg-gray-200/50 dark:hover:bg-slate-700/50 rounded-lg text-gray-500 dark:text-slate-400 transition-colors"
+            className="lg:hidden p-2 hover:bg-gray-200/50 rounded-lg text-gray-500 transition-colors"
             onClick={onToggle}
           >
             <X size={20} />

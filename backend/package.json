@@ -1,7 +1,7 @@
 {
-  "name": "kbsys-backend",
+  "name": "flowra-backend",
   "version": "1.0.0",
-  "description": "KBSys Backend API - Project Management System",
+  "description": "Flowra Backend API - Project Management System",
   "main": "src/app.js",
   "type": "module",
   "scripts": {

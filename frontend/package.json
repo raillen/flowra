@@ -1,7 +1,7 @@
 {
-  "name": "kbsys-frontend",
+  "name": "flowra-frontend",
   "version": "1.0.0",
-  "description": "KBSys Frontend - Project Management System",
+  "description": "Flowra - Project Management System",
   "type": "module",
   "scripts": {
     "dev": "vite",
