@@ -94,7 +94,7 @@ export async function moveCard(request, reply) {
   const { projectId, boardId, cardId } = request.params;
   const { columnId, order } = request.body;
 
-  console.log('>>> card.controller.moveCard called:', { boardId, cardId, columnId, order });
+
 
   const card = await cardService.moveCard(boardId, cardId, columnId, order);
 
@@ -183,3 +183,14 @@ export async function getSubtasks(request, reply) {
   return reply.send(successResponse(subtasks));
 }
 
+
+/**
+ * Search cards globally (user access scope)
+ */
+export async function searchCards(request, reply) {
+  const { search } = request.query;
+  const userId = request.user.id;
+
+  const cards = await cardService.searchCards(userId, search);
+  return reply.send(successResponse(cards));
+}

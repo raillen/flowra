@@ -75,8 +75,8 @@ export default function PreviewModal({
                             <button
                                 onClick={() => setViewMode('desktop')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'desktop'
-                                        ? 'bg-indigo-100 text-indigo-700'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                    ? 'bg-indigo-100 text-indigo-700'
+                                    : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 <Monitor size={16} />
@@ -85,8 +85,8 @@ export default function PreviewModal({
                             <button
                                 onClick={() => setViewMode('mobile')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'mobile'
-                                        ? 'bg-indigo-100 text-indigo-700'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                    ? 'bg-indigo-100 text-indigo-700'
+                                    : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 <Smartphone size={16} />
@@ -107,8 +107,8 @@ export default function PreviewModal({
                 <div className="flex-1 overflow-auto bg-gradient-to-b from-gray-100 to-gray-200 p-8">
                     <div
                         className={`mx-auto transition-all duration-300 ${viewMode === 'mobile'
-                                ? 'max-w-sm'
-                                : 'max-w-2xl'
+                            ? 'max-w-sm'
+                            : 'max-w-2xl'
                             }`}
                     >
                         {/* Device Frame for Mobile */}
@@ -122,8 +122,8 @@ export default function PreviewModal({
                         {/* Form Container */}
                         <div
                             className={`bg-white shadow-xl overflow-hidden ${viewMode === 'mobile'
-                                    ? 'rounded-[2.5rem] border-8 border-gray-800 pt-8'
-                                    : 'rounded-xl border border-gray-200'
+                                ? 'rounded-[2.5rem] border-8 border-gray-800 pt-8'
+                                : 'rounded-xl border border-gray-200'
                                 }`}
                         >
                             {/* Form Header */}
@@ -145,7 +145,7 @@ export default function PreviewModal({
                                         template={{ fields: JSON.stringify(fields) }}
                                         readOnly={false}
                                         onSubmit={(data) => {
-                                            console.log('Preview submit:', data);
+                                            // console.log('Preview submit:', data);
                                             alert('Preview: Dados seriam enviados:\n' + JSON.stringify(data, null, 2));
                                         }}
                                     />

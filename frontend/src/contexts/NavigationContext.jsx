@@ -103,7 +103,7 @@ export const NavigationProvider = ({ children }) => {
    * Navigates to a specific card
    */
   const navigateToCard = (projectId, boardId, cardId) => {
-    console.log('Navigating to card:', cardId, 'in board:', boardId);
+
     setActiveProjectId(projectId);
     setActiveModule('kanban');
     setActiveBoardId(boardId);

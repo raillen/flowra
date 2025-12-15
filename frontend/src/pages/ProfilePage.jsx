@@ -35,7 +35,7 @@ const ProfilePage = () => {
     const [tempImage, setTempImage] = useState(null);
 
     useEffect(() => {
-        console.log('ProfilePage: Component Mounted (Corrected URL)');
+        // console.log('ProfilePage: Component Mounted (Corrected URL)');
         fetchProfileData();
     }, []);
 

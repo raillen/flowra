@@ -14,7 +14,7 @@ import {
     Copy, Printer, Share2, CheckCircle, AlertCircle, Clock3
 } from 'lucide-react';
 import { listSubmissions, listProjects, listBoards, listColumns } from '../../../services/briefingService';
-import { Modal, Button } from '../../ui';
+import { Modal, Button, BaseInput, BaseSelect } from '../../ui';
 import api from '../../../config/api';
 import { useNavigation } from '../../../contexts/NavigationContext';
 import { useToast } from '../../../contexts/ToastContext';
@@ -386,22 +386,22 @@ export default function BriefingSubmissionsTab() {
     return (
         <>
             {/* Toolbar */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 space-y-4">
+            <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 space-y-4 shadow-sm">
                 <div className="flex items-center gap-4">
-                    {/* Search */}
+                    {/* Search - Using BaseInput structure manually for icon placement or using BaseInput with leftIcon */}
                     <div className="relative flex-1 max-w-md">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
+                        <BaseInput
+                            leftIcon={Search}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Buscar por título, template ou board..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            rightIcon={searchQuery ? X : null}
+                        // Using a little hack to make the right icon clickable for clearing
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 p-1"
                             >
                                 <X size={16} />
                             </button>
@@ -411,7 +411,7 @@ export default function BriefingSubmissionsTab() {
                     {/* Filter toggle */}
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilters ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg transition-colors text-sm font-medium ${showFilters ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                     >
                         <Filter size={16} />
@@ -425,7 +425,7 @@ export default function BriefingSubmissionsTab() {
                     <button
                         onClick={() => loadSubmissions(true)}
                         disabled={refreshing}
-                        className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                        className="p-2.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                         title="Atualizar"
                     >
                         <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
@@ -433,21 +433,21 @@ export default function BriefingSubmissionsTab() {
 
                     {/* Export */}
                     <div className="relative group">
-                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
+                        <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-sm font-medium transition-colors">
                             <Download size={16} />
                             Exportar
                             <ChevronDown size={14} />
                         </button>
-                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 w-40">
                             <button
                                 onClick={() => handleExport('json')}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 first:rounded-t-lg"
                             >
                                 Exportar JSON
                             </button>
                             <button
                                 onClick={() => handleExport('csv')}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 last:rounded-b-lg"
                             >
                                 Exportar CSV
                             </button>
@@ -457,37 +457,35 @@ export default function BriefingSubmissionsTab() {
 
                 {/* Expanded filters */}
                 {showFilters && (
-                    <div className="flex items-center gap-4 pt-4 border-t border-gray-100 animate-in slide-in-from-top-2">
+                    <div className="flex items-end gap-4 pt-4 border-t border-gray-100 animate-in slide-in-from-top-2">
                         <div className="flex-1">
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Template</label>
-                            <select
+                            <BaseSelect
+                                label="Template"
                                 value={filterTemplate}
                                 onChange={(e) => setFilterTemplate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">Todos os templates</option>
                                 {uniqueTemplates.map(t => (
                                     <option key={t.id} value={t.id}>{t.name}</option>
                                 ))}
-                            </select>
+                            </BaseSelect>
                         </div>
                         <div className="flex-1">
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                            <select
+                            <BaseSelect
+                                label="Status"
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">Todos os status</option>
                                 {Object.entries(STATUS_CONFIG).map(([key, val]) => (
                                     <option key={key} value={key}>{val.label}</option>
                                 ))}
-                            </select>
+                            </BaseSelect>
                         </div>
-                        <div className="pt-5">
+                        <div className="pb-0.5">
                             <button
                                 onClick={() => { setFilterTemplate(''); setFilterStatus(''); }}
-                                className="text-sm text-gray-500 hover:text-gray-700"
+                                className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                             >
                                 Limpar filtros
                             </button>
@@ -498,12 +496,12 @@ export default function BriefingSubmissionsTab() {
 
             {/* Bulk actions bar */}
             {selectedIds.length > 0 && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-4 flex items-center justify-between animate-in slide-in-from-top-2">
-                    <span className="text-sm text-indigo-700 font-medium">
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-4 flex items-center justify-between animate-in slide-in-from-top-2 shadow-sm">
+                    <span className="text-sm text-indigo-700 font-medium pl-2">
                         {selectedIds.length} item(s) selecionado(s)
                     </span>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
+                        <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="bg-white hover:bg-gray-50 border-indigo-200 text-indigo-700">
                             <Download size={14} className="mr-1" /> Exportar
                         </Button>
                         <Button variant="danger" size="sm" onClick={handleBulkDelete}>
@@ -511,7 +509,7 @@ export default function BriefingSubmissionsTab() {
                         </Button>
                         <button
                             onClick={() => setSelectedIds([])}
-                            className="p-1 text-indigo-600 hover:text-indigo-800"
+                            className="p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-md transition-colors ml-2"
                         >
                             <X size={18} />
                         </button>
@@ -520,19 +518,19 @@ export default function BriefingSubmissionsTab() {
             )}
 
             {/* Results count */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 px-1">
                 <p className="text-sm text-gray-500">
-                    {filteredSubmissions.length} de {submissions.length} resposta(s)
+                    Mostrando <strong>{filteredSubmissions.length}</strong> de {submissions.length} resposta(s)
                 </p>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                 <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+                    <thead className="bg-gray-50/80 border-b border-gray-200">
                         <tr>
-                            <th className="w-12 px-4 py-3">
-                                <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded">
+                            <th className="w-12 px-4 py-3 text-center">
+                                <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded transition-colors">
                                     {selectedIds.length === filteredSubmissions.length && filteredSubmissions.length > 0 ? (
                                         <CheckSquare size={18} className="text-indigo-600" />
                                     ) : (
@@ -540,39 +538,39 @@ export default function BriefingSubmissionsTab() {
                                     )}
                                 </button>
                             </th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo / Título</th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Destino</th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                            <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Modelo / Título</th>
+                            <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Destino</th>
+                            <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Data</th>
+                            <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {filteredSubmissions.map((sub) => (
                             <tr
                                 key={sub.id}
-                                className={`hover:bg-gray-50 transition-colors ${selectedIds.includes(sub.id) ? 'bg-indigo-50/50' : ''}`}
+                                className={`hover:bg-gray-50/80 transition-colors group ${selectedIds.includes(sub.id) ? 'bg-indigo-50/30' : ''}`}
                             >
-                                <td className="px-4 py-4">
+                                <td className="px-4 py-4 text-center">
                                     <button
                                         onClick={() => toggleSelect(sub.id)}
-                                        className="p-1 hover:bg-gray-200 rounded"
+                                        className="p-1 hover:bg-gray-200 rounded transition-colors"
                                     >
                                         {selectedIds.includes(sub.id) ? (
                                             <CheckSquare size={18} className="text-indigo-600" />
                                         ) : (
-                                            <Square size={18} className="text-gray-400" />
+                                            <Square size={18} className="text-gray-400 opacity-50 group-hover:opacity-100" />
                                         )}
                                     </button>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                                            <FileText size={16} />
+                                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+                                            <FileText size={18} />
                                         </div>
-                                        <div>
-                                            <div className="font-medium text-gray-800">{sub.title}</div>
-                                            <div className="text-xs text-gray-500">
+                                        <div className="min-w-0">
+                                            <div className="font-medium text-gray-900 truncate max-w-[200px]">{sub.title}</div>
+                                            <div className="text-xs text-gray-500 truncate max-w-[200px]">
                                                 {sub.briefingTemplate?.name || 'Modelo removido'}
                                             </div>
                                         </div>
@@ -580,7 +578,7 @@ export default function BriefingSubmissionsTab() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="text-sm">
-                                        <div className="text-gray-700">{sub.board?.name || '—'}</div>
+                                        <div className="text-gray-700 font-medium">{sub.board?.name || '—'}</div>
                                         <div className="text-xs text-gray-400">{sub.column?.title || ''}</div>
                                     </div>
                                 </td>
@@ -588,47 +586,49 @@ export default function BriefingSubmissionsTab() {
                                     {renderStatusBadge(sub)}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="text-sm text-gray-500" title={formatDate(sub.createdAt)}>
-                                        {formatRelativeDate(sub.createdAt)}
+                                    <div className="text-sm text-gray-500 flex flex-col">
+                                        <span>{formatDate(sub.createdAt).split(' ')[0]}</span>
+                                        <span className="text-xs text-gray-400">{formatDate(sub.createdAt).split(' ')[1]}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center justify-end gap-1">
+                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => handleViewDetails(sub)}
-                                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                             title="Ver Detalhes"
                                         >
-                                            <Eye size={16} />
+                                            <Eye size={18} />
                                         </button>
                                         <button
                                             onClick={() => handleNavigateToCard(sub)}
-                                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                             title="Ir para Card"
                                         >
-                                            <ExternalLink size={16} />
+                                            <ExternalLink size={18} />
                                         </button>
                                         <button
                                             onClick={() => handleCopyToClipboard(sub)}
-                                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                             title="Copiar Dados"
                                         >
-                                            <Copy size={16} />
+                                            <Copy size={18} />
                                         </button>
                                         <button
                                             onClick={() => handleOpenRedirectModal(sub)}
-                                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Redirecionar"
                                         >
-                                            <ArrowRight size={16} />
+                                            <ArrowRight size={18} />
                                         </button>
+                                        <div className="w-px h-4 bg-gray-200 mx-1"></div>
                                         <button
                                             onClick={() => handleDelete(sub)}
                                             disabled={deleting === sub.id}
-                                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                                             title="Excluir"
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 size={18} />
                                         </button>
                                     </div>
                                 </td>
@@ -639,9 +639,16 @@ export default function BriefingSubmissionsTab() {
 
                 {/* No results */}
                 {filteredSubmissions.length === 0 && (
-                    <div className="text-center py-12 text-gray-400">
-                        <Search size={32} className="mx-auto mb-2 opacity-50" />
-                        <p>Nenhum resultado encontrado</p>
+                    <div className="text-center py-16 text-gray-400 bg-gray-50/30">
+                        <Search size={48} className="mx-auto mb-4 opacity-20" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum resultado encontrado</h3>
+                        <p className="text-sm">Tente ajustar seus filtros ou buscar por outro termo.</p>
+                        <button
+                            onClick={() => { setSearchQuery(''); setFilterTemplate(''); setFilterStatus(''); }}
+                            className="mt-4 text-indigo-600 hover:underline text-sm font-medium"
+                        >
+                            Limpar busca e filtros
+                        </button>
                     </div>
                 )}
             </div>
@@ -657,65 +664,73 @@ export default function BriefingSubmissionsTab() {
                 {selectedSubmission && (
                     <div className="h-[80vh] flex flex-col">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
+                        <div className="bg-white border-b border-gray-100 p-6">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-white/20 rounded-xl">
+                                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
                                         <FileText size={24} />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold">{selectedSubmission.title}</h2>
-                                        <p className="text-white/80 text-sm">
+                                        <h2 className="text-xl font-bold text-gray-900">{selectedSubmission.title}</h2>
+                                        <p className="text-gray-500 text-sm">
                                             Template: {selectedSubmission.briefingTemplate?.name || 'N/A'}
                                         </p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setShowDetailsModal(false)}
-                                    className="p-2 hover:bg-white/20 rounded-lg text-white/80 hover:text-white"
+                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
                             </div>
 
-                            <div className="flex items-center gap-6 mt-4 text-sm text-white/80">
-                                <span className="flex items-center gap-1">
-                                    <Calendar size={14} />
+                            <div className="flex items-center gap-6 mt-6 text-sm text-gray-600">
+                                <span className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-lg border border-gray-100">
+                                    <Calendar size={14} className="text-gray-400" />
                                     {formatDate(selectedSubmission.createdAt)}
                                 </span>
-                                <span className="flex items-center gap-1">
-                                    <Layout size={14} />
-                                    {selectedSubmission.board?.name} → {selectedSubmission.column?.title}
+                                <span className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-lg border border-gray-100">
+                                    <Layout size={14} className="text-gray-400" />
+                                    {selectedSubmission.board?.name} <span className="text-gray-300">/</span> {selectedSubmission.column?.title}
                                 </span>
                                 {renderStatusBadge(selectedSubmission)}
                             </div>
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                                <FileText size={16} />
-                                Respostas do Formulário
-                            </h4>
-                            <div className="bg-white border border-gray-200 rounded-xl p-6">
-                                {selectedSubmission.briefingTemplate ? (
-                                    <BriefingRenderer
-                                        template={selectedSubmission.briefingTemplate}
-                                        initialData={parseBriefingData(selectedSubmission.briefingData)}
-                                        readOnly={true}
-                                    />
-                                ) : (
-                                    <div className="space-y-4">
-                                        {Object.entries(parseBriefingData(selectedSubmission.briefingData)).map(([key, value]) => (
-                                            <div key={key} className="border-b border-gray-100 pb-4 last:border-0">
-                                                <span className="text-xs font-medium text-gray-500 uppercase">{key}</span>
-                                                <p className="text-gray-800 mt-1">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </p>
-                                            </div>
-                                        ))}
+                        <div className="flex-1 overflow-y-auto p-8 bg-gray-50/50">
+                            <div className="max-w-3xl mx-auto space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                                        <FileText size={18} className="text-indigo-600" />
+                                        Respostas do Briefing
+                                    </h4>
+                                    <div className="text-xs text-gray-400 uppercase font-medium tracking-wider">
+                                        Somente Leitura
                                     </div>
-                                )}
+                                </div>
+
+                                <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+                                    {selectedSubmission.briefingTemplate ? (
+                                        <BriefingRenderer
+                                            template={selectedSubmission.briefingTemplate}
+                                            initialData={parseBriefingData(selectedSubmission.briefingData)}
+                                            readOnly={true}
+                                        />
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {Object.entries(parseBriefingData(selectedSubmission.briefingData)).map(([key, value]) => (
+                                                <div key={key} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">{key}</span>
+                                                    <div className="text-gray-900 text-base leading-relaxed p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                        {typeof value === 'object' ? <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(value, null, 2)}</pre> : String(value)}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -726,6 +741,7 @@ export default function BriefingSubmissionsTab() {
                                     variant="danger"
                                     size="sm"
                                     onClick={() => { handleDelete(selectedSubmission); setShowDetailsModal(false); }}
+                                    className="text-red-600 bg-red-50 hover:bg-red-100 border-red-100"
                                 >
                                     <Trash2 size={14} className="mr-1" /> Excluir
                                 </Button>
@@ -736,20 +752,21 @@ export default function BriefingSubmissionsTab() {
                                     size="sm"
                                     onClick={() => handleCopyToClipboard(selectedSubmission)}
                                 >
-                                    <Copy size={14} className="mr-1" /> Copiar
+                                    <Copy size={14} className="mr-1" /> Copiar Dados
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => { handleOpenRedirectModal(selectedSubmission); setShowDetailsModal(false); }}
                                 >
-                                    <ArrowRight size={14} className="mr-1" /> Redirecionar
+                                    <ArrowRight size={14} className="mr-1" /> Mover
                                 </Button>
                                 <Button
                                     size="sm"
                                     onClick={() => handleNavigateToCard(selectedSubmission)}
+                                    className="shadow-md shadow-indigo-100"
                                 >
-                                    <ExternalLink size={14} className="mr-1" /> Ir para Card
+                                    <ExternalLink size={14} className="mr-1" /> Ver no Kanban
                                 </Button>
                             </div>
                         </div>
@@ -761,82 +778,78 @@ export default function BriefingSubmissionsTab() {
             <Modal
                 isOpen={showRedirectModal}
                 onClose={() => { setShowRedirectModal(false); setSelectedSubmission(null); }}
-                title="Redirecionar Briefing"
+                title="Mover Briefing"
                 maxWidth="max-w-lg"
             >
-                <div className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                        Mova este card de briefing para outro projeto, board ou coluna.
+                <div className="space-y-5 py-2">
+                    <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100 flex gap-2">
+                        <InfoIcon className="text-blue-500 shrink-0 mt-0.5" size={16} />
+                        Mova este card para outro quadro e coluna. O histórico de atividades será preservado.
                     </p>
 
                     {/* Project */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            <Folder size={14} className="inline mr-1" /> Projeto
-                        </label>
-                        <select
+                        <BaseSelect
+                            label="Projeto"
+                            leftIcon={Folder}
                             value={redirectData.projectId}
                             onChange={(e) => {
                                 setRedirectData({ projectId: e.target.value, boardId: '', columnId: '' });
                                 setColumns([]);
                                 if (e.target.value) loadBoards(e.target.value);
                             }}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
                         >
                             <option value="">Selecione um projeto</option>
                             {Array.isArray(projects) && projects.map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
-                        </select>
+                        </BaseSelect>
                     </div>
 
                     {/* Board */}
                     {redirectData.projectId && (
                         <div className="animate-in slide-in-from-top-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                <Layout size={14} className="inline mr-1" /> Board
-                            </label>
-                            <select
+                            <BaseSelect
+                                label="Quadro (Board)"
+                                leftIcon={Layout}
                                 value={redirectData.boardId}
                                 onChange={(e) => {
                                     setRedirectData(prev => ({ ...prev, boardId: e.target.value, columnId: '' }));
                                     if (e.target.value) loadColumns(e.target.value);
                                 }}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">Selecione um board</option>
                                 {Array.isArray(boards) && boards.map(b => (
                                     <option key={b.id} value={b.id}>{b.name}</option>
                                 ))}
-                            </select>
+                            </BaseSelect>
                         </div>
                     )}
 
                     {/* Column */}
                     {redirectData.boardId && (
                         <div className="animate-in slide-in-from-top-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                <CreditCard size={14} className="inline mr-1" /> Coluna
-                            </label>
-                            <select
+                            <BaseSelect
+                                label="Coluna (Status)"
+                                leftIcon={CheckSquare}
                                 value={redirectData.columnId}
                                 onChange={(e) => setRedirectData(prev => ({ ...prev, columnId: e.target.value }))}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">Selecione uma coluna</option>
                                 {Array.isArray(columns) && columns.map(c => (
                                     <option key={c.id} value={c.id}>{c.title}</option>
                                 ))}
-                            </select>
+                            </BaseSelect>
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-4">
-                        <Button variant="outline" onClick={() => setShowRedirectModal(false)}>
-                            Cancelar
-                        </Button>
-                        <Button onClick={handleRedirect} disabled={!redirectData.columnId}>
-                            <ArrowRight size={16} className="mr-2" /> Redirecionar
+                    <div className="flex justify-end pt-4 gap-2">
+                        <Button variant="outline" onClick={() => setShowRedirectModal(false)}>Cancelar</Button>
+                        <Button
+                            onClick={handleRedirect}
+                            disabled={!redirectData.columnId}
+                        >
+                            Confirmar Movimentação
                         </Button>
                     </div>
                 </div>
@@ -844,3 +857,22 @@ export default function BriefingSubmissionsTab() {
         </>
     );
 }
+
+// Missing InfoIcon helper
+const InfoIcon = ({ size, className }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+);

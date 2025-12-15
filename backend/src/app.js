@@ -40,6 +40,7 @@ import archiveRoutes from './routes/archive.routes.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
 import { importRoutes } from './routes/import.routes.js';
 import { auditLogRoutes } from './routes/auditLog.routes.js';
+import { automationRoutes } from './routes/automation.routes.js';
 import { initializeSocket } from './config/socket.js';
 
 /**
@@ -62,7 +63,15 @@ async function createApp() {
 
   // Security plugins
   await app.register(helmet, {
-    contentSecurityPolicy: false, // Adjust for Swagger UI
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "validator.swagger.io"],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // Needed for Swagger UI inline scripts?
+      }
+    },
+    // contentSecurityPolicy: false, // Replaced with strict policy above
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     crossOriginEmbedderPolicy: false,
   });
@@ -215,6 +224,7 @@ async function createApp() {
   await app.register(analyticsRoutes, { prefix: '/api/analytics' });
   await app.register(importRoutes, { prefix: '/api/import' });
   await app.register(auditLogRoutes, { prefix: '/api/audit-logs' });
+  await app.register(automationRoutes, { prefix: '/api' });
   // Dashboard route already registered at line 179
   // Removing duplicate at line 189
 

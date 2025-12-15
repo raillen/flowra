@@ -226,5 +226,23 @@ export async function boardRoutes(fastify) {
     },
     boardFieldConfigController.getEnabledFields
   );
+  // Global Board Search
+  fastify.get(
+    '/boards',
+    {
+      schema: {
+        description: 'Search boards globally',
+        tags: ['boards'],
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            search: { type: 'string' }
+          }
+        }
+      }
+    },
+    boardController.searchBoards
+  );
 }
 

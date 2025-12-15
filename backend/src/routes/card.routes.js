@@ -272,5 +272,24 @@ export async function cardRoutes(fastify) {
       return reply.status(204).send();
     }
   );
-}
 
+
+  // Global Card Search
+  fastify.get(
+    '/cards',
+    {
+      schema: {
+        description: 'Search cards globally',
+        tags: ['cards'],
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            search: { type: 'string' }
+          }
+        }
+      }
+    },
+    cardController.searchCards
+  );
+}

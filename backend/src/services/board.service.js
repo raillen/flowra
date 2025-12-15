@@ -181,7 +181,28 @@ export async function addMember(projectId, boardId, userId, targetUserId) {
 /**
  * Remove member from board
  */
-export async function removeMember(projectId, boardId, userId, targetUserId) {
-  await verifyBoardAccess(projectId, boardId, userId, true);
-  return boardRepository.removeMember(boardId, targetUserId);
+
+/**
+ * Searches boards by name
+ * @param {string} userId
+ * @param {string} query
+ * @returns {Promise<Array>}
+ */
+export async function searchBoards(userId, query) {
+  if (!query) return [];
+
+  const boards = await prisma.board.findMany({
+    where: {
+      name: { contains: query }, // Prisma default is case-insensitive for some DBs, explicitly mode: 'insensitive' if postgres
+      OR: [
+        { project: { userId } },
+        { members: { some: { userId } } },
+        { isPrivate: false, project: { members: { some: { userId } } } }
+      ]
+    },
+    take: 10,
+    select: { id: true, name: true, projectId: true }
+  });
+
+  return boards;
 }

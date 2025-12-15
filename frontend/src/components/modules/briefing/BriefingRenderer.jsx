@@ -9,10 +9,11 @@
 import React, { useState, useEffect } from 'react';
 import {
     Star, Check, ChevronDown, X, Plus, Calendar, Clock,
-    Upload, Image as ImageIcon, Flag, User, Minus
+    Upload, Image as ImageIcon, Flag, User, Minus, DollarSign
 } from 'lucide-react';
 import Moodboard from './Moodboard';
 import { validateField, FIELD_TYPES } from './FieldTypes';
+import { BaseInput, BaseSelect, Button } from '../../ui';
 
 export default function BriefingRenderer({
     template,
@@ -107,61 +108,66 @@ export default function BriefingRenderer({
         }
     };
 
-    // Common input styles
-    const inputBaseClass = "w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all";
-    const errorClass = "border-red-300 focus:ring-red-500";
-
     // Render individual field based on type
     const renderFieldInput = (field) => {
         const value = formData[field.id];
         const fieldErrors = errors[field.id] || [];
         const hasError = touched[field.id] && fieldErrors.length > 0;
-        const inputClass = `${inputBaseClass} ${hasError ? errorClass : ''}`;
+        const errorMessage = hasError ? fieldErrors[0] : null;
 
         switch (field.type) {
             // TEXT FIELDS
             case 'text':
                 return (
-                    <input
-                        type="text"
+                    <BaseInput
                         value={value || ''}
                         onChange={(e) => handleChange(field.id, e.target.value)}
                         onBlur={() => handleBlur(field.id)}
                         placeholder={field.placeholder || 'Sua resposta'}
                         disabled={readOnly}
-                        className={inputClass}
+                        error={errorMessage}
                     />
                 );
 
             case 'textarea':
                 return (
-                    <textarea
-                        rows={field.rows || 4}
-                        value={value || ''}
-                        onChange={(e) => handleChange(field.id, e.target.value)}
-                        onBlur={() => handleBlur(field.id)}
-                        placeholder={field.placeholder || 'Sua resposta'}
-                        disabled={readOnly}
-                        className={`${inputClass} resize-none`}
-                    />
+                    <div className="relative">
+                        <textarea
+                            rows={field.rows || 4}
+                            value={value || ''}
+                            onChange={(e) => handleChange(field.id, e.target.value)}
+                            onBlur={() => handleBlur(field.id)}
+                            placeholder={field.placeholder || 'Sua resposta'}
+                            disabled={readOnly}
+                            className={`
+                                w-full px-4 py-3 bg-[rgb(var(--input-bg))] border border-[rgb(var(--input-border))] 
+                                text-[rgb(var(--text-primary))] rounded-lg shadow-sm text-sm 
+                                placeholder:text-[rgb(var(--text-secondary))]/60 
+                                focus:outline-none focus:ring-2 focus:ring-[rgb(var(--input-ring))]/20 focus:border-[rgb(var(--input-ring))] 
+                                transition-all duration-200 resize-none
+                                ${hasError ? '!border-[rgb(var(--error))] focus:!ring-[rgb(var(--error))]/20' : ''}
+                            `}
+                        />
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
+                    </div>
                 );
 
             case 'email':
                 return (
-                    <input
+                    <BaseInput
                         type="email"
                         value={value || ''}
                         onChange={(e) => handleChange(field.id, e.target.value)}
                         onBlur={() => handleBlur(field.id)}
                         placeholder={field.placeholder || 'exemplo@email.com'}
                         disabled={readOnly}
-                        className={inputClass}
+                        error={errorMessage}
                     />
                 );
 
             case 'phone':
                 return (
-                    <input
+                    <BaseInput
                         type="tel"
                         value={value || ''}
                         onChange={(e) => {
@@ -180,27 +186,27 @@ export default function BriefingRenderer({
                         onBlur={() => handleBlur(field.id)}
                         placeholder={field.placeholder || '(00) 00000-0000'}
                         disabled={readOnly}
-                        className={inputClass}
+                        error={errorMessage}
                     />
                 );
 
             case 'url':
                 return (
-                    <input
+                    <BaseInput
                         type="url"
                         value={value || ''}
                         onChange={(e) => handleChange(field.id, e.target.value)}
                         onBlur={() => handleBlur(field.id)}
                         placeholder={field.placeholder || 'https://'}
                         disabled={readOnly}
-                        className={inputClass}
+                        error={errorMessage}
                     />
                 );
 
             // NUMBER FIELDS
             case 'number':
                 return (
-                    <input
+                    <BaseInput
                         type="number"
                         value={value ?? ''}
                         onChange={(e) => handleChange(field.id, e.target.value ? parseFloat(e.target.value) : null)}
@@ -210,26 +216,24 @@ export default function BriefingRenderer({
                         step={field.step || 1}
                         placeholder={field.placeholder || '0'}
                         disabled={readOnly}
-                        className={inputClass}
+                        error={errorMessage}
                     />
                 );
 
             case 'currency':
                 return (
-                    <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">R$</span>
-                        <input
-                            type="number"
-                            value={value ?? ''}
-                            onChange={(e) => handleChange(field.id, e.target.value ? parseFloat(e.target.value) : null)}
-                            onBlur={() => handleBlur(field.id)}
-                            min={field.min || 0}
-                            step={0.01}
-                            placeholder="0,00"
-                            disabled={readOnly}
-                            className={`${inputClass} pl-12`}
-                        />
-                    </div>
+                    <BaseInput
+                        type="number"
+                        leftIcon={DollarSign}
+                        value={value ?? ''}
+                        onChange={(e) => handleChange(field.id, e.target.value ? parseFloat(e.target.value) : null)}
+                        onBlur={() => handleBlur(field.id)}
+                        min={field.min || 0}
+                        step={0.01}
+                        placeholder="0,00"
+                        disabled={readOnly}
+                        error={errorMessage}
+                    />
                 );
 
             case 'range':
@@ -256,77 +260,80 @@ export default function BriefingRenderer({
             case 'rating':
                 const maxStars = field.maxStars || 5;
                 return (
-                    <div className="flex gap-2">
-                        {[...Array(maxStars)].map((_, i) => (
-                            <button
-                                key={i}
-                                type="button"
-                                onClick={() => !readOnly && handleChange(field.id, i + 1)}
-                                className={`p-1 transition-transform hover:scale-110 ${readOnly ? 'cursor-default' : 'cursor-pointer'}`}
-                            >
-                                <Star
-                                    size={28}
-                                    className={`transition-colors ${(value || 0) > i
-                                            ? 'fill-yellow-400 text-yellow-400'
+                    <div className="space-y-1">
+                        <div className="flex gap-2">
+                            {[...Array(maxStars)].map((_, i) => (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => !readOnly && handleChange(field.id, i + 1)}
+                                    className={`p-1 transition-transform hover:scale-110 ${readOnly ? 'cursor-default' : 'cursor-pointer'}`}
+                                >
+                                    <Star
+                                        size={28}
+                                        className={`transition-colors ${(value || 0) > i
+                                            ? 'fill-amber-400 text-amber-400'
                                             : 'text-gray-300'
-                                        }`}
-                                />
-                            </button>
-                        ))}
+                                            }`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
                     </div>
                 );
 
             // SELECTION FIELDS
             case 'select':
                 return (
-                    <div className="relative">
-                        <select
-                            value={value || ''}
-                            onChange={(e) => handleChange(field.id, e.target.value)}
-                            onBlur={() => handleBlur(field.id)}
-                            disabled={readOnly}
-                            className={`${inputClass} appearance-none pr-10`}
-                        >
-                            <option value="">{field.placeholder || 'Selecione...'}</option>
-                            {(field.options || []).map((opt, i) => (
-                                <option key={i} value={typeof opt === 'object' ? opt.value : opt}>
-                                    {typeof opt === 'object' ? opt.label : opt}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    </div>
+                    <BaseSelect
+                        value={value || ''}
+                        onChange={(e) => handleChange(field.id, e.target.value)}
+                        onBlur={() => handleBlur(field.id)}
+                        disabled={readOnly}
+                        error={errorMessage}
+                    >
+                        <option value="">{field.placeholder || 'Selecione...'}</option>
+                        {(field.options || []).map((opt, i) => (
+                            <option key={i} value={typeof opt === 'object' ? opt.value : opt}>
+                                {typeof opt === 'object' ? opt.label : opt}
+                            </option>
+                        ))}
+                    </BaseSelect>
                 );
 
             case 'radio':
                 return (
-                    <div className={`space-y-3 ${field.layout === 'horizontal' ? 'flex flex-wrap gap-4' : ''}`}>
-                        {(field.options || []).map((opt, i) => {
-                            const optValue = typeof opt === 'object' ? opt.value : opt;
-                            const optLabel = typeof opt === 'object' ? opt.label : opt;
-                            return (
-                                <label
-                                    key={i}
-                                    className={`flex items-center gap-3 cursor-pointer group ${field.layout === 'horizontal' ? '' : 'p-3 border rounded-lg hover:bg-gray-50'
-                                        } ${value === optValue ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'}`}
-                                >
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${value === optValue ? 'border-indigo-600' : 'border-gray-300'
-                                        }`}>
-                                        {value === optValue && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
-                                    </div>
-                                    <input
-                                        type="radio"
-                                        name={field.id}
-                                        value={optValue}
-                                        checked={value === optValue}
-                                        onChange={() => handleChange(field.id, optValue)}
-                                        className="hidden"
-                                        disabled={readOnly}
-                                    />
-                                    <span className="text-gray-700">{optLabel}</span>
-                                </label>
-                            );
-                        })}
+                    <div className="space-y-1">
+                        <div className={`space-y-3 ${field.layout === 'horizontal' ? 'flex flex-wrap gap-4 space-y-0' : ''}`}>
+                            {(field.options || []).map((opt, i) => {
+                                const optValue = typeof opt === 'object' ? opt.value : opt;
+                                const optLabel = typeof opt === 'object' ? opt.label : opt;
+                                return (
+                                    <label
+                                        key={i}
+                                        className={`flex items-center gap-3 cursor-pointer group ${field.layout === 'horizontal' ? '' : 'p-3 border rounded-lg hover:bg-gray-50'
+                                            } ${value === optValue ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${value === optValue ? 'border-indigo-600' : 'border-gray-300'
+                                            }`}>
+                                            {value === optValue && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
+                                        </div>
+                                        <input
+                                            type="radio"
+                                            name={field.id}
+                                            value={optValue}
+                                            checked={value === optValue}
+                                            onChange={() => handleChange(field.id, optValue)}
+                                            className="hidden"
+                                            disabled={readOnly}
+                                        />
+                                        <span className="text-gray-700">{optLabel}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
                     </div>
                 );
 
@@ -353,38 +360,41 @@ export default function BriefingRenderer({
 
             case 'checkbox':
                 return (
-                    <div className={`space-y-2 ${field.layout === 'horizontal' ? 'flex flex-wrap gap-4' : ''}`}>
-                        {(field.options || []).map((opt, i) => {
-                            const optValue = typeof opt === 'object' ? opt.value : opt;
-                            const optLabel = typeof opt === 'object' ? opt.label : opt;
-                            const checked = Array.isArray(value) && value.includes(optValue);
-                            return (
-                                <label
-                                    key={i}
-                                    className={`flex items-center gap-3 cursor-pointer p-3 border rounded-lg transition-colors hover:bg-gray-50 ${checked ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'
-                                        }`}
-                                >
-                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${checked ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'
-                                        }`}>
-                                        {checked && <Check size={12} className="text-white" />}
-                                    </div>
-                                    <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={() => {
-                                            const current = Array.isArray(value) ? value : [];
-                                            const newValue = checked
-                                                ? current.filter(v => v !== optValue)
-                                                : [...current, optValue];
-                                            handleChange(field.id, newValue);
-                                        }}
-                                        className="hidden"
-                                        disabled={readOnly}
-                                    />
-                                    <span className="text-gray-700">{optLabel}</span>
-                                </label>
-                            );
-                        })}
+                    <div className="space-y-1">
+                        <div className={`space-y-2 ${field.layout === 'horizontal' ? 'flex flex-wrap gap-4 space-y-0' : ''}`}>
+                            {(field.options || []).map((opt, i) => {
+                                const optValue = typeof opt === 'object' ? opt.value : opt;
+                                const optLabel = typeof opt === 'object' ? opt.label : opt;
+                                const checked = Array.isArray(value) && value.includes(optValue);
+                                return (
+                                    <label
+                                        key={i}
+                                        className={`flex items-center gap-3 cursor-pointer p-3 border rounded-lg transition-colors hover:bg-gray-50 ${checked ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'
+                                            }`}
+                                    >
+                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${checked ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'
+                                            }`}>
+                                            {checked && <Check size={12} className="text-white" />}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => {
+                                                const current = Array.isArray(value) ? value : [];
+                                                const newValue = checked
+                                                    ? current.filter(v => v !== optValue)
+                                                    : [...current, optValue];
+                                                handleChange(field.id, newValue);
+                                            }}
+                                            className="hidden"
+                                            disabled={readOnly}
+                                        />
+                                        <span className="text-gray-700">{optLabel}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
                     </div>
                 );
 
@@ -392,7 +402,7 @@ export default function BriefingRenderer({
                 const tags = Array.isArray(value) ? value : [];
                 return (
                     <div className="space-y-2">
-                        <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border border-gray-200 rounded-lg bg-white">
+                        <div className="flex flex-wrap gap-2 min-h-[42px] p-2 border border-gray-200 rounded-lg bg-white focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-500 transition-all">
                             {tags.map((tag, i) => (
                                 <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm">
                                     {tag}
@@ -411,7 +421,7 @@ export default function BriefingRenderer({
                                 <input
                                     type="text"
                                     placeholder="Digite e pressione Enter"
-                                    className="flex-1 min-w-[120px] outline-none text-sm"
+                                    className="flex-1 min-w-[120px] outline-none text-sm bg-transparent p-1"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && e.target.value.trim()) {
                                             e.preventDefault();
@@ -422,108 +432,113 @@ export default function BriefingRenderer({
                                 />
                             )}
                         </div>
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
                     </div>
                 );
 
             // DATE/TIME FIELDS
             case 'date':
                 return (
-                    <div className="relative">
-                        <input
-                            type="date"
-                            value={value || ''}
-                            onChange={(e) => handleChange(field.id, e.target.value)}
-                            onBlur={() => handleBlur(field.id)}
-                            min={field.minDate}
-                            max={field.maxDate}
-                            disabled={readOnly}
-                            className={inputClass}
-                        />
-                    </div>
+                    <BaseInput
+                        type="date"
+                        value={value || ''}
+                        onChange={(e) => handleChange(field.id, e.target.value)}
+                        onBlur={() => handleBlur(field.id)}
+                        min={field.minDate}
+                        max={field.maxDate}
+                        disabled={readOnly}
+                        error={errorMessage}
+                    />
                 );
 
             case 'time':
                 return (
-                    <div className="relative">
-                        <input
-                            type="time"
-                            value={value || ''}
-                            onChange={(e) => handleChange(field.id, e.target.value)}
-                            onBlur={() => handleBlur(field.id)}
-                            disabled={readOnly}
-                            className={inputClass}
-                        />
-                    </div>
+                    <BaseInput
+                        type="time"
+                        value={value || ''}
+                        onChange={(e) => handleChange(field.id, e.target.value)}
+                        onBlur={() => handleBlur(field.id)}
+                        disabled={readOnly}
+                        error={errorMessage}
+                    />
                 );
 
             case 'datetime':
                 return (
-                    <div className="relative">
-                        <input
-                            type="datetime-local"
-                            value={value || ''}
-                            onChange={(e) => handleChange(field.id, e.target.value)}
-                            onBlur={() => handleBlur(field.id)}
-                            disabled={readOnly}
-                            className={inputClass}
-                        />
-                    </div>
+                    <BaseInput
+                        type="datetime-local"
+                        value={value || ''}
+                        onChange={(e) => handleChange(field.id, e.target.value)}
+                        onBlur={() => handleBlur(field.id)}
+                        disabled={readOnly}
+                        error={errorMessage}
+                    />
                 );
 
             // MEDIA FIELDS
             case 'moodboard':
                 return (
-                    <Moodboard
-                        images={value || []}
-                        onChange={(imgs) => handleChange(field.id, imgs)}
-                        readOnly={readOnly}
-                        maxFiles={field.maxFiles}
-                    />
+                    <div className="space-y-1">
+                        <Moodboard
+                            images={value || []}
+                            onChange={(imgs) => handleChange(field.id, imgs)}
+                            readOnly={readOnly}
+                            maxFiles={field.maxFiles}
+                        />
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
+                    </div>
                 );
 
             case 'file':
                 return (
-                    <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-indigo-300 transition-colors">
-                        {value ? (
-                            <div className="flex items-center justify-center gap-2">
-                                <span className="text-sm text-gray-700">{value.name || 'Arquivo selecionado'}</span>
-                                {!readOnly && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleChange(field.id, null)}
-                                        className="text-red-500 hover:text-red-600"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            <label className="cursor-pointer">
-                                <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-                                <p className="text-sm text-gray-500">Clique para fazer upload</p>
-                                <p className="text-xs text-gray-400">Máx. {field.maxSizeMB || 10}MB</p>
-                                <input
-                                    type="file"
-                                    onChange={(e) => handleChange(field.id, e.target.files[0])}
-                                    className="hidden"
-                                    disabled={readOnly}
-                                />
-                            </label>
-                        )}
+                    <div className="space-y-1">
+                        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-indigo-300 transition-colors bg-gray-50/50">
+                            {value ? (
+                                <div className="flex items-center justify-center gap-2">
+                                    <span className="text-sm text-gray-700 font-medium">{value.name || 'Arquivo selecionado'}</span>
+                                    {!readOnly && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleChange(field.id, null)}
+                                            className="text-red-500 hover:text-red-600 p-1 hover:bg-red-50 rounded-full"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <label className="cursor-pointer block">
+                                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Upload size={24} />
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-700">Clique para fazer upload</p>
+                                    <p className="text-xs text-gray-400 mt-1">Máx. {field.maxSizeMB || 10}MB</p>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => handleChange(field.id, e.target.files[0])}
+                                        className="hidden"
+                                        disabled={readOnly}
+                                    />
+                                </label>
+                            )}
+                        </div>
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
                     </div>
                 );
 
             case 'color':
                 return (
                     <div className="flex items-center gap-4">
-                        <input
-                            type="color"
-                            value={value || '#6366f1'}
-                            onChange={(e) => handleChange(field.id, e.target.value)}
-                            disabled={readOnly}
-                            className="w-12 h-12 rounded-lg cursor-pointer border border-gray-200"
-                        />
-                        <div className="flex gap-2">
+                        <div className="relative">
+                            <input
+                                type="color"
+                                value={value || '#6366f1'}
+                                onChange={(e) => handleChange(field.id, e.target.value)}
+                                disabled={readOnly}
+                                className="w-12 h-12 rounded-xl cursor-pointer border-0 p-0 overflow-hidden ring-1 ring-gray-200"
+                            />
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
                             {(field.presets || ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']).map((color, i) => (
                                 <button
                                     key={i}
@@ -553,17 +568,18 @@ export default function BriefingRenderer({
                                 key={i}
                                 type="button"
                                 onClick={() => !readOnly && handleChange(field.id, p.value)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${value === p.value
-                                        ? 'border-current shadow-md'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${value === p.value
+                                    ? 'border-transparent shadow-sm ring-1 ring-black/5'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
                                     }`}
                                 style={{
                                     color: value === p.value ? p.color : undefined,
-                                    backgroundColor: value === p.value ? `${p.color}15` : undefined
+                                    backgroundColor: value === p.value ? `${p.color}15` : undefined,
+                                    borderColor: value === p.value ? p.color : undefined
                                 }}
                             >
                                 <Flag size={16} style={{ color: p.color }} />
-                                <span className="font-medium">{p.label}</span>
+                                <span className="font-medium text-sm">{p.label}</span>
                             </button>
                         ))}
                     </div>
@@ -571,46 +587,49 @@ export default function BriefingRenderer({
 
             case 'terms':
                 return (
-                    <label className="flex items-start gap-3 cursor-pointer">
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 transition-colors ${value ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'
-                            }`}>
-                            {value && <Check size={12} className="text-white" />}
-                        </div>
-                        <div>
-                            <span className="text-gray-700">{field.text || 'Aceito os termos e condições'}</span>
-                            {field.linkUrl && (
-                                <a
-                                    href={field.linkUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="ml-1 text-indigo-600 hover:underline"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    {field.linkText || 'Ler termos'}
-                                </a>
-                            )}
-                        </div>
-                        <input
-                            type="checkbox"
-                            checked={value || false}
-                            onChange={() => handleChange(field.id, !value)}
-                            className="hidden"
-                            disabled={readOnly}
-                        />
-                    </label>
+                    <div className="space-y-1">
+                        <label className="flex items-start gap-3 cursor-pointer select-none">
+                            <div className={`w-5 h-5 rounded border flex items-center justify-center mt-0.5 transition-colors ${value ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'
+                                }`}>
+                                {value && <Check size={12} className="text-white" />}
+                            </div>
+                            <div className="text-sm">
+                                <span className="text-gray-700">{field.text || 'Aceito os termos e condições'}</span>
+                                {field.linkUrl && (
+                                    <a
+                                        href={field.linkUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-1 text-indigo-600 hover:underline font-medium"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {field.linkText || 'Ler termos'}
+                                    </a>
+                                )}
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={value || false}
+                                onChange={() => handleChange(field.id, !value)}
+                                className="hidden"
+                                disabled={readOnly}
+                            />
+                        </label>
+                        {hasError && <p className="text-xs text-[rgb(var(--error))] mt-1">{errorMessage}</p>}
+                    </div>
                 );
 
             case 'progress':
                 return (
                     <div className="space-y-2">
-                        <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-4 bg-gray-100 rounded-full overflow-hidden border border-gray-100">
                             <div
-                                className="h-full bg-indigo-600 transition-all"
+                                className="h-full bg-indigo-600 transition-all duration-500 ease-out"
                                 style={{ width: `${value || 0}%` }}
                             />
                         </div>
                         {field.showPercentage !== false && (
-                            <div className="text-center text-sm text-gray-600 font-medium">
+                            <div className="text-right text-xs text-gray-500 font-medium font-mono">
                                 {value || 0}%
                             </div>
                         )}
@@ -619,18 +638,19 @@ export default function BriefingRenderer({
 
             // LAYOUT ELEMENTS (non-input)
             case 'divider':
-                return <div className="h-px bg-gray-300 my-4" />;
+                return <div className="h-px bg-gray-100 my-6" />;
 
             case 'description_block':
                 return (
-                    <div className="prose prose-sm max-w-none text-gray-600">
+                    <div className="prose prose-sm max-w-none text-gray-600 bg-gray-50 rounded-lg p-4 border border-gray-100">
                         {field.content}
                     </div>
                 );
 
             default:
                 return (
-                    <div className="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg">
+                    <div className="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-amber-400" />
                         Campo não suportado: {field.type}
                     </div>
                 );
@@ -644,10 +664,10 @@ export default function BriefingRenderer({
         // Section header
         if (field.type === 'section') {
             return (
-                <div className="mt-8 mb-4 border-t-8 border-indigo-500 rounded-lg bg-white shadow-sm p-6">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">{field.label}</h2>
+                <div className="mt-8 mb-6 border-l-4 border-indigo-500 pl-4 py-1">
+                    <h2 className="text-xl font-semibold text-gray-900">{field.label}</h2>
                     {(field.description || field.helpText) && (
-                        <p className="text-gray-600 text-sm">{field.description || field.helpText}</p>
+                        <p className="text-gray-500 text-sm mt-1">{field.description || field.helpText}</p>
                     )}
                 </div>
             );
@@ -655,18 +675,18 @@ export default function BriefingRenderer({
 
         // Divider
         if (field.type === 'divider') {
-            return <div className="flex items-center gap-2 my-6">
-                <div className="flex-1 h-px bg-gray-300" />
-                <Minus size={14} className="text-gray-400" />
-                <div className="flex-1 h-px bg-gray-300" />
+            return <div className="flex items-center gap-2 my-8">
+                <div className="flex-1 h-px bg-gray-200" />
+                <Minus size={14} className="text-gray-300" />
+                <div className="flex-1 h-px bg-gray-200" />
             </div>;
         }
 
         // Description block (no input)
         if (field.type === 'description_block') {
             return (
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 my-4">
-                    <div className="prose prose-sm max-w-none text-blue-800">
+                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 my-6">
+                    <div className="prose prose-sm max-w-none text-blue-900">
                         {field.content || field.label}
                     </div>
                 </div>
@@ -678,32 +698,20 @@ export default function BriefingRenderer({
 
         // Regular field card
         return (
-            <div className={`bg-white rounded-xl border shadow-sm p-6 mb-4 transition-all hover:shadow-md ${hasError ? 'border-red-200' : 'border-gray-200'
+            <div className={`bg-white rounded-xl border shadow-sm p-6 mb-6 transition-all hover:shadow-md ${hasError ? 'border-red-200 ring-1 ring-red-100' : 'border-gray-200'
                 }`}>
-                <label className="block text-base font-medium text-gray-800 mb-1">
+                <label className="block text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1">
                     {field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                    {field.required && <span className="text-red-500 text-xs align-top">*</span>}
                 </label>
 
                 {(field.helpText || field.description) && (
-                    <p className="text-xs text-gray-500 mb-4">{field.helpText || field.description}</p>
+                    <p className="text-xs text-gray-500 mb-4 leading-relaxed">{field.helpText || field.description}</p>
                 )}
 
                 <div className="mt-2">
                     {renderFieldInput(field)}
                 </div>
-
-                {/* Error messages */}
-                {hasError && (
-                    <div className="mt-2 space-y-1">
-                        {fieldErrors.map((err, i) => (
-                            <p key={i} className="text-sm text-red-500 flex items-center gap-1">
-                                <X size={14} />
-                                {err}
-                            </p>
-                        ))}
-                    </div>
-                )}
             </div>
         );
     };
@@ -717,16 +725,14 @@ export default function BriefingRenderer({
             ))}
 
             {!readOnly && fields.length > 0 && (
-                <div className="pt-6 flex justify-between items-center">
-                    <div />
-                    <button
-                        type="button"
+                <div className="pt-8 flex justify-end">
+                    <Button
                         onClick={handleSubmit}
-                        className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
+                        className="px-8 py-2.5 h-auto text-base shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all"
                     >
-                        <Check size={18} />
-                        Enviar
-                    </button>
+                        <Check size={18} className="mr-2" />
+                        Enviar Briefing
+                    </Button>
                 </div>
             )}
         </div>

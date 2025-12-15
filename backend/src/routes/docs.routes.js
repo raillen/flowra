@@ -119,7 +119,7 @@ export default async function docsRoutes(fastify, options) {
         }
 
         const results = [];
-        const sections = isAdmin ? ['technical', 'usage'] : ['usage'];
+        const sections = isAdmin ? ['technical', 'usage', 'learn'] : ['usage'];
 
         for (const section of sections) {
             const sectionPath = path.join(DOCS_PATH, section);

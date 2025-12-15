@@ -23,6 +23,11 @@
     --success: 34 197 94;
     --warning: 234 179 8;
     --error: 239 68 68;
+
+    /* Form Elements */
+    --input-bg: 255 255 255;
+    --input-border: 226 232 240;
+    --input-ring: 99 102 241;
   }
 
   [data-theme='dark'] {
@@ -41,6 +46,11 @@
     --primary: 129 140 248;
     /* indigo-400 */
     --primary-fg: 15 23 42;
+
+    /* Form Elements */
+    --input-bg: 15 23 42;
+    --input-border: 51 65 85;
+    --input-ring: 129 140 248;
   }
 
   [data-theme='gruvbox'] {
@@ -62,6 +72,11 @@
     --success: 184 187 38;
     --warning: 250 189 47;
     --error: 204 36 29;
+
+    /* Form Elements */
+    --input-bg: 40 40 40;
+    --input-border: 102 92 84;
+    --input-ring: 251 73 52;
   }
 
   [data-theme='nord'] {
@@ -83,6 +98,11 @@
     --success: 163 190 140;
     --warning: 235 203 139;
     --error: 191 97 106;
+
+    /* Form Elements */
+    --input-bg: 46 52 64;
+    --input-border: 76 86 106;
+    --input-ring: 136 192 208;
   }
 
   [data-theme='rose-pine'] {
@@ -107,6 +127,11 @@
     /* gold */
     --error: 235 110 121;
     /* love */
+
+    /* Form Elements */
+    --input-bg: 25 23 36;
+    --input-border: 64 61 82;
+    --input-ring: 196 167 231;
   }
 
   [data-theme='dracula'] {
@@ -128,6 +153,11 @@
     --success: 80 250 123;
     --warning: 241 250 140;
     --error: 255 85 85;
+
+    /* Form Elements */
+    --input-bg: 40 42 54;
+    --input-border: 98 114 164;
+    --input-ring: 255 121 198;
   }
 
   [data-theme='catppuccin'] {
@@ -149,6 +179,11 @@
     --success: 166 227 161;
     --warning: 249 226 175;
     --error: 243 139 168;
+
+    /* Form Elements */
+    --input-bg: 30 30 46;
+    --input-border: 69 71 90;
+    --input-ring: 203 166 247;
   }
 
   [data-theme='solarized'] {
@@ -170,6 +205,11 @@
     --success: 133 153 0;
     --warning: 181 137 0;
     --error: 220 50 47;
+
+    /* Form Elements */
+    --input-bg: 0 43 54;
+    --input-border: 88 110 117;
+    --input-ring: 38 139 210;
   }
 
   [data-theme='tokyo-night'] {
@@ -191,6 +231,11 @@
     --success: 158 206 106;
     --warning: 224 175 104;
     --error: 247 118 142;
+
+    /* Form Elements */
+    --input-bg: 26 27 38;
+    --input-border: 65 72 104;
+    --input-ring: 122 162 247;
   }
 
   [data-theme='synthwave'] {
@@ -212,6 +257,11 @@
     --success: 114 241 184;
     --warning: 255 211 25;
     --error: 254 68 80;
+
+    /* Form Elements */
+    --input-bg: 38 35 53;
+    --input-border: 73 66 99;
+    --input-ring: 255 65 145;
   }
 
   * {
@@ -219,7 +269,7 @@
   }
 
   body {
-    @apply bg-background text-text-primary transition-colors duration-300;
+    @apply bg-background text-text-primary;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;

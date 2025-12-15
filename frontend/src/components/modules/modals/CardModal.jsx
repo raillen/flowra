@@ -19,6 +19,8 @@ import BriefingRenderer from '../briefing/BriefingRenderer';
 import { getTemplateById, submitBriefing } from '../../../services/briefingService'; // Create this frontend service next if not exists
 import { FileText, Layout } from 'lucide-react';
 import UserMultiSelect from '../../ui/UserMultiSelect';
+import BaseInput from '../../ui/BaseInput';
+import BaseSelect from '../../ui/BaseSelect';
 
 /**
  * CardModal - Professional Unified Card View
@@ -321,18 +323,18 @@ const CardModal = ({
     };
 
     const handleDelete = async () => {
-        console.log('CardModal: handleDelete clicked');
+        // console.log('CardModal: handleDelete clicked');
         if (!card) return;
         if (window.confirm('Tem certeza que deseja excluir este card permanentemente?')) {
             try {
-                console.log('CardModal: Deleting card...', card.id);
+                // console.log('CardModal: Deleting card...', card.id);
                 try {
                     await cardService.deleteCard(projectId, boardId, card.id);
                 } catch (e) {
                     await api.delete(`/cards/${card.id}`);
                 }
 
-                console.log('CardModal: Delete API success, calling onSave');
+                // console.log('CardModal: Delete API success, calling onSave');
                 if (onSave) onSave({ id: card.id, _deleted: true });
 
                 alert('Card excluído com sucesso!');
@@ -764,43 +766,125 @@ const CardModal = ({
 
                                         {isEnabled('startDate') && (
                                             <div className="space-y-1">
-                                                <label className="text-xs text-gray-500 flex items-center gap-1"><Calendar size={12} /> Data de Início</label>
-                                                <input
+                                                <BaseInput
                                                     type="date"
+                                                    label="Data de Início"
                                                     value={startDate}
                                                     onChange={(e) => setStartDate(e.target.value)}
-                                                    className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm"
+                                                    leftIcon={Calendar}
                                                 />
                                             </div>
                                         )}
 
                                         {isEnabled('estimatedHours') && (
                                             <div className="space-y-1">
-                                                <label className="text-xs text-gray-500 flex items-center gap-1"><Clock size={12} /> Horas Estimadas</label>
-                                                <input
+                                                <BaseInput
                                                     type="number"
+                                                    label="Horas Estimadas"
                                                     value={estimatedHours}
                                                     onChange={(e) => setEstimatedHours(e.target.value)}
                                                     placeholder="0"
                                                     min="0"
                                                     step="0.5"
-                                                    className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm"
+                                                    leftIcon={Clock}
                                                 />
                                             </div>
                                         )}
 
                                         {isEnabled('externalUrl') && (
                                             <div className="space-y-1">
-                                                <label className="text-xs text-gray-500 flex items-center gap-1"><LinkIcon size={12} /> Link Externo</label>
-                                                <input
+                                                <BaseInput
                                                     type="url"
+                                                    label="Link Externo"
                                                     value={externalUrl}
                                                     onChange={(e) => setExternalUrl(e.target.value)}
                                                     placeholder="https://..."
-                                                    className="w-full bg-white border-gray-200 rounded-lg text-sm p-2 shadow-sm"
+                                                    leftIcon={LinkIcon}
                                                 />
                                             </div>
                                         )}
+                                    </div>
+                                )}
+
+                                {/* CUSTOM FIELDS SECTION */}
+                                {customFieldDefinitions?.length > 0 && (
+                                    <div className="space-y-4 pt-4 border-t border-gray-100">
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Campos Personalizados</h4>
+                                        {customFieldDefinitions.map(field => {
+                                            const value = customFieldsData[field.id] ?? '';
+                                            const handleChange = (val) => {
+                                                setCustomFieldsData(prev => ({ ...prev, [field.id]: val }));
+                                            };
+
+                                            return (
+                                                <div key={field.id} className="space-y-1">
+
+                                                    {field.type === 'text' && (
+                                                        <BaseInput
+                                                            label={field.name + (field.required ? ' *' : '')}
+                                                            value={value}
+                                                            onChange={(e) => handleChange(e.target.value)}
+                                                            placeholder={field.name}
+                                                        />
+                                                    )}
+
+                                                    {field.type === 'number' && (
+                                                        <BaseInput
+                                                            type="number"
+                                                            label={field.name + (field.required ? ' *' : '')}
+                                                            value={value}
+                                                            onChange={(e) => handleChange(e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    )}
+
+                                                    {field.type === 'date' && (
+                                                        <BaseInput
+                                                            type="date"
+                                                            label={field.name + (field.required ? ' *' : '')}
+                                                            value={value}
+                                                            onChange={(e) => handleChange(e.target.value)}
+                                                        />
+                                                    )}
+
+                                                    {field.type === 'boolean' && (
+                                                        <div className="flex items-center gap-2 pt-6">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={!!value}
+                                                                onChange={(e) => handleChange(e.target.checked)}
+                                                                className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                                            />
+                                                            <span className="text-sm text-[rgb(var(--text-primary))]">{field.name}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {field.type === 'select' && (
+                                                        <BaseSelect
+                                                            label={field.name + (field.required ? ' *' : '')}
+                                                            value={value}
+                                                            onChange={(e) => handleChange(e.target.value)}
+                                                        >
+                                                            <option value="">Selecione...</option>
+                                                            {(field.options || []).map((opt, idx) => (
+                                                                <option key={idx} value={opt}>{opt}</option>
+                                                            ))}
+                                                        </BaseSelect>
+                                                    )}
+
+                                                    {field.type === 'url' && (
+                                                        <BaseInput
+                                                            type="url"
+                                                            label={field.name + (field.required ? ' *' : '')}
+                                                            value={value}
+                                                            onChange={(e) => handleChange(e.target.value)}
+                                                            placeholder="https://..."
+                                                            leftIcon={LinkIcon}
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
 

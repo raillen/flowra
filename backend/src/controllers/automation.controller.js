@@ -1,54 +1,37 @@
-import { prisma } from '../config/database.js';
-import { logger } from '../config/logger.js';
+import * as automationService from '../services/automation.service.js';
+import { successResponse } from '../utils/responses.js';
 
-export async function getRules(req, reply) {
-    const { boardId } = req.params;
-    try {
-        const rules = await prisma.automationRule.findMany({
-            where: { boardId },
-            orderBy: { createdAt: 'desc' }
-        });
-        return rules;
-    } catch (error) {
-        logger.error({ error }, 'Failed to fetch automation rules');
-        return reply.status(500).send({ message: 'Failed to fetch rules' });
-    }
-}
+/**
+ * Automation Controller
+ * Handles HTTP requests for automation rules
+ */
 
-export async function createRule(req, reply) {
-    const { boardId } = req.params;
-    const { name, triggerType, conditions, actions, cronExpression } = req.body;
+export const createRule = async (request, reply) => {
+    const { boardId } = request.params;
+    const rule = await automationService.createRule(boardId, request.body);
+    return reply.code(201).send(successResponse(rule, 'Automation rule created', 201));
+};
 
-    try {
-        const rule = await prisma.automationRule.create({
-            data: {
-                boardId,
-                name,
-                triggerType,
-                conditions: typeof conditions === 'string' ? conditions : JSON.stringify(conditions),
-                actions: typeof actions === 'string' ? actions : JSON.stringify(actions),
-                cronExpression,
-                isActive: true
-            }
-        });
+export const listRules = async (request, reply) => {
+    const { boardId } = request.params;
+    const rules = await automationService.getRulesByBoard(boardId);
+    return reply.send(successResponse(rules));
+};
 
-        logger.info({ ruleId: rule.id, boardId }, 'Automation rule created');
-        return rule;
-    } catch (error) {
-        logger.error({ error }, 'Failed to create automation rule');
-        return reply.status(500).send({ message: 'Failed to create rule' });
-    }
-}
+export const getRule = async (request, reply) => {
+    const { ruleId } = request.params;
+    const rule = await automationService.getRuleById(ruleId);
+    return reply.send(successResponse(rule));
+};
 
-export async function deleteRule(req, reply) {
-    const { ruleId } = req.params;
-    try {
-        await prisma.automationRule.delete({
-            where: { id: ruleId }
-        });
-        return reply.code(204).send();
-    } catch (error) {
-        logger.error({ error }, 'Failed to delete automation rule');
-        return reply.status(500).send({ message: 'Failed to delete rule' });
-    }
-}
+export const updateRule = async (request, reply) => {
+    const { ruleId } = request.params;
+    const rule = await automationService.updateRule(ruleId, request.body);
+    return reply.send(successResponse(rule, 'Automation rule updated'));
+};
+
+export const deleteRule = async (request, reply) => {
+    const { ruleId } = request.params;
+    await automationService.deleteRule(ruleId);
+    return reply.code(204).send();
+};

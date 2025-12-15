@@ -6,6 +6,7 @@ import {
 import { Modal, Button } from '../../ui';
 import { useBoardConfig } from '../../../hooks/useBoardConfig';
 import { getBoardById, updateBoard, addMember, removeMember } from '../../../services/boardService';
+import { getRules, createRule, deleteRule } from '../../../services/automationService';
 import { ICON_MAP, ICON_CATEGORIES } from '../../../utils/iconLibrary';
 
 // Color mapping for Status/Priority
@@ -47,6 +48,7 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
 
     // Automation State (mocked if not passed as prop, assuming it's managed internally or ready for integration)
     const [rules, setRules] = useState([]);
+    const [loadingRules, setLoadingRules] = useState(false);
     const [newRule, setNewRule] = useState({ triggerType: '', triggerValue: '', actionType: '', actionValue: '' });
 
     // Custom Fields State
@@ -92,6 +94,25 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
             setLoadingBoard(false);
         }
     };
+
+    const fetchRules = async () => {
+        if (!boardId) return;
+        try {
+            setLoadingRules(true);
+            const data = await getRules(boardId);
+            setRules(data);
+        } catch (error) {
+            console.error('Failed to load rules:', error);
+        } finally {
+            setLoadingRules(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'automation') {
+            fetchRules();
+        }
+    }, [activeTab, boardId]);
 
     const handleTogglePrivacy = async () => {
         try {
@@ -345,6 +366,9 @@ const BoardSettingsModal = ({ isOpen, onClose, boardId, projectId, boardName, on
                                     setNewRule={setNewRule}
                                     columns={columns}
                                     members={members}
+                                    loading={loadingRules}
+                                    onRefresh={fetchRules}
+                                    boardId={boardId}
                                 />
                             )}
 
@@ -666,17 +690,50 @@ const CustomFieldsTab = ({ localFields, newField, setNewField, handleAddCustomFi
     </div>
 );
 
-const AutomationTab = ({ rules, setRules, newRule, setNewRule, columns, members }) => {
-    const handleCreateRule = () => {
+const AutomationTab = ({ rules, setRules, newRule, setNewRule, columns, members, loading, onRefresh, boardId }) => {
+    const handleCreateRule = async () => {
         if (!newRule.triggerType || !newRule.actionType) return;
-        const rule = { id: crypto.randomUUID(), ...newRule };
-        setRules([...rules, rule]);
-        setNewRule({ triggerType: '', triggerValue: '', actionType: '', actionValue: '', cronExpression: '' });
+
+        try {
+            // Prepare payload
+            // Simplification: logic to construct complex conditions/actions JSON based on UI
+            const actions = [{
+                type: newRule.actionType,
+                value: newRule.actionValue
+            }];
+
+            const conditions = {};
+            if (newRule.triggerType === 'CARD_MOVE' && newRule.triggerValue) {
+                conditions.columnId = newRule.triggerValue;
+            }
+
+            await createRule(boardId, {
+                name: `${newRule.triggerType} -> ${newRule.actionType}`,
+                triggerType: newRule.triggerType,
+                conditions: JSON.stringify(conditions),
+                actions: JSON.stringify(actions),
+                isActive: true
+            });
+
+            // Refresh rules
+            if (onRefresh) onRefresh();
+
+            setNewRule({ triggerType: '', triggerValue: '', actionType: '', actionValue: '', cronExpression: '' });
+        } catch (err) {
+            console.error("Failed to create rule", err);
+        }
     };
 
-    const handleDeleteRule = (id) => {
-        setRules(rules.filter(r => r.id !== id));
+    const handleDeleteRule = async (id) => {
+        try {
+            await deleteRule(id);
+            if (onRefresh) onRefresh();
+        } catch (err) {
+            console.error("Failed to delete rule", err);
+        }
     };
+
+
 
     return (
         <div className="space-y-6">

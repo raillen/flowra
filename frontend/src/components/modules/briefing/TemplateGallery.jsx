@@ -173,14 +173,14 @@ const TEMPLATE_PRESETS = [
 ];
 
 const COLOR_CLASSES = {
-    indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', hover: 'hover:bg-indigo-50', border: 'border-indigo-200' },
-    green: { bg: 'bg-green-100', text: 'text-green-600', hover: 'hover:bg-green-50', border: 'border-green-200' },
-    yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600', hover: 'hover:bg-yellow-50', border: 'border-yellow-200' },
-    blue: { bg: 'bg-blue-100', text: 'text-blue-600', hover: 'hover:bg-blue-50', border: 'border-blue-200' },
-    purple: { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'hover:bg-purple-50', border: 'border-purple-200' },
-    pink: { bg: 'bg-pink-100', text: 'text-pink-600', hover: 'hover:bg-pink-50', border: 'border-pink-200' },
-    cyan: { bg: 'bg-cyan-100', text: 'text-cyan-600', hover: 'hover:bg-cyan-50', border: 'border-cyan-200' },
-    orange: { bg: 'bg-orange-100', text: 'text-orange-600', hover: 'hover:bg-orange-50', border: 'border-orange-200' }
+    indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', ring: 'ring-indigo-500' },
+    green: { bg: 'bg-emerald-50', text: 'text-emerald-600', ring: 'ring-emerald-500' },
+    yellow: { bg: 'bg-amber-50', text: 'text-amber-600', ring: 'ring-amber-500' },
+    blue: { bg: 'bg-blue-50', text: 'text-blue-600', ring: 'ring-blue-500' },
+    purple: { bg: 'bg-purple-50', text: 'text-purple-600', ring: 'ring-purple-500' },
+    pink: { bg: 'bg-pink-50', text: 'text-pink-600', ring: 'ring-pink-500' },
+    cyan: { bg: 'bg-cyan-50', text: 'text-cyan-600', ring: 'ring-cyan-500' },
+    orange: { bg: 'bg-orange-50', text: 'text-orange-600', ring: 'ring-orange-500' }
 };
 
 export default function TemplateGallery({ isOpen, onClose, onSelectTemplate }) {
@@ -204,26 +204,26 @@ export default function TemplateGallery({ isOpen, onClose, onSelectTemplate }) {
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-500 to-purple-600">
+                <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
                     <div>
-                        <h2 className="text-xl font-bold text-white">Galeria de Templates</h2>
-                        <p className="text-white/80 text-sm">
+                        <h2 className="text-xl font-bold text-gray-900">Galeria de Templates</h2>
+                        <p className="text-gray-500 text-sm mt-1">
                             Comece rapidamente com um template pronto
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-white/20 rounded-lg text-white/80 hover:text-white transition-colors"
+                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Templates Grid */}
-                <div className="flex-1 overflow-auto p-6">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex-1 overflow-auto p-8 bg-gray-50">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                         {TEMPLATE_PRESETS.map(template => {
                             const colors = COLOR_CLASSES[template.color] || COLOR_CLASSES.indigo;
                             const isSelected = selectedTemplate?.id === template.id;
@@ -232,27 +232,27 @@ export default function TemplateGallery({ isOpen, onClose, onSelectTemplate }) {
                                 <button
                                     key={template.id}
                                     onClick={() => setSelectedTemplate(template)}
-                                    className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
-                                            ? `${colors.border} ${colors.bg} ring-2 ring-offset-2 ring-${template.color}-500`
-                                            : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-md'
+                                    className={`p-5 rounded-xl border text-left transition-all ${isSelected
+                                        ? `border-indigo-600 ring-1 ring-indigo-600 shadow-md transform scale-[1.02] bg-white`
+                                        : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-sm'
                                         }`}
                                 >
-                                    <div className={`w-12 h-12 ${colors.bg} rounded-xl flex items-center justify-center mb-3`}>
+                                    <div className={`w-12 h-12 ${colors.bg} rounded-xl flex items-center justify-center mb-4`}>
                                         <template.icon size={24} className={colors.text} />
                                     </div>
-                                    <h3 className="font-semibold text-gray-900 mb-1">
+                                    <h3 className={`font-semibold mb-1 ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
                                         {template.name}
                                     </h3>
                                     <p className="text-sm text-gray-500 line-clamp-2">
                                         {template.description}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-3">
-                                        <span className="text-xs text-gray-400">
+                                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-50">
+                                        <span className="text-xs text-gray-400 font-medium">
                                             {template.fields.length} campos
                                         </span>
                                         {isSelected && (
-                                            <span className={`text-xs ${colors.text} font-medium`}>
-                                                ✓ Selecionado
+                                            <span className="ml-auto text-xs text-indigo-600 font-bold flex items-center gap-1">
+                                                <CheckCircle size={12} /> Selecionado
                                             </span>
                                         )}
                                     </div>
@@ -263,25 +263,25 @@ export default function TemplateGallery({ isOpen, onClose, onSelectTemplate }) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <div className="flex items-center justify-between px-8 py-4 border-t border-gray-200 bg-white">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                        className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
                     >
                         Cancelar
                     </button>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                         {selectedTemplate && (
-                            <span className="text-sm text-gray-500">
-                                {selectedTemplate.name} selecionado
+                            <span className="text-sm text-gray-500 hidden sm:inline">
+                                <span className="font-semibold text-gray-900">{selectedTemplate.name}</span> selecionado
                             </span>
                         )}
                         <button
                             onClick={handleUseTemplate}
                             disabled={!selectedTemplate}
-                            className={`px-6 py-2 rounded-lg font-medium transition-colors ${selectedTemplate
-                                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            className={`px-6 py-2.5 rounded-xl font-medium transition-all shadow-sm ${selectedTemplate
+                                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                 }`}
                         >
                             Usar Template

@@ -78,7 +78,7 @@ const MainContent = () => {
   };
 
   return (
-    <div className="flex-1 overflow-hidden relative flex flex-col">
+    <div className="flex-1 overflow-hidden relative flex flex-col bg-gray-50">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {renderContent()}
       </div>

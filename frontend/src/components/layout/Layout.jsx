@@ -36,9 +36,9 @@ const Layout = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="flex h-screen bg-background font-sans text-text-primary overflow-hidden transition-colors duration-300">
+    <div className="flex h-screen bg-white font-sans text-gray-900 overflow-hidden">
       <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
-      <main className="flex-1 flex flex-col min-w-0 bg-background/50 relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-white relative">
         <Header onMenuClick={toggleSidebar} />
         <MainContent />
         <BubbleChat />

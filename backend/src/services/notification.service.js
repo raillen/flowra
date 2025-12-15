@@ -130,6 +130,6 @@ export const notifyAssignment = async (assignedUserId, actorName, cardTitle, car
  */
 export const sendEmailNotification = async (to, subject, content) => {
     // TODO: Implement email sending logic (e.g. via Resend, SendGrid, or SMTP)
-    console.log(`[Email Stub] To: ${to}, Subject: ${subject}`);
+    // console.log(`[Email Stub] To: ${to}, Subject: ${subject}`);
     return true;
 };

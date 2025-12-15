@@ -28,13 +28,9 @@ const BoardModal = ({ isOpen, onClose, projectId, board = null, onSuccess }) => 
     if (isOpen) {
       // Debug logging - only log essential fields to avoid circular references
       if (board) {
-        console.log('BoardModal received board:', {
-          id: board.id,
-          name: board.name,
-          projectId: board.projectId,
-          hasId: !!board.id,
-          type: typeof board.id,
-        });
+        /** 
+         * Debug logging removed
+         */
       }
 
       if (board && board.id) {

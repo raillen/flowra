@@ -83,147 +83,137 @@ const ProjectDashboard = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300 p-8">
-      <div className="space-y-6">
-        <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-5">
-            <Button
-              variant="ghost"
-              onClick={exitProject}
-              className="p-2 h-10 w-10 rounded-full hover:bg-slate-100"
-            >
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
-            </Button>
-            <div className="h-14 w-14 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Folder className="w-7 h-7" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{activeProject.name}</h1>
-              <p className="text-slate-500 flex items-center gap-2 mt-1">
-                Visualização Geral do Projeto
-                <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                <span className="text-indigo-600 font-medium">{activeProject.department}</span>
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => openBoardModal(null)}
-              icon={Plus}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20"
-            >
-              Novo Quadro
-            </Button>
-          </div>
-        </div>
+    <div className="space-y-8 animate-in fade-in duration-300 p-8 max-w-[1600px] mx-auto">
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                <Layout className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-500">Total de Boards</p>
-                <p className="text-2xl font-bold text-slate-800">{totalBoards}</p>
-              </div>
-            </div>
-            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-500 w-full rounded-full"></div>
-            </div>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={exitProject}
+            className="p-2 h-10 w-10 rounded-lg hover:bg-gray-100 -ml-2"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-500" />
+          </Button>
+          <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
+            <Folder className="w-6 h-6" />
           </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-                <Layout className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-500">Atividades Totais</p>
-                <p className="text-2xl font-bold text-slate-800">{totalCards}</p>
-              </div>
-            </div>
-            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-purple-500 w-[70%] rounded-full"></div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-50 text-green-600 rounded-xl">
-                  <Layout className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-500">Equipe</p>
-                  <p className="text-2xl font-bold text-slate-800">{activeProject.members?.length || 0}</p>
-                </div>
-              </div>
-              <MemberAvatarGroup
-                members={[
-                  ...(activeProject.user && !activeProject.members?.some(m => m.user.id === activeProject.user.id) ? [activeProject.user] : []),
-                  ...(activeProject.members?.map(m => m.user) || [])
-                ]}
-                limit={3}
-                size="sm"
-              />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{activeProject.name}</h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-sm text-gray-500">Visualização do Projeto</span>
+              {activeProject.department && (
+                <>
+                  <span className="text-gray-300">•</span>
+                  <span className="text-sm font-medium text-gray-700">{activeProject.department}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
+        <div>
+          <Button
+            onClick={() => openBoardModal(null)}
+            icon={Plus}
+            className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-sm"
+          >
+            Novo Quadro
+          </Button>
+        </div>
+      </div>
 
-        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mt-8 mb-4">
-          <Layout className="text-indigo-600" size={20} />
-          Quadros do Projeto
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="bg-white p-5 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-gray-500">Quadros</span>
+            <Layout className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-3xl font-semibold text-gray-900">{totalBoards}</p>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-gray-500">Total de Cards</span>
+            <div className="w-5 h-5 flex items-center justify-center rounded bg-gray-100 text-xs font-bold text-gray-500">#</div>
+          </div>
+          <p className="text-3xl font-semibold text-gray-900">{totalCards}</p>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-gray-500">Equipe do Projeto</span>
+            <div className="text-xs font-medium bg-gray-100 px-2 py-0.5 rounded text-gray-600">{activeProject.members?.length || 0} membros</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <MemberAvatarGroup
+              members={[
+                ...(activeProject.user && !activeProject.members?.some(m => m.user.id === activeProject.user.id) ? [activeProject.user] : []),
+                ...(activeProject.members?.map(m => m.user) || [])
+              ]}
+              limit={5}
+              size="sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          Quadros
+          <span className="text-xs font-normal text-gray-400 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded-full">{totalBoards}</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {loadingBoards && (
-            <div className="col-span-3 text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-              <p className="text-slate-500">Carregando boards...</p>
+            <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div>
+              <p className="text-sm">Carregando quadros...</p>
             </div>
           )}
+
           {!loadingBoards && projectBoards.map((board) => (
             <div
               key={board.id}
-              className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-indigo-300 hover:shadow-xl transition-all duration-300 flex flex-col h-48 relative cursor-pointer"
+              className="group bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 flex flex-col h-44 relative cursor-pointer"
               onClick={() => goToBoard(activeProjectId, board.id)}
             >
-              <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500 w-full group-hover:h-3 transition-all"></div>
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-bold text-lg text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors line-clamp-1 pr-8">
                     {board.name}
-                  </h4>
-                  <div className="relative board-menu-container">
+                  </h3>
+
+                  <div className="absolute top-4 right-3 board-menu-container">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowMenu({ ...showMenu, [board.id]: !showMenu[board.id] });
                       }}
-                      className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                     >
                       <MoreVertical size={16} />
                     </button>
                     {showMenu[board.id] && (
-                      <div className="absolute right-0 top-8 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-10 py-1 animation-scale-in origin-top-right">
+                      <div className="absolute right-0 top-8 w-40 bg-white rounded-lg shadow-lg ring-1 ring-black/5 z-10 py-1 origin-top-right animate-in fade-in zoom-in-95 duration-100">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowMenu({});
                             openBoardModal(board);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 flex items-center gap-2"
+                          className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
                         >
                           <Edit2 size={14} /> Editar
                         </button>
+                        <hr className="my-1 border-gray-100" />
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowMenu({});
                             setDeleteConfirm({ isOpen: true, board });
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                         >
                           <Trash2 size={14} /> Excluir
                         </button>
@@ -232,33 +222,33 @@ const ProjectDashboard = () => {
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-500 mb-4 line-clamp-2 flex-1">
-                  {board.description || 'Sem descrição definida para este quadro.'}
+                <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">
+                  {board.description || <span className="italic opacity-50">Sem descrição</span>}
                 </p>
 
-                <div className="flex items-center justify-between text-xs font-medium text-slate-400">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-slate-100 px-2 py-1 rounded-md text-slate-600">
-                      {board.columns?.length || 0} colunas
-                    </span>
-                    <span className="bg-slate-100 px-2 py-1 rounded-md text-slate-600">
-                      {board._count?.cards || board.cards?.length || 0} cards
-                    </span>
+                <div className="flex items-center gap-4 text-xs font-medium text-gray-400 pt-3 border-t border-gray-50">
+                  <div className="flex items-center gap-1.5">
+                    <Layout size={12} />
+                    {board.columns?.length || 0} colunas
                   </div>
-                  <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                    {board._count?.cards || board.cards?.length || 0} cards
+                  </div>
                 </div>
               </div>
             </div>
           ))}
+
           {!loadingBoards && (
             <button
               onClick={() => openBoardModal(null)}
-              className="h-48 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50/30 transition-all gap-3 group"
+              className="h-44 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all flex flex-col items-center justify-center gap-2 group text-gray-400"
             >
-              <div className="p-3 bg-slate-50 rounded-full group-hover:bg-indigo-100 transition-colors">
-                <Plus size={24} className="text-slate-400 group-hover:text-indigo-600" />
+              <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-white group-hover:shadow-sm transition-all">
+                <Plus size={20} className="text-gray-400 group-hover:text-gray-600" />
               </div>
-              <span className="font-medium">Criar Novo Quadro</span>
+              <span className="text-sm font-medium group-hover:text-gray-600">Criar Novo Quadro</span>
             </button>
           )}
         </div>

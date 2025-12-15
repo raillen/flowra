@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Toast } from '../ui';
-import { UserPlus, Mail, Lock, User, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Button, Toast, BaseInput } from '../ui';
+import { UserPlus, Mail, Lock, User, AlertCircle, ArrowLeft, Building2 } from 'lucide-react';
 import { register } from '../../services/authService';
 
 /**
@@ -23,7 +23,6 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
         e.preventDefault();
         setError('');
 
-        // Validation
         if (!name || !email || !password || !confirmPassword || !companyName) {
             setError('Por favor, preencha todos os campos');
             return;
@@ -59,7 +58,6 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
                 type: 'success'
             });
 
-            // Call success callback with user and token
             if (onRegisterSuccess) {
                 onRegisterSuccess(result);
             }
@@ -72,139 +70,93 @@ const Register = ({ onBackToLogin, onRegisterSuccess }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-slate-800 mb-2">Criar Conta</h1>
-                    <p className="text-slate-500">Cadastre-se e crie sua empresa no KBSys</p>
+                    <div className="h-12 w-12 bg-indigo-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/30">
+                        <UserPlus className="text-white w-6 h-6" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Criar Conta</h1>
+                    <p className="text-gray-500 text-sm">Cadastre-se e comece a organizar seus projetos com sua equipe.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm animate-in fade-in slide-in-from-top-2">
                             <AlertCircle size={18} />
-                            <span className="text-sm">{error}</span>
+                            <span>{error}</span>
                         </div>
                     )}
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Nome
-                        </label>
-                        <div className="relative">
-                            <User
-                                size={18}
-                                className="absolute left-3 top-3 text-slate-400"
-                            />
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                placeholder="Seu nome completo"
-                                required
-                            />
-                        </div>
-                    </div>
+                    <div className="space-y-4">
+                        <BaseInput
+                            label="Nome Completo"
+                            icon={User}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Seu nome"
+                            fullWidth
+                        />
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Nome da Empresa
-                        </label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-3 text-slate-400">🏢</span>
-                            <input
-                                type="text"
-                                value={companyName}
-                                onChange={(e) => setCompanyName(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                placeholder="Nome da sua empresa"
-                                required
-                            />
-                        </div>
-                    </div>
+                        <BaseInput
+                            label="Nome da Empresa"
+                            icon={Building2} // Need to import Building2 if not already available, or use generic icon
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            placeholder="Sua empresa"
+                            fullWidth
+                        />
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Email
-                        </label>
-                        <div className="relative">
-                            <Mail
-                                size={18}
-                                className="absolute left-3 top-3 text-slate-400"
-                            />
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                placeholder="seu@email.com"
-                                required
-                            />
-                        </div>
-                    </div>
+                        <BaseInput
+                            label="Email Corporativo"
+                            icon={Mail}
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="seu@empresa.com"
+                            fullWidth
+                        />
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Senha
-                        </label>
-                        <div className="relative">
-                            <Lock
-                                size={18}
-                                className="absolute left-3 top-3 text-slate-400"
-                            />
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                placeholder="••••••••"
-                                required
-                                minLength={6}
-                            />
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">Mínimo de 6 caracteres</p>
-                    </div>
+                        <BaseInput
+                            label="Senha"
+                            icon={Lock}
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            helperText="Mínimo de 6 caracteres"
+                            fullWidth
+                        />
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Confirmar Senha
-                        </label>
-                        <div className="relative">
-                            <Lock
-                                size={18}
-                                className="absolute left-3 top-3 text-slate-400"
-                            />
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                placeholder="••••••••"
-                                required
-                            />
-                        </div>
+                        <BaseInput
+                            label="Confirmar Senha"
+                            icon={Lock}
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="••••••••"
+                            fullWidth
+                        />
                     </div>
 
                     <Button
                         type="submit"
-                        className="w-full"
+                        className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98]"
                         disabled={loading}
-                        icon={UserPlus}
                     >
-                        {loading ? 'Criando conta...' : 'Criar Conta'}
+                        {loading ? 'Criando conta...' : 'Criar Conta Grátis'}
                     </Button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-slate-500">
+                <div className="mt-8 pt-6 border-t border-gray-100 text-center text-sm text-gray-500">
                     <p>
-                        Já tem uma conta?{' '}
+                        Já possui uma conta?{' '}
                         <button
                             onClick={onBackToLogin}
-                            className="text-indigo-600 hover:underline font-medium inline-flex items-center gap-1"
+                            className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline inline-flex items-center gap-1 transition-colors"
                         >
                             <ArrowLeft size={14} />
-                            Voltar para login
+                            Fazer Login
                         </button>
                     </p>
                 </div>

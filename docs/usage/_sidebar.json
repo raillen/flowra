@@ -1,8 +1,7 @@
 {
-    "title": "Documentação de Uso",
     "sections": [
         {
-            "title": "Primeiros Passos",
+            "title": "Começando",
             "icon": "rocket",
             "items": [
                 {
@@ -10,68 +9,40 @@
                     "path": "getting-started/introduction"
                 },
                 {
-                    "title": "Primeiro Acesso",
-                    "path": "getting-started/first-login"
-                },
-                {
-                    "title": "Navegação",
-                    "path": "getting-started/navigation"
+                    "title": "Login e Registro",
+                    "path": "getting-started/auth"
                 }
             ]
         },
         {
-            "title": "Projetos",
-            "icon": "folder",
+            "title": "Quadros (Boards)",
+            "icon": "layers",
             "items": [
                 {
-                    "title": "Criando Projetos",
-                    "path": "projects/creating-projects"
+                    "title": "Criando Quadros",
+                    "path": "boards/create"
                 },
                 {
-                    "title": "Gerenciando Equipes",
-                    "path": "projects/managing-teams"
+                    "title": "Gerenciando Cards",
+                    "path": "boards/cards"
                 },
                 {
-                    "title": "Boards",
-                    "path": "projects/boards"
+                    "title": "Automação",
+                    "path": "boards/automation"
                 }
             ]
         },
         {
-            "title": "Tarefas",
-            "icon": "check-square",
+            "title": "Configurações",
+            "icon": "wrench",
             "items": [
                 {
-                    "title": "Criando Tarefas",
-                    "path": "tasks/creating-tasks"
+                    "title": "Perfil",
+                    "path": "settings/profile"
                 },
                 {
-                    "title": "Workflow Kanban",
-                    "path": "tasks/kanban-workflow"
-                }
-            ]
-        },
-        {
-            "title": "Calendário",
-            "icon": "calendar",
-            "items": [
-                {
-                    "title": "Eventos",
-                    "path": "calendar/events"
-                }
-            ]
-        },
-        {
-            "title": "Briefings",
-            "icon": "file-text",
-            "items": [
-                {
-                    "title": "Criando Formulários",
-                    "path": "briefings/creating-forms"
-                },
-                {
-                    "title": "Recebendo Respostas",
-                    "path": "briefings/receiving-responses"
+                    "title": "Segurança",
+                    "path": "settings/security"
                 }
             ]
         }

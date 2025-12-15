@@ -1,0 +1,110 @@
+{
+    "sections": [
+        {
+            "title": "Comece Aqui",
+            "icon": "rocket",
+            "items": [
+                {
+                    "title": "Bem-vindo ao Curso",
+                    "path": "01-introduction"
+                },
+                {
+                    "title": "A História do Projeto",
+                    "path": "02-history"
+                }
+            ]
+        },
+        {
+            "title": "Conceitos Básicos",
+            "icon": "book",
+            "items": [
+                {
+                    "title": "Dicionário do Dev",
+                    "path": "concepts/dictionary"
+                },
+                {
+                    "title": "Arquitetura (O Restaurante)",
+                    "path": "03-architecture"
+                },
+                {
+                    "title": "Banco de Dados",
+                    "path": "04-database"
+                }
+            ]
+        },
+        {
+            "title": "Nossa Caixa de Ferramentas",
+            "icon": "wrench",
+            "items": [
+                {
+                    "title": "Por que Fastify?",
+                    "path": "toolbox/fastify"
+                },
+                {
+                    "title": "O Poder do Prisma",
+                    "path": "toolbox/prisma"
+                },
+                {
+                    "title": "Segurança com Zod",
+                    "path": "toolbox/zod"
+                }
+            ]
+        },
+        {
+            "title": "Laboratório de Código",
+            "icon": "puzzle",
+            "items": [
+                {
+                    "title": "Anatomia de uma Rota",
+                    "path": "labs/anatomy-route"
+                },
+                {
+                    "title": "Ciclo de Vida React",
+                    "path": "labs/react-lifecycle"
+                },
+                {
+                    "title": "Hooks Explicados",
+                    "path": "labs/hooks"
+                }
+            ]
+        },
+        {
+            "title": "Funcionalidades Avançadas",
+            "icon": "layers",
+            "items": [
+                {
+                    "title": "Automação por Dentro",
+                    "path": "05-automation"
+                },
+                {
+                    "title": "Segurança e Hardening",
+                    "path": "06-security"
+                }
+            ]
+        },
+        {
+            "title": "Guia de Sobrevivência",
+            "icon": "check-square",
+            "items": [
+                {
+                    "title": "Entendendo Erros",
+                    "path": "survival/errors"
+                },
+                {
+                    "title": "Git sem Medo",
+                    "path": "survival/git"
+                }
+            ]
+        },
+        {
+            "title": "Conclusão",
+            "icon": "check",
+            "items": [
+                {
+                    "title": "Próximos Passos",
+                    "path": "07-conclusion"
+                }
+            ]
+        }
+    ]
+}

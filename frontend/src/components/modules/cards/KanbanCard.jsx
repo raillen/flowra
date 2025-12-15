@@ -154,6 +154,7 @@ const KanbanCard = ({
     onArchive,
     dragHandleProps = {},
 }) => {
+    // Simplified Priority Colors (Thinner/Subtle)
     const priority = PRIORITIES[card.priority] || PRIORITIES.media;
     const cardType = CARD_TYPES[card.type] || CARD_TYPES.tarefa;
     const isCompleted = card.status === 'concluido' || card.completedAt;
@@ -186,94 +187,83 @@ const KanbanCard = ({
         <div
             onClick={onClick}
             className={`
-                group relative bg-surface rounded-xl overflow-hidden cursor-pointer
+                group relative bg-white rounded-lg cursor-pointer
                 transition-all duration-200 ease-out
+                border border-gray-200
                 ${isDragging
-                    ? 'shadow-card-drag rotate-2 scale-105 ring-2 ring-primary-300'
-                    : 'shadow-card hover:shadow-card-hover'
+                    ? 'shadow-lg rotate-2 scale-105 ring-2 ring-gray-900 z-50'
+                    : 'shadow-sm hover:shadow-md hover:border-gray-300'
                 }
-                ${isCompleted ? 'opacity-75' : ''}
-                ${isBlocked ? 'ring-2 ring-red-300 ring-opacity-50' : ''}
+                ${isCompleted ? 'opacity-75 bg-gray-50' : ''}
+                ${isBlocked ? 'ring-2 ring-red-100' : ''}
             `}
         >
-            {/* Priority side bar */}
-            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${priority.color}`} />
+            {/* Priority Indicator - Clean Left Border */}
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${priority.color} rounded-l-lg`} />
 
-            {/* Card content */}
+            {/* Card Content */}
             <div className="pl-4 pr-3 py-3">
-                {/* Top row - Type badge, drag handle, menu */}
+                {/* Header: Type, Drag, Actions */}
                 <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
-                        {/* Type badge */}
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${cardType.color}`}>
-                            <span>{cardType.icon}</span>
-                            {!isCompact && cardType.label}
+                        {/* Type Icon Only for cleaner look, or subtle badge */}
+                        <span className="text-lg leading-none" title={cardType.label}>
+                            {cardType.icon}
                         </span>
 
-                        {/* Blocked indicator */}
                         {isBlocked && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-xs font-medium">
-                                <AlertTriangle size={12} />
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700">
+                                <AlertTriangle size={10} />
                                 Bloqueado
                             </span>
                         )}
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {/* Drag handle */}
                         <div
                             {...dragHandleProps}
-                            className="p-1 text-secondary-400 hover:text-secondary-600 hover:bg-secondary-100 rounded cursor-grab active:cursor-grabbing"
+                            className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded cursor-grab active:cursor-grabbing"
                         >
-                            <GripVertical size={16} />
+                            <GripVertical size={14} />
                         </div>
 
-                        {/* Archive button */}
                         {onArchive && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onArchive(card.id); }}
-                                className="p-1 text-secondary-400 hover:text-amber-600 hover:bg-amber-50 rounded"
-                                title="Arquivar"
+                                className="p-1 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded"
                             >
-                                <Archive size={16} />
+                                <Archive size={14} />
                             </button>
                         )}
 
-                        {/* Menu button */}
                         {onMenuClick && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onMenuClick(card); }}
-                                className="p-1 text-secondary-400 hover:text-secondary-600 hover:bg-secondary-100 rounded"
+                                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
                             >
-                                <MoreHorizontal size={16} />
+                                <MoreHorizontal size={14} />
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* Title */}
-                <h4 className={`font-semibold text-secondary-800 leading-snug mb-2 ${isCompleted ? 'line-through text-secondary-500' : ''}`}>
+                <h4 className={`text-sm font-semibold text-gray-900 leading-snug mb-2 ${isCompleted ? 'line-through text-gray-400' : ''}`}>
                     {card.title}
                 </h4>
 
-                {/* Description preview */}
-                {!isCompact && card.description && (
-                    <p className="text-sm text-secondary-500 line-clamp-2 mb-3">
-                        {card.description}
-                    </p>
-                )}
-
-                {/* Tags */}
+                {/* Tags - Cleaner, smaller */}
                 {!isCompact && card.tags?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
                         {card.tags.slice(0, 3).map((tagItem, idx) => {
                             const tag = tagItem.tag || tagItem;
+                            // Simplify tag colors to avoid neon clashes, or keep user colors but muted
                             return (
                                 <span
                                     key={tag.id || idx}
-                                    className="px-2 py-0.5 rounded-full text-xs font-medium"
+                                    className="px-2 py-0.5 rounded text-[10px] font-medium border border-transparent"
                                     style={{
-                                        backgroundColor: `${tag.color}20`,
+                                        backgroundColor: `${tag.color}15`, // 15% opacity
                                         color: tag.color,
                                     }}
                                 >
@@ -282,20 +272,23 @@ const KanbanCard = ({
                             );
                         })}
                         {card.tags.length > 3 && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-600">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
                                 +{card.tags.length - 3}
                             </span>
                         )}
                     </div>
                 )}
 
-                {/* Progress bar */}
+                {/* Progress - Thinner, gray background */}
                 {hasProgress && (
                     <div className="mb-3">
-                        <div className="flex items-center justify-between text-xs text-secondary-500 mb-1">
+                        <div className="flex items-center justify-between text-[10px] text-gray-500 mb-1">
                             <span className="flex items-center gap-1">
-                                {checklistItems.length > 0 && <CheckSquare size={12} />}
-                                {checklistItems.length > 0 ? 'Tarefas' : 'Progresso'}
+                                {checklistItems.length > 0 && <CheckSquare size={10} />}
+                                {checklistItems.length > 0
+                                    ? <span className="uppercase tracking-wider font-semibold">Checklist</span>
+                                    : <span className="uppercase tracking-wider font-semibold">Progresso</span>
+                                }
                             </span>
                             <span className="font-medium">
                                 {checklistItems.length > 0
@@ -304,40 +297,38 @@ const KanbanCard = ({
                                 }
                             </span>
                         </div>
-                        <div className="h-1.5 bg-secondary-100 rounded-full overflow-hidden">
+                        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                                className={`h-full transition-all duration-300 ${displayProgress >= 100 ? 'bg-emerald-500' : 'bg-primary-500'}`}
+                                className={`h-full transition-all duration-300 ${displayProgress >= 100 ? 'bg-emerald-500' : 'bg-gray-900'}`}
                                 style={{ width: `${Math.min(displayProgress, 100)}%` }}
                             />
                         </div>
                     </div>
                 )}
 
-                {/* Bottom row - Due date, counts, assignees */}
-                <div className="flex items-center justify-between gap-2">
+                {/* Footer Info */}
+                <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-gray-50">
                     <div className="flex items-center gap-3">
-                        {/* Due date */}
                         <DueDateBadge dueDate={card.dueDate} isCompleted={isCompleted} />
 
-                        {/* Story points */}
                         {card.storyPoints && (
-                            <span className="px-1.5 py-0.5 bg-secondary-100 rounded text-xs font-bold text-secondary-600">
+                            <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                                 {card.storyPoints} pts
                             </span>
                         )}
 
-                        {/* Counts */}
-                        <div className="flex items-center gap-2 text-xs text-secondary-400">
+                        {/* Counts (Comments/Attachments) */}
+                        <div className="flex items-center gap-2 text-gray-400">
                             {(card._count?.comments || card.comments?.length > 0) && (
-                                <span className="flex items-center gap-0.5">
+                                <span className="flex items-center gap-0.5 text-xs">
                                     <MessageSquare size={12} />
-                                    {card._count?.comments || card.comments?.length}
+                                    <span className="text-[10px]">{card._count?.comments || card.comments?.length}</span>
                                 </span>
                             )}
                             {(card._count?.attachments || card.attachments?.length > 0) && (
-                                <span className="flex items-center gap-0.5">
+                                <span className="flex items-center gap-0.5 text-xs">
                                     <Paperclip size={12} />
-                                    {card._count?.attachments || card.attachments?.length}
+                                    <span className="text-[10px]">{card._count?.attachments || card.attachments?.length}</span>
                                 </span>
                             )}
                         </div>
@@ -345,15 +336,17 @@ const KanbanCard = ({
 
                     {/* Assignees */}
                     {assignees.length > 0 && (
-                        <AvatarStack users={assignees} maxVisible={3} />
+                        <div className="scale-90 origin-right">
+                            <AvatarStack users={assignees} maxVisible={3} />
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Completed overlay */}
+            {/* Completed Icon Overlay */}
             {isCompleted && (
-                <div className="absolute top-2 right-2">
-                    <CheckCircle size={20} className="text-emerald-500" />
+                <div className="absolute top-2 right-2 text-emerald-500/20">
+                    <CheckCircle size={40} />
                 </div>
             )}
         </div>

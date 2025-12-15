@@ -226,44 +226,46 @@ const SortableColumn = ({
       ref={setNodeRef}
       style={style}
       className={`
-        w-80 flex flex-col rounded-xl h-full transition-all duration-200
-        ${isDragging ? 'opacity-50 ring-2 ring-primary/50' : ''}
-        ${isOver ? 'ring-2 ring-primary/50 ring-offset-2' : ''}
-        ${column.color || 'bg-background/80'}
-        border border-border shadow-sm
+        w-80 flex flex-col rounded-2xl h-full transition-all duration-200
+        ${isDragging ? 'opacity-50 ring-2 ring-gray-900/10 rotate-1' : ''}
+        ${isOver ? 'ring-2 ring-indigo-500/50 ring-offset-2' : ''}
+        ${column.color || 'bg-gray-50/80'}
+        border border-gray-200/50
       `}
     >
       {/* Column header */}
-      <div className="p-4 border-b border-border flex items-center justify-between group">
-        <div className="flex items-center gap-2.5 flex-1">
+      <div className="p-4 flex items-center justify-between group">
+        <div className="flex items-center gap-3 flex-1">
           <div
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-text-secondary hover:text-text-primary transition-colors"
+            className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors p-1 hover:bg-gray-200 rounded"
           >
-            <GripVertical size={16} />
+            <GripVertical size={14} />
           </div>
-          <span className="font-semibold text-text-primary">{column.title}</span>
-          <Badge color="bg-surface text-text-secondary">{columnCards.length}</Badge>
+          <span className="font-bold text-gray-700 text-sm tracking-tight">{column.title}</span>
+          <span className="bg-white text-gray-500 text-xs font-semibold px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">
+            {columnCards.length}
+          </span>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEditColumn(column)}
-            className="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded transition-colors"
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-all"
           >
-            <Edit2 size={14} />
+            <Edit2 size={12} />
           </button>
           <button
             onClick={() => onDeleteColumn(column.id)}
-            className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50/10 rounded transition-colors"
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-white rounded-lg transition-all"
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
           </button>
         </div>
       </div>
 
       {/* Column content */}
-      <div className="flex-1 p-3 space-y-3 overflow-y-auto custom-scrollbar min-h-[200px]">
+      <div className="flex-1 px-3 pb-3 space-y-3 overflow-y-auto custom-scrollbar min-h-[150px]">
         {columnCards.length > 0 ? (
           <SortableContext items={columnCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
             {columnCards.map((card) => (
@@ -279,27 +281,26 @@ const SortableColumn = ({
             ))}
           </SortableContext>
         ) : (
-          <div className="text-center py-8 text-text-secondary">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-surface-hover flex items-center justify-center">
-              <Plus size={20} className="text-text-secondary" />
+          <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-xl m-1">
+            <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100/50 flex items-center justify-center">
+              <Plus size={16} className="text-gray-300" />
             </div>
-            <p className="text-sm font-medium mb-1">Coluna vazia</p>
-            <p className="text-xs">Arraste cards ou adicione novos</p>
+            <p className="text-xs font-medium text-gray-400">Sem cards</p>
           </div>
         )}
       </div>
 
 
       {/* Add card button */}
-      <div className="p-3 border-t border-border">
+      <div className="px-3 pb-3 pt-1">
         <button
           onClick={() => onAddCard(column.id)}
-          className="w-full py-2.5 px-4 text-sm font-medium text-text-secondary hover:text-primary 
-                     bg-background hover:bg-surface-hover rounded-lg border border-dashed border-border 
-                     hover:border-primary/50 transition-all flex items-center justify-center gap-2"
+          className="w-full py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-gray-900 
+                     hover:bg-white rounded-xl transition-all flex items-center justify-center gap-2
+                     shadow-sm border border-transparent hover:border-gray-200 hover:shadow"
         >
           <Plus size={16} />
-          Adicionar Card
+          <span className="text-xs">Adicionar Novo Card</span>
         </button>
       </div>
     </div>
@@ -324,7 +325,21 @@ const KanbanBoardView = () => {
   const [loadingBoard, setLoadingBoard] = useState(true);
   const [error, setError] = useState(null);
   const [activeId, setActiveId] = useState(null);
-  const [viewMode, setViewMode] = useState('kanban'); // kanban, list, calendar, timeline, gantt, swimlanes, hierarchy
+
+  // Initialize viewMode from localStorage (Global persistence)
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      return localStorage.getItem('kbsys_global_view_mode') || 'kanban';
+    } catch {
+      return 'kanban';
+    }
+  });
+
+  // Persist viewMode changes
+  useEffect(() => {
+    localStorage.setItem('kbsys_global_view_mode', viewMode);
+  }, [viewMode]);
+
   const [filters, setFilters] = useState({});
   const [boardUsers, setBoardUsers] = useState([]);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
@@ -582,7 +597,7 @@ const KanbanBoardView = () => {
             try {
               await cardService.moveCard(activeProjectId, activeBoardId, activeCard.id, targetColumnId, newIndex);
             } catch (err) {
-              console.error("Failed to reorder card", err);
+              // console.error("Failed to reorder card", err);
               // We might want to revert logic here if strict, but for now we log
               setError('Erro ao salvar ordem do card');
             }
@@ -648,19 +663,18 @@ const KanbanBoardView = () => {
   };
 
   const handleSaveCard = async (cardData) => {
-    console.log('handleSaveCard called with:', cardData);
-    console.log('Current editingCard state:', editingCard);
+
 
     try {
       setError(null);
 
       // Handle Delete (signaled by null or _deleted flag)
       if (cardData === null || cardData._deleted) {
-        console.log('Processing DELETE action');
+        // console.log('Processing DELETE action');
         const targetId = cardData?._deleted ? cardData.id : editingCard?.id;
 
         if (targetId) {
-          console.log('Removing card from state:', targetId);
+          // console.log('Removing card from state:', targetId);
           setCards((prev) => prev.filter((c) => c.id !== targetId));
         } else {
           console.warn('DELETE called but could not determine card ID!');
@@ -674,11 +688,11 @@ const KanbanBoardView = () => {
       // Handle Archive (signaled by archivedAt property)
       // We assume the API call was already handled by the modal for archive actions
       if (cardData.archivedAt) {
-        console.log('Processing ARCHIVE action');
+        // console.log('Processing ARCHIVE action');
         const targetId = cardData.id || editingCard?.id;
 
         if (targetId) {
-          console.log('Removing card from state (Archive):', targetId);
+          // console.log('Removing card from state (Archive):', targetId);
           setCards((prev) => prev.filter((c) => c.id !== targetId));
         } else {
           console.warn('ARCHIVE called but could not determine card ID!');
@@ -698,10 +712,17 @@ const KanbanBoardView = () => {
         );
         setCards((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       } else {
+        const targetColumnId = cardData.columnId || selectedColumnId;
+        // console.log('Creating card in column:', targetColumnId);
+
+        if (!targetColumnId) {
+          throw new Error('Column ID is missing');
+        }
+
         const newCard = await cardService.createCard(
           activeProjectId,
           activeBoardId,
-          selectedColumnId,
+          targetColumnId,
           cardData
         );
         setCards((prev) => [...prev, newCard]);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, FileText, Copy, Inbox, Grid, List, Trash2, Edit2, ExternalLink, Calendar, Eye, Layers } from 'lucide-react';
-import { Button, Modal } from '../../ui';
+import { Button, Modal, BaseInput } from '../../ui';
 import TemplateBuilder from '../briefing/TemplateBuilder';
 import BriefingSubmissionsTab from '../briefing/BriefingSubmissionsTab';
 import PreviewModal from '../briefing/PreviewModal';
@@ -140,7 +140,7 @@ export default function BriefingTemplatesView() {
         if (loading) {
             return (
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                 </div>
             );
         }
@@ -159,7 +159,7 @@ export default function BriefingTemplatesView() {
         // List View
         if (viewMode === 'list') {
             return (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
@@ -181,7 +181,7 @@ export default function BriefingTemplatesView() {
                                                 <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                                     <FileText size={16} />
                                                 </div>
-                                                <span className="font-medium text-gray-800">{tpl.name}</span>
+                                                <span className="font-medium text-gray-900">{tpl.name}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -191,7 +191,7 @@ export default function BriefingTemplatesView() {
                                             <span className="text-sm text-gray-600">{fieldCount} campos</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 text-xs rounded-full ${tpl.isPublic ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                            <span className={`px-2 py-1 text-xs rounded-full ${tpl.isPublic ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
                                                 {tpl.isPublic ? 'Público' : 'Interno'}
                                             </span>
                                         </td>
@@ -205,7 +205,7 @@ export default function BriefingTemplatesView() {
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={(e) => handleEdit(tpl, e)}
-                                                    className="text-gray-500 hover:text-indigo-600 p-2 hover:bg-indigo-50 rounded"
+                                                    className="text-gray-400 hover:text-indigo-600 p-2 hover:bg-indigo-50 rounded"
                                                     title="Editar"
                                                 >
                                                     <Edit2 size={16} />
@@ -213,7 +213,7 @@ export default function BriefingTemplatesView() {
                                                 {tpl.isPublic && (
                                                     <button
                                                         onClick={(e) => handleCopyLink(tpl, e)}
-                                                        className="text-gray-500 hover:text-blue-600 p-2 hover:bg-blue-50 rounded"
+                                                        className="text-gray-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded"
                                                         title="Copiar Link Público"
                                                     >
                                                         <Copy size={16} />
@@ -222,7 +222,7 @@ export default function BriefingTemplatesView() {
                                                 <button
                                                     onClick={(e) => handleDelete(tpl, e)}
                                                     disabled={deleting === tpl.id}
-                                                    className="text-gray-500 hover:text-red-600 p-2 hover:bg-red-50 rounded disabled:opacity-50"
+                                                    className="text-gray-400 hover:text-red-600 p-2 hover:bg-red-50 rounded disabled:opacity-50"
                                                     title="Excluir"
                                                 >
                                                     <Trash2 size={16} />
@@ -247,10 +247,10 @@ export default function BriefingTemplatesView() {
                     return (
                         <div key={tpl.id}
                             onClick={() => handleEdit(tpl)}
-                            className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all group relative cursor-pointer hover:border-primary/30"
+                            className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all group relative cursor-pointer hover:border-indigo-200"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+                                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
                                     <FileText size={24} />
                                 </div>
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
@@ -273,11 +273,11 @@ export default function BriefingTemplatesView() {
                                     </button>
                                 </div>
                             </div>
-                            <h3 className="font-bold text-gray-800 mb-1 truncate">{tpl.name}</h3>
+                            <h3 className="font-bold text-gray-900 mb-1 truncate">{tpl.name}</h3>
                             <p className="text-sm text-gray-500 line-clamp-2 mb-4 h-10">{tpl.description || 'Sem descrição'}</p>
 
                             <div className="flex items-center gap-3 text-xs text-gray-400 border-t border-gray-50 pt-4">
-                                <span className={`px-2 py-0.5 rounded-full ${tpl.isPublic ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                <span className={`px-2 py-0.5 rounded-full ${tpl.isPublic ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
                                     {tpl.isPublic ? 'Público' : 'Interno'}
                                 </span>
                                 <span>•</span>
@@ -294,8 +294,8 @@ export default function BriefingTemplatesView() {
         <div className="p-8 max-w-7xl mx-auto h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Briefings</h1>
-                    <p className="text-slate-500 mt-1">Gerencie seus formulários e modelos de solicitação</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Briefings</h1>
+                    <p className="text-gray-500 mt-1">Gerencie seus formulários e modelos de solicitação</p>
                 </div>
                 {activeTab === 'modelos' && (
                     <div className="flex items-center gap-3">
@@ -349,27 +349,36 @@ export default function BriefingTemplatesView() {
 
             {/* Builder Modal */}
             <Modal isOpen={isBuilderOpen} onClose={() => setIsBuilderOpen(false)} title={null} maxWidth="max-w-7xl" noPadding>
-                <div className="h-[90vh] overflow-y-auto bg-gray-50/50">
+                <div className="h-[90vh] flex flex-col bg-gray-50/50">
                     {/* Template Name Input */}
-                    <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
-                        <input
-                            type="text"
-                            value={newTemplateData.name}
-                            onChange={(e) => setNewTemplateData(prev => ({ ...prev, name: e.target.value }))}
-                            className="text-2xl font-bold text-gray-800 border-none outline-none w-full bg-transparent placeholder-gray-400"
-                            placeholder="Nome do Formulário"
+                    <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                        <div className="w-1/2">
+                            <BaseInput
+                                value={newTemplateData.name}
+                                onChange={(e) => setNewTemplateData(prev => ({ ...prev, name: e.target.value }))}
+                                placeholder="Nome do Formulário"
+                                className="text-xl font-bold border-transparent hover:border-gray-200 focus:border-indigo-500 bg-transparent px-0"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 text-xs rounded-full ${newTemplateData.isPublic ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
+                                {newTemplateData.isPublic ? 'Público' : 'Interno'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto">
+                        <TemplateBuilder
+                            fields={newTemplateData.fields}
+                            onChange={(fields) => setNewTemplateData(prev => ({ ...prev, fields }))}
+                            description={newTemplateData.description}
+                            onDescriptionChange={(desc) => setNewTemplateData(prev => ({ ...prev, description: desc }))}
+                            isPublic={newTemplateData.isPublic}
+                            onIsPublicChange={(val) => setNewTemplateData(prev => ({ ...prev, isPublic: val }))}
                         />
                     </div>
 
-                    <TemplateBuilder
-                        fields={newTemplateData.fields}
-                        onChange={(fields) => setNewTemplateData(prev => ({ ...prev, fields }))}
-                        description={newTemplateData.description}
-                        onDescriptionChange={(desc) => setNewTemplateData(prev => ({ ...prev, description: desc }))}
-                        isPublic={newTemplateData.isPublic}
-                        onIsPublicChange={(val) => setNewTemplateData(prev => ({ ...prev, isPublic: val }))}
-                    />
-                    <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 flex justify-between gap-3 z-50">
+                    <div className="shrink-0 p-4 bg-white border-t border-gray-200 flex justify-between gap-3 z-50">
                         <div className="flex gap-2">
                             {currentTemplate && (
                                 <Button

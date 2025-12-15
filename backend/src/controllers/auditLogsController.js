@@ -6,9 +6,22 @@ export const auditLogsController = {
         const skip = (page - 1) * limit;
 
         const where = {};
+
+        // Security: Restrict access
+        // If user is not admin, they can ONLY see their own logs
+        if (request.user.role !== 'admin' && request.user.role !== 'superuser') {
+            // If they tried to query another user, deny it or override
+            if (userId && userId !== request.user.id) {
+                return reply.status(403).send({ message: 'Forbidden: You can only view your own logs' });
+            }
+            where.userId = request.user.id;
+        } else {
+            // Admin can filter by userId if provided
+            if (userId) where.userId = userId;
+        }
+
         if (action) where.action = action;
         if (entityType) where.entityType = entityType;
-        if (userId) where.userId = userId;
 
         try {
             const [logs, total] = await Promise.all([

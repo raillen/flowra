@@ -24,7 +24,8 @@ import {
     Save,
     X,
     Copy,
-    Check
+    Check,
+    GraduationCap
 } from 'lucide-react';
 
 /**
@@ -48,13 +49,15 @@ const DocumentationView = () => {
 
     // Load sidebar when section changes
     useEffect(() => {
+        setSidebar(null);
+        setCurrentPath(null); // Clear path to prevent 404s with old path
         loadSidebar();
     }, [activeSection]);
 
     // Load content when path changes
     useEffect(() => {
         loadContent();
-    }, [activeSection, currentPath]);
+    }, [currentPath]);
 
     const loadSidebar = async () => {
         try {
@@ -64,6 +67,10 @@ const DocumentationView = () => {
                 // Expand first section by default
                 if (response.data.data.sections?.[0]) {
                     setExpandedSections({ [response.data.data.sections[0].title]: true });
+                    // Auto-select first item of the new section to avoid 404s
+                    if (response.data.data.sections[0].items?.[0]) {
+                        setCurrentPath(response.data.data.sections[0].items[0].path);
+                    }
                 }
             }
         } catch (error) {
@@ -75,6 +82,7 @@ const DocumentationView = () => {
     };
 
     const loadContent = async () => {
+        if (!currentPath) return; // Don't fetch if no path selected
         setLoading(true);
         try {
             const response = await api.get(`/docs/${activeSection}/${currentPath}`);
@@ -161,15 +169,26 @@ const DocumentationView = () => {
                             📘 Uso
                         </button>
                         {isAdmin && (
-                            <button
-                                onClick={() => setActiveSection('technical')}
-                                className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1 ${activeSection === 'technical'
-                                    ? 'bg-white text-primary-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                <Lock size={12} /> Técnica
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => setActiveSection('technical')}
+                                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1 ${activeSection === 'technical'
+                                        ? 'bg-white text-primary-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    <Lock size={12} /> Técnica
+                                </button>
+                                <button
+                                    onClick={() => setActiveSection('learn')}
+                                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1 ${activeSection === 'learn'
+                                        ? 'bg-amber-50 text-amber-600 shadow-sm border border-amber-100'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    <GraduationCap size={14} /> Aprenda
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>

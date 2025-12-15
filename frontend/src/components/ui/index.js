@@ -6,3 +6,5 @@ export { Toast } from './Toast';
 export { Spinner } from './Spinner';
 export { AvatarStack, Avatar } from './AvatarStack';
 export { default as AssigneePopover } from './AssigneePopover';
+export { default as BaseInput } from './BaseInput';
+export { default as BaseSelect } from './BaseSelect';

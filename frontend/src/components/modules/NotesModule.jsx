@@ -149,6 +149,7 @@ const NotesModule = () => {
             note={selectedNote}
             isEditing={isEditing}
             onEdit={() => setIsEditing(true)}
+            onCancel={() => setIsEditing(false)}
             onSave={(updatedNote) => {
               setNotes(notes.map((n) => (n.id === updatedNote.id ? updatedNote : n)));
               setSelectedNote(updatedNote);
@@ -179,192 +180,41 @@ const NotesModule = () => {
   );
 };
 
-const NoteEditor = ({ note, isEditing, onEdit, onSave, onDelete, onReferenceClick, onShare }) => {
+// Utility to strip HTML tags for raw content search
+const stripHtml = (html) => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
+
+import TipTapEditor from './notes/TipTapEditor';
+
+const NoteEditor = ({ note, isEditing, onEdit, onCancel, onSave, onDelete, onReferenceClick, onShare }) => {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content || '');
-  const [references, setReferences] = useState(note.references || []);
-  const [showMentionMenu, setShowMentionMenu] = useState(false);
-  const [mentionQuery, setMentionQuery] = useState('');
-  const [mentionResults, setMentionResults] = useState({ projects: [], boards: [], cards: [] });
-  const [mentionLoading, setMentionLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const editorRef = useRef(null);
 
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content || '');
-    setReferences(note.references || []);
   }, [note]);
-
-  const insertCheckbox = () => {
-    const cursorPos = editorRef.current?.selectionStart || content.length;
-    const textBefore = content.slice(0, cursorPos);
-    const textAfter = content.slice(cursorPos);
-
-    // Check newline
-    const lastNewline = textBefore.lastIndexOf('\n');
-    const isStartOfLine = lastNewline === -1 || lastNewline === textBefore.length - 1;
-    const prefix = isStartOfLine ? '- [ ] ' : '\n- [ ] ';
-
-    const newContent = textBefore + prefix + textAfter;
-    setContent(newContent);
-
-    setTimeout(() => {
-      editorRef.current?.focus();
-      const newPos = cursorPos + prefix.length;
-      editorRef.current?.setSelectionRange(newPos, newPos);
-    }, 0);
-  };
-
-  const toggleTaskStatus = (index) => {
-    let currentIndex = 0;
-    const newContent = content.replace(/- \[( |x)\]/g, (match) => {
-      if (currentIndex === index) {
-        currentIndex++;
-        return match === '- [ ]' ? '- [x]' : '- [ ]';
-      }
-      currentIndex++;
-      return match;
-    });
-    setContent(newContent);
-    const updatedNote = { ...note, content: newContent };
-    onSave(updatedNote);
-    api.put(`/notes/${note.id}`, {
-      ...note,
-      content: newContent,
-      rawContent: newContent.replace(/@\[[^\]]+\]/g, '').replace(/<[^>]*>/g, ' ').trim()
-    }).catch(err => console.error(err));
-  };
-
-  // ... (handleContentChange, insertMention, handleSave, searchMentions same as before) ...
-  // Re-implementing simplified versions for brevity in this full-write to ensure correctness
-
-  const handleContentChange = (e) => {
-    const newContent = e.target.value;
-    setContent(newContent);
-    const cursorPos = e.target.selectionStart;
-    const textBeforeCursor = newContent.slice(0, cursorPos);
-    const atMatch = textBeforeCursor.match(/@(\w*)$/);
-    if (atMatch) {
-      setShowMentionMenu(true);
-      setMentionQuery(atMatch[1]);
-    } else {
-      setShowMentionMenu(false);
-      setMentionQuery('');
-    }
-  };
-
-  const insertMention = (type, item) => {
-    const itemTitle = type === 'card' ? item.title : item.name;
-    const mentionText = `@[${itemTitle}]`;
-    const newRef = { type, id: item.id, title: itemTitle };
-    setReferences([...references, newRef]);
-    const cursorPos = editorRef.current?.selectionStart || content.length;
-    const textBeforeCursor = content.slice(0, cursorPos);
-    const textAfterCursor = content.slice(cursorPos);
-    const atPos = textBeforeCursor.lastIndexOf('@');
-    const newContent = textBeforeCursor.slice(0, atPos) + mentionText + ' ' + textAfterCursor;
-    setContent(newContent);
-    setShowMentionMenu(false);
-    setMentionQuery('');
-    setTimeout(() => {
-      editorRef.current?.focus();
-      const newPos = atPos + mentionText.length + 1;
-      editorRef.current?.setSelectionRange(newPos, newPos);
-    }, 0);
-  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const rawContent = stripHtml(content);
       const response = await api.put(`/notes/${note.id}`, {
         title,
         content,
-        rawContent: content.replace(/@\[[^\]]+\]/g, '').replace(/<[^>]*>/g, ' ').trim(),
-        references,
+        rawContent,
+        references: note.references || [], // Preserve references for now
       });
       onSave(response.data.data);
-    } catch (error) { console.error(error); } finally { setSaving(false); }
-  };
-
-  // Only render content logic needed for view mode
-  const renderContent = (text) => {
-    if (!text) return <p className="text-secondary-400 dark:text-gray-500 italic">Nota vazia</p>;
-    const lines = text.split('\n');
-    let checkboxIndex = 0;
-
-    return lines.map((line, i) => {
-      // Check for Checkboxes
-      const checkboxMatch = line.match(/^- \[( |x)\] (.*)/);
-      if (checkboxMatch) {
-        const isChecked = checkboxMatch[1] === 'x';
-        const textContent = checkboxMatch[2];
-        const currentIndex = checkboxIndex++;
-        return (
-          <div key={i} className="flex items-start gap-3 py-1 group">
-            <button
-              onClick={() => toggleTaskStatus(currentIndex)}
-              className={`mt-1 shrinking-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${isChecked
-                ? 'bg-primary-500 border-primary-500'
-                : 'border-secondary-300 dark:border-slate-500 hover:border-primary-500 bg-white dark:bg-slate-800'
-                }`}
-            >
-              {isChecked && <Check size={10} className="text-white" />}
-            </button>
-            <span className={`text-secondary-700 dark:text-gray-300 leading-relaxed ${isChecked ? 'line-through text-secondary-400 dark:text-gray-600' : ''}`}>
-              {renderTextWithMentions(textContent)}
-            </span>
-          </div>
-        );
-      }
-
-      // Check for YouTube Embed
-      // Regex detects standard youtube and youtu.be links
-      const youtubeMatch = line.match(/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})(?:\S+)?$/);
-      if (youtubeMatch) {
-        const videoId = youtubeMatch[1];
-        return (
-          <div key={i} className="my-4 rounded-xl overflow-hidden shadow-lg border border-secondary-200 dark:border-slate-700 max-w-2xl bg-black">
-            <iframe
-              width="100%"
-              height="360"
-              src={`https://www.youtube.com/embed/${videoId}`}
-              className="aspect-video"
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-        );
-      }
-
-      // Check for Image Embed (Simple URL check)
-      const imageMatch = line.match(/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|svg)$/);
-      if (imageMatch) {
-        return (
-          <div key={i} className="my-4">
-            <img src={line.trim()} alt="Embedded" className="rounded-lg shadow-md max-h-96 object-contain border border-secondary-200 dark:border-slate-700" />
-          </div>
-        );
-      }
-
-      return (
-        <div key={i} className="min-h-[1.5em] whitespace-pre-wrap leading-relaxed text-secondary-700 dark:text-gray-300 mb-1">
-          {renderTextWithMentions(line)}
-        </div>
-      );
-    });
-  };
-
-  const renderTextWithMentions = (text) => {
-    return text.split(/(@\[[^\]]+\])/g).map((part, idx) => {
-      const mentionMatch = part.match(/@\[([^\]]+)\]/);
-      if (mentionMatch) {
-        return <span key={idx} className="text-primary-600 dark:text-primary-400 font-medium bg-primary-50 dark:bg-primary-900/40 px-1 rounded mx-0.5">@{mentionMatch[1]}</span>
-      }
-      return part;
-    });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -388,7 +238,7 @@ const NoteEditor = ({ note, isEditing, onEdit, onSave, onDelete, onReferenceClic
               <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50">
                 <Save size={16} /> {saving ? 'Salvando...' : 'Salvar'}
               </button>
-              <button onClick={() => { setTitle(note.title); setContent(note.content || ''); }} className="p-2 text-secondary-500 hover:text-secondary-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-secondary-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+              <button onClick={() => { setTitle(note.title); setContent(note.content || ''); onCancel(); }} className="p-2 text-secondary-500 hover:text-secondary-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-secondary-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                 <X size={18} />
               </button>
             </>
@@ -412,40 +262,20 @@ const NoteEditor = ({ note, isEditing, onEdit, onSave, onDelete, onReferenceClic
         </div>
       </div>
 
-      <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-        <div className="max-w-3xl mx-auto">
-          {isEditing ? (
-            <div className="relative h-full flex flex-col">
-              <div className="flex items-center gap-1 mb-3 p-2 bg-secondary-50 dark:bg-slate-800 rounded-lg shrink-0">
-                <button title="Negrito" className="p-2 hover:bg-secondary-200 dark:hover:bg-slate-700 rounded transition-colors text-secondary-600 dark:text-gray-400"><Bold size={16} /></button>
-                <button title="Itálico" className="p-2 hover:bg-secondary-200 dark:hover:bg-slate-700 rounded transition-colors text-secondary-600 dark:text-gray-400"><Italic size={16} /></button>
-                <button title="Lista" className="p-2 hover:bg-secondary-200 dark:hover:bg-slate-700 rounded transition-colors text-secondary-600 dark:text-gray-400"><List size={16} /></button>
-                <button onClick={insertCheckbox} className="p-2 hover:bg-secondary-200 dark:hover:bg-slate-700 rounded transition-colors text-secondary-600 dark:text-gray-400" title="Inserir Tarefa"><CheckSquare size={16} /></button>
-                <div className="h-6 w-px bg-secondary-300 dark:bg-slate-600 mx-1" />
-                <span className="text-xs text-secondary-500 dark:text-gray-500 ml-2">Use @ para mencionar</span>
-              </div>
-
-              <textarea
-                ref={editorRef}
-                value={content}
-                onChange={handleContentChange}
-                placeholder="Comece a escrever...&#10;Use @ para referenciar projetos, boards ou cards"
-                className="w-full flex-1 p-4 border border-secondary-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl resize-none outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-secondary-700 dark:text-gray-200 leading-relaxed font-sans"
-              />
-              {showMentionMenu && (
-                <div className="absolute top-20 left-4 z-50 bg-white dark:bg-slate-800 border border-secondary-200 dark:border-slate-700 shadow-xl rounded-xl p-2 w-64">
-                  <p className="text-xs text-gray-500 p-2">Resultados para "{mentionQuery}"...</p>
-                  {/* Simplified mention dropdown for brevity */}
-                  <button onClick={() => setShowMentionMenu(false)} className="text-xs text-center w-full p-2 text-gray-400">Fechar</button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="prose prose-slate dark:prose-invert max-w-none">
-              {renderContent(content)}
-            </div>
-          )}
-        </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {isEditing ? (
+          <TipTapEditor
+            content={content}
+            onChange={setContent}
+            editable={true}
+          />
+        ) : (
+          <TipTapEditor
+            content={content}
+            onChange={() => { }}
+            editable={false}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,9 +1,30 @@
 import { PrismaClient } from '@prisma/client';
+import { UnauthorizedError } from '../utils/errors.js';
 const prisma = new PrismaClient();
+
+const checkBoardAccess = async (userId, boardId) => {
+    const membership = await prisma.boardMember.findUnique({
+        where: {
+            boardId_userId: {
+                boardId,
+                userId
+            }
+        }
+    });
+
+    if (!membership) {
+        // Also check if user is project owner or admin (optional, sticking to board membership for now)
+        // Or check if board is public/open? Assuming private by default.
+        throw new Error('Access denied to this board');
+    }
+};
 
 export const getBoardSummary = async (request, reply) => {
     const { boardId } = request.params;
+    const userId = request.user.id;
     try {
+        await checkBoardAccess(userId, boardId);
+
         const cards = await prisma.card.findMany({
             where: { boardId, archivedAt: null },
             select: {
@@ -45,7 +66,10 @@ export const getBoardSummary = async (request, reply) => {
 
 export const getMemberWorkload = async (request, reply) => {
     const { boardId } = request.params;
+    const userId = request.user.id;
     try {
+        await checkBoardAccess(userId, boardId);
+
         const members = await prisma.boardMember.findMany({
             where: { boardId },
             include: { user: true }
@@ -109,7 +133,10 @@ export const getMemberWorkload = async (request, reply) => {
 
 export const getStatusDistribution = async (request, reply) => {
     const { boardId } = request.params;
+    const userId = request.user.id;
     try {
+        await checkBoardAccess(userId, boardId);
+
         const columns = await prisma.column.findMany({
             where: { boardId },
             include: { _count: { select: { cards: { where: { archivedAt: null } } } } }
@@ -130,7 +157,10 @@ export const getStatusDistribution = async (request, reply) => {
 
 export const getBurndown = async (request, reply) => {
     const { boardId } = request.params;
+    const userId = request.user.id;
     try {
+        await checkBoardAccess(userId, boardId);
+
         const today = new Date();
         const lookbackDays = 30;
         const startDate = new Date();

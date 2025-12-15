@@ -118,3 +118,14 @@ export async function removeMember(request, reply) {
 
   return reply.send(successResponse(null, 'Member removed successfully'));
 }
+
+/**
+ * Search boards globally (user access scope)
+ */
+export async function searchBoards(request, reply) {
+  const { search } = request.query;
+  const userId = request.user.id;
+
+  const boards = await boardService.searchBoards(userId, search);
+  return reply.send(successResponse(boards));
+}

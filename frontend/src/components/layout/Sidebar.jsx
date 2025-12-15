@@ -30,7 +30,7 @@ import {
 
 /**
  * Sidebar navigation component
- * Redesigned with modern glassmorphism, gradient accents, and Collapsible Project Tree
+ * Redesigned with modern flat style (BoardSettingsModal look), 280px fixed width
  * 
  * @module components/layout/Sidebar
  */
@@ -121,32 +121,31 @@ const Sidebar = ({ isOpen, onToggle }) => {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
           onClick={onToggle}
         />
       )}
 
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-72 bg-surface/80 backdrop-blur-xl border-r border-border
-        transform transition-all duration-300 ease-out
+        w-[280px] bg-gray-50/50 dark:bg-slate-900/95 border-r border-gray-200 dark:border-slate-700
+        transform transition-all duration-300 ease-out flex-shrink-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        flex flex-col h-full shadow-xl lg:shadow-none
+        flex flex-col h-full shadow-2xl lg:shadow-none
       `}>
 
         {/* Logo Area */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-border">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-primary-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
-              <Code2 className="text-white" size={20} />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm text-white`} style={{ backgroundColor: accentColor || '#4F46E5' }}>
+              <Code2 size={18} />
             </div>
             <div>
-              <span className="font-bold text-lg text-text-primary tracking-tight">KBSys</span>
-              <span className="text-[10px] text-text-secondary block -mt-1">Project Manager</span>
+              <span className="font-bold text-gray-900 dark:text-white leading-tight">KBSys</span>
             </div>
           </div>
           <button
-            className="lg:hidden p-2 hover:bg-surface-hover rounded-lg text-text-secondary hover:text-text-primary transition-colors"
+            className="lg:hidden p-2 hover:bg-gray-200/50 dark:hover:bg-slate-700/50 rounded-lg text-gray-500 dark:text-slate-400 transition-colors"
             onClick={onToggle}
           >
             <X size={20} />
@@ -154,35 +153,33 @@ const Sidebar = ({ isOpen, onToggle }) => {
         </div>
 
         {/* Navigation Items */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 custom-scrollbar">
 
           {/* Principal Group */}
-          {menuGroups[0].items.map((item) => (
-            <NavItem key={item.id} item={item} activeModule={activeModule} handleNavigation={handleNavigation} accentColor={accentColor} />
-          ))}
+          <div className="space-y-1">
+            {menuGroups[0].items.map((item) => (
+              <NavItem key={item.id} item={item} activeModule={activeModule} handleNavigation={handleNavigation} accentColor={accentColor} />
+            ))}
+          </div>
 
           {/* Projects Tree Section */}
           <div>
-            <div className="flex items-center justify-between px-3 mb-2 group">
-              <button
-                onClick={() => handleNavigation('projects')}
-                className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider hover:text-primary-600 transition-colors flex-1 text-left"
-              >
+            <div className="flex items-center justify-between px-2 mb-3 group">
+              <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
                 Projetos
-              </button>
+              </span>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => handleNavigation('projects')}
-                  className="p-1 hover:bg-primary-50 text-text-secondary hover:text-primary-600 rounded-md transition-colors"
-                  title="Ver Todos / Novo Projeto"
+                  className="p-1 hover:bg-gray-200/50 dark:hover:bg-slate-700/50 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 rounded transition-colors"
+                  title="Novo Projeto"
                 >
                   <Plus size={14} />
                 </button>
                 <button
                   onClick={() => setIsProjectsSectionExpanded(!isProjectsSectionExpanded)}
-                  className="p-1 hover:bg-surface-hover text-text-secondary hover:text-text-primary rounded-md transition-colors"
-                  title={isProjectsSectionExpanded ? "Recolher" : "Expandir"}
+                  className="p-1 hover:bg-gray-200/50 dark:hover:bg-slate-700/50 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 rounded transition-colors"
                 >
                   {isProjectsSectionExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                 </button>
@@ -190,9 +187,9 @@ const Sidebar = ({ isOpen, onToggle }) => {
             </div>
 
             {isProjectsSectionExpanded && (
-              <div className="space-y-0.5 animate-slide-down">
+              <div className="space-y-1 animate-slide-down">
                 {projects.length === 0 ? (
-                  <p className="px-3 text-sm text-text-secondary italic">Nenhum projeto</p>
+                  <p className="px-2 text-sm text-gray-400 dark:text-slate-500 italic">Nenhum projeto</p>
                 ) : (
                   projects.map((project) => {
                     const isActive = isProjectActive(project.id);
@@ -200,22 +197,20 @@ const Sidebar = ({ isOpen, onToggle }) => {
                     const hasBoards = project.boards && project.boards.length > 0;
 
                     return (
-                      <div key={project.id} className="mb-0.5">
+                      <div key={project.id}>
                         {/* Project Item */}
                         <div
                           className={`
-                          w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer group select-none
-                          ${isActive && !activeBoardId ? 'bg-surface-hover' : 'hover:bg-surface-hover'}
+                          w-full flex items-center justify-between px-3 py-2 rounded-md transition-all duration-200 cursor-pointer group select-none
+                          ${isActive && !activeBoardId
+                              ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-gray-100 dark:ring-slate-700 text-gray-900 dark:text-white'
+                              : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100/50 dark:hover:bg-slate-800/50 hover:text-gray-900 dark:hover:text-white'}
                         `}
                           onClick={() => {
                             if (hasBoards && !isExpanded) {
                               toggleProject({ stopPropagation: () => { } }, project.id);
                             } else {
-                              // Just navigate to project
                               navigateTo('projects');
-                              // Actually, we might want to set active project context?
-                              // Since we don't have a specific "Project View" other than the list,
-                              // we just toggle unless user wants to go to board.
                             }
                           }}
                         >
@@ -223,15 +218,14 @@ const Sidebar = ({ isOpen, onToggle }) => {
                             {hasBoards ? (
                               <div
                                 onClick={(e) => toggleProject(e, project.id)}
-                                className="p-0.5 rounded-md hover:bg-black/5 text-text-secondary transition-colors"
+                                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                               >
                                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                               </div>
-                            ) : (
-                              <div className="w-4.5" /> /* Spacer */
-                            )}
-                            <Folder size={15} className={`${isActive ? 'text-primary-600' : 'text-text-secondary'} shrink-0`} />
-                            <span className={`text-sm font-medium truncate ${isActive ? 'text-primary-700' : 'text-text-secondary'}`}>
+                            ) : <div className="w-3.5" />}
+
+                            <Folder size={16} className={`shrink-0 ${isActive && !activeBoardId ? 'fill-current' : ''}`} style={isActive && !activeBoardId ? { color: accentColor } : {}} />
+                            <span className="text-sm font-medium truncate">
                               {project.name}
                             </span>
                           </div>
@@ -239,7 +233,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
 
                         {/* Boards List (Nested) */}
                         {isExpanded && hasBoards && (
-                          <div className="ml-4 pl-3 border-l-2 border-border/50 space-y-0.5 mt-0.5 mb-1.5 animate-slide-down">
+                          <div className="ml-5 pl-3 border-l border-gray-200 dark:border-slate-700 space-y-1 mt-1 mb-2 animate-slide-down">
                             {project.boards.map(board => {
                               const isBoardActive = activeBoardId === board.id;
                               return (
@@ -247,14 +241,15 @@ const Sidebar = ({ isOpen, onToggle }) => {
                                   key={board.id}
                                   onClick={() => handleBoardNavigation(project.id, board.id)}
                                   className={`
-                                  w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors text-left
+                                  w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all text-left
                                   ${isBoardActive
-                                      ? 'bg-primary-50 text-primary-700 font-medium'
-                                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                                      ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-gray-100 dark:ring-slate-700 text-gray-900 dark:text-white font-medium'
+                                      : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-slate-800/50'
                                     }
                                 `}
                                 >
-                                  <Layout size={13} className={isBoardActive ? 'text-primary-500' : 'opacity-70'} />
+                                  {/* <Layout size={14} className={isBoardActive ? 'text-primary-500' : 'opacity-70'} /> */}
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isBoardActive ? '' : 'bg-gray-300 dark:bg-slate-600'}`} style={isBoardActive ? { backgroundColor: accentColor } : {}}></span>
                                   <span className="truncate">{board.name}</span>
                                 </button>
                               );
@@ -271,52 +266,52 @@ const Sidebar = ({ isOpen, onToggle }) => {
 
           {/* Other Tools */}
           {menuGroups.slice(1).map((group) => (
-            <div key={group.id}>
+            <div key={group.id} className="space-y-1">
               {group.label && (
-                <h3 className="px-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                  {group.label}
-                </h3>
+                <div className="px-2 mb-2 mt-6">
+                  <h3 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                    {group.label}
+                  </h3>
+                </div>
               )}
-              <div className="space-y-1">
-                {group.items.map((item) => (
-                  <NavItem key={item.id} item={item} activeModule={activeModule} handleNavigation={handleNavigation} accentColor={accentColor} />
-                ))}
-              </div>
+              {group.items.map((item) => (
+                <NavItem key={item.id} item={item} activeModule={activeModule} handleNavigation={handleNavigation} accentColor={accentColor} />
+              ))}
             </div>
           ))}
 
         </div>
 
         {/* User Profile Section */}
-        <div className="p-4 border-t border-border bg-gradient-to-t from-surface-hover to-transparent">
-          <div className="flex items-center gap-3 p-2 hover:bg-surface-hover rounded-xl transition-colors cursor-pointer group">
+        <div className="p-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-900/80">
+          <div className="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:ring-1 hover:ring-gray-200 dark:hover:ring-slate-700 rounded-lg transition-all cursor-pointer group">
             <div className="relative">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-md"
+                  className="w-9 h-9 rounded-lg object-cover bg-gray-200 dark:bg-slate-700"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md">
+                <div className="w-9 h-9 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-slate-400 flex items-center justify-center text-sm font-semibold">
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary truncate">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {user?.name || 'Usuário'}
               </p>
-              <p className="text-xs text-text-secondary truncate">
+              <p className="text-xs text-gray-500 dark:text-slate-400 truncate">
                 {user?.email}
               </p>
             </div>
 
             <button
               onClick={() => logout && logout()}
-              className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+              className="text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
               title="Sair"
             >
               <LogOut size={16} />
@@ -337,39 +332,26 @@ const NavItem = ({ item, activeModule, handleNavigation, accentColor }) => {
     <button
       onClick={() => handleNavigation(item.id)}
       className={`
-        w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative overflow-hidden
+        w-full flex items-center justify-between px-3 py-2 rounded-md transition-all duration-200 group relative
         ${isActive
-          ? 'text-white shadow-md'
-          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+          ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-gray-100 dark:ring-slate-700 text-gray-900 dark:text-white font-medium'
+          : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100/50 dark:hover:bg-slate-800/50 hover:text-gray-900 dark:hover:text-white'
         }
       `}
-      style={isActive ? { backgroundColor: accentColor } : {}}
     >
-      <div className="flex items-center gap-3 relative z-10">
-        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-surface-hover group-hover:bg-border'}`}>
-          <Icon size={16} className={isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'} />
-        </div>
-        <span className="text-sm font-medium">{item.label}</span>
+      <div className="flex items-center gap-3">
+        <Icon size={18} className={`${isActive ? '' : 'text-gray-400 dark:text-slate-500 group-hover:text-gray-600 dark:group-hover:text-slate-300'}`} style={isActive ? { color: accentColor || '#4F46E5' } : {}} />
+        <span className="text-sm">{item.label}</span>
       </div>
 
       {item.badge ? (
-        <span className={`
-          text-[10px] font-bold px-2 py-0.5 rounded-full relative z-10
-          ${isActive
-            ? 'bg-white/25 text-white'
-            : 'bg-red-100 text-red-600'
-          }
-        `}>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
           {item.badge}
         </span>
-      ) : (
-        <ChevronRight
-          size={14}
-          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-white/70' : 'text-text-secondary'}`}
-        />
-      )}
+      ) : null}
     </button>
   );
 };
 
 export default Sidebar;
+
