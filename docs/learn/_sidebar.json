@@ -41,6 +41,22 @@
                     "path": "toolbox/fastify"
                 },
                 {
+                    "title": "React: Construindo com LEGOs",
+                    "path": "toolbox/react"
+                },
+                {
+                    "title": "Vite: O Motor",
+                    "path": "toolbox/vite"
+                },
+                {
+                    "title": "Tailwind: Maquiagem",
+                    "path": "toolbox/tailwind"
+                },
+                {
+                    "title": "Nginx: O Porteiro",
+                    "path": "toolbox/nginx"
+                },
+                {
                     "title": "O Poder do Prisma",
                     "path": "toolbox/prisma"
                 },
