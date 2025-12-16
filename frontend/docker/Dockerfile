@@ -21,17 +21,14 @@ FROM nginx:alpine
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy custom nginx config as template
-COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
+# Copy custom nginx config DIRECTLY (no templates)
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Set default backend URL
-ENV BACKEND_URL=http://backend:3000
-
 # Expose port 80
 EXPOSE 80
 
-# Start nginx (using default entrypoint which processes templates)
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
