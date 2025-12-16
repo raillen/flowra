@@ -1,4 +1,4 @@
-# KBSys Frontend
+# Flowra Frontend
 
 Sistema de gestão de projetos - Frontend React
 

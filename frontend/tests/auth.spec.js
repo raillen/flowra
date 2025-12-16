@@ -11,7 +11,7 @@ test.describe('Auth Flow', () => {
         await page.goto('/login');
 
         // Check if we are on login or need to click 'Criar uma conta'
-        await expect(page).toHaveTitle(/KBSys|Login/);
+        await expect(page).toHaveTitle(/Flowra|Login/);
         if (await page.getByText('Criar conta').isVisible()) {
             await page.getByText('Criar conta').click();
         }

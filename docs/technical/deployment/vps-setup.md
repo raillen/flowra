@@ -1,6 +1,6 @@
 # Configuração de VPS
 
-Este guia cobre o deploy do KBSys em um servidor VPS (Ubuntu 22.04+).
+Este guia cobre o deploy do Flowra em um servidor VPS (Ubuntu 22.04+).
 
 ---
 
@@ -59,8 +59,8 @@ sudo systemctl enable postgresql
 
 ```bash
 cd /var/www
-git clone https://github.com/seu-usuario/kbsys.git
-cd kbsys
+git clone https://github.com/seu-usuario/flowra.git
+cd flowra
 ```
 
 ### 2. Configurar Backend
@@ -74,7 +74,7 @@ nano .env  # Editar variáveis
 
 **Variáveis `.env`:**
 ```env
-DATABASE_URL="postgresql://user:pass@localhost:5432/kbsys"
+DATABASE_URL="postgresql://user:pass@localhost:5432/flowra"
 JWT_SECRET="sua-chave-secreta-forte"
 NODE_ENV="production"
 PORT=3000
@@ -114,8 +114,8 @@ npm run build
 ### Backend
 
 ```bash
-cd /var/www/kbsys/backend
-pm2 start src/app.js --name kbsys-api
+cd /var/www/flowra/backend
+pm2 start src/app.js --name flowra-api
 pm2 save
 pm2 startup
 ```
@@ -150,7 +150,7 @@ server {
 server {
     listen 80;
     server_name seudominio.com;
-    root /var/www/kbsys/frontend/dist;
+    root /var/www/flowra/frontend/dist;
 
     location / {
         try_files $uri $uri/ /index.html;

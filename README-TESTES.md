@@ -1,6 +1,6 @@
-# Testes com Playwright - KBSys
+# Testes com Playwright - Flowra
 
-Este projeto contém testes E2E e de API usando Playwright para o sistema KBSys.
+Este projeto contém testes E2E e de API usando Playwright para o sistema Flowra.
 
 ## 📋 Estrutura de Testes
 

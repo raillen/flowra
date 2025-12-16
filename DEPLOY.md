@@ -1,5 +1,5 @@
 # ===========================================
-# KBSys Deploy Guide - VPS
+# Flowra Deploy Guide - VPS
 # ===========================================
 
 ## Pré-requisitos
@@ -14,8 +14,8 @@
 ### 1. Clone o repositório na VPS
 
 ```bash
-git clone <seu-repo> kbsys
-cd kbsys
+git clone <seu-repo> flowra
+cd flowra
 ```
 
 ### 2. Configure as variáveis de ambiente
@@ -28,9 +28,9 @@ nano .env
 Edite o arquivo `.env` com suas configurações:
 
 ```env
-DB_USER=kbsys
+DB_USER=flowra
 DB_PASSWORD=SuaSenhaSeguraAqui123!
-DB_NAME=kbsys
+DB_NAME=flowra
 JWT_SECRET=ChaveSuperSecretaParaJWT_MinimoDeDozeCaracteres
 APP_PORT=80
 CORS_ORIGIN=https://seudominio.com
@@ -145,7 +145,7 @@ docker-compose ps db
 docker-compose logs db
 
 # Testar conexão manualmente
-docker-compose exec db psql -U kbsys -d kbsys
+docker-compose exec db psql -U flowra -d flowra
 ```
 
 ### Frontend retorna 502 Bad Gateway

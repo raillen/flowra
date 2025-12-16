@@ -1,4 +1,4 @@
-# Guia de Deploy - KBSys Backend
+# Guia de Deploy - Flowra Backend
 
 ## 🐳 Deploy com Docker (Recomendado)
 
@@ -66,17 +66,18 @@ sudo apt install -y nodejs npm postgresql
 
 2. **Configurar PostgreSQL:**
 ```bash
-sudo -u postgres createdb kbsys
-sudo -u postgres createuser kbsys_user
-sudo -u postgres psql -c "ALTER USER kbsys_user WITH PASSWORD 'sua-senha';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE kbsys TO kbsys_user;"
+sudo -u postgres createdb flowra
+sudo -u postgres createuser flowra_user
+sudo -u postgres psql -c "ALTER USER flowra_user WITH PASSWORD 'sua-senha';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE flowra TO flowra_user;"
 ```
 
 3. **Clonar e configurar:**
 ```bash
 cd /var/www
-git clone <seu-repo> kbsys-backend
-cd kbsys-backend/backend
+git clone <seu-repo> flowra-backend
+cd flowra-backend/backend
+pm2 start src/app.js --name flowra-backend
 npm install --production
 cp .env.example .env
 nano .env  # Configurar
@@ -91,7 +92,7 @@ npm run prisma:migrate deploy
 5. **Usar PM2 para gerenciar processo:**
 ```bash
 npm install -g pm2
-pm2 start src/app.js --name kbsys-backend
+pm2 start src/app.js --name flowra-backend
 pm2 save
 pm2 startup  # Configurar auto-start
 ```
@@ -114,7 +115,7 @@ git pull
 npm install --production
 npm run prisma:generate
 npm run prisma:migrate deploy
-pm2 restart kbsys-backend
+pm2 restart flowra-backend
 ```
 
 ---
@@ -130,16 +131,9 @@ chmod +x scripts/backup-db.sh
 ### Manual
 ```bash
 # Com Docker
-docker exec kbsys-postgres pg_dump -U kbsys_user kbsys > backup.sql
-
-# Sem Docker
-PGPASSWORD=sua-senha pg_dump -h localhost -U kbsys_user kbsys > backup.sql
-```
-
-### Restaurar Backup
-```bash
-chmod +x scripts/restore-db.sh
-./scripts/restore-db.sh backups/kbsys_backup_20240101_120000.sql.gz
+docker exec flowra-postgres pg_dump -U flowra_user flowra > backup.sql
+PGPASSWORD=sua-senha pg_dump -h localhost -U flowra_user flowra > backup.sql
+./scripts/restore-db.sh backups/flowra_backup_20240101_120000.sql.gz
 ```
 
 ---
@@ -152,7 +146,7 @@ chmod +x scripts/restore-db.sh
 docker-compose -f docker/docker-compose.yml logs -f backend
 
 # PM2
-pm2 logs kbsys-backend
+pm2 logs flowra-backend
 ```
 
 ### Health Check
@@ -186,7 +180,7 @@ docker-compose -f docker/docker-compose.yml ps
 ```nginx
 server {
     listen 80;
-    server_name api.kbsys.com;
+    server_name api.flowra.com;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -221,7 +215,7 @@ docker-compose -f docker/docker-compose.yml config
 docker-compose -f docker/docker-compose.yml ps postgres
 
 # Testar conexão
-docker-compose -f docker/docker-compose.yml exec postgres psql -U kbsys_user -d kbsys
+docker-compose -f docker/docker-compose.yml exec postgres psql -U flowra_user -d flowra
 ```
 
 ### Porta já em uso

@@ -1,7 +1,7 @@
 {
-  "name": "kbsys-tests",
+  "name": "flowra-tests",
   "version": "1.0.0",
-  "description": "Testes E2E e de API para KBSys usando Playwright",
+  "description": "Testes E2E e de API para Flowra usando Playwright",
   "type": "module",
   "scripts": {
     "test": "playwright test",
@@ -19,4 +19,3 @@
     "@playwright/test": "^1.40.0"
   }
 }
-

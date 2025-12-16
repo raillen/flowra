@@ -2,7 +2,7 @@
 
 ## 📋 Resumo
 
-O frontend do KBSys foi completamente modularizado seguindo as melhores práticas de engenharia de software. O código original do `index.html` foi refatorado em uma estrutura React moderna e organizada.
+O frontend do Flowra foi completamente modularizado seguindo as melhores práticas de engenharia de software. O código original do `index.html` foi refatorado em uma estrutura React moderna e organizada.
 
 ## 🏗️ Estrutura Criada
 

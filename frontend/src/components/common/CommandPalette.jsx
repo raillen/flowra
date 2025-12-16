@@ -232,13 +232,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
                                                 key={item.id}
                                                 onClick={() => handleSelect(item)}
                                                 className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${globalIndex === selectedIndex
-                                                        ? 'bg-primary-50 text-primary-700'
-                                                        : 'hover:bg-secondary-50'
+                                                    ? 'bg-primary-50 text-primary-700'
+                                                    : 'hover:bg-secondary-50'
                                                     }`}
                                             >
                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${globalIndex === selectedIndex
-                                                        ? 'bg-primary-100'
-                                                        : 'bg-secondary-100'
+                                                    ? 'bg-primary-100'
+                                                    : 'bg-secondary-100'
                                                     }`}>
                                                     <Icon size={16} />
                                                 </div>
@@ -269,7 +269,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
                             <span>selecionar</span>
                         </span>
                     </div>
-                    <span>Powered by KBSys</span>
+                    <span>Powered by Flowra</span>
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-# Guia de Desenvolvimento do Backend - KBSys
+# Guia de Desenvolvimento do Backend - Flowra
 
 ## 📋 Índice
 
@@ -16,7 +16,7 @@
 
 ## Visão Geral
 
-O backend do KBSys é uma API RESTful desenvolvida em Node.js seguindo as melhores práticas de engenharia de software. A arquitetura segue o padrão de separação de responsabilidades com camadas bem definidas: Controllers, Services, Repositories e Models.
+O backend do Flowra é uma API RESTful desenvolvida em Node.js seguindo as melhores práticas de engenharia de software. A arquitetura segue o padrão de separação de responsabilidades com camadas bem definidas: Controllers, Services, Repositories e Models.
 
 ### Princípios Aplicados
 
@@ -67,7 +67,7 @@ O backend do KBSys é uma API RESTful desenvolvida em Node.js seguindo as melhor
 ## Estrutura do Projeto
 
 ```
-kbsys-backend/
+flowra-backend/
 ├── src/
 │   ├── config/              # Configurações da aplicação
 │   │   ├── database.js      # Configuração Prisma
@@ -234,7 +234,7 @@ kbsys-backend/
 ```bash
 # 1. Clonar repositório
 git clone <repository-url>
-cd kbsys-backend
+cd flowra-backend
 
 # 2. Instalar dependências
 npm install
@@ -265,7 +265,7 @@ PORT=3000
 HOST=0.0.0.0
 
 # Banco de Dados
-DATABASE_URL=postgresql://user:password@localhost:5432/kbsys
+DATABASE_URL=postgresql://user:password@localhost:5432/flowra
 
 # Autenticação
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -358,7 +358,7 @@ logger.error({ error, context }, 'Failed to create project');
 
 A documentação da API está disponível em:
 - **Desenvolvimento**: `http://localhost:3000/docs`
-- **Produção**: `https://api.kbsys.com/docs`
+- **Produção**: `https://api.flowra.com/docs`
 
 ### Exemplo de Endpoint Documentado
 
@@ -471,7 +471,7 @@ sudo apt install docker.io docker-compose -y
 
 # 2. Clonar repositório
 git clone <repository-url>
-cd kbsys-backend
+cd flowra-backend
 
 # 3. Configurar .env
 nano .env

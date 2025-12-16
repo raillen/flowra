@@ -128,7 +128,7 @@ const Login = ({ onCreateAccount }) => {
         <div className="mt-6 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full text-xs text-gray-500 border border-gray-100">
             <span className="text-xs">💡</span>
-            <span>Teste: admin@kbsys.com / admin123</span>
+            <span>Teste: admin@flowra.com / admin123</span>
           </div>
         </div>
       </div>

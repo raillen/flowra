@@ -1,4 +1,4 @@
-# Resumo de Deploy - KBSys
+# Resumo de Deploy - Flowra
 
 ## ✅ Scripts Criados
 
@@ -57,7 +57,7 @@ chmod +x scripts/backup-db.sh
 
 # Restaurar backup
 chmod +x scripts/restore-db.sh
-./scripts/restore-db.sh backups/kbsys_backup_20240101_120000.sql.gz
+./scripts/restore-db.sh backups/flowra_backup_20240101_120000.sql.gz
 ```
 
 ---
@@ -82,8 +82,8 @@ chmod +x scripts/restore-db.sh
 
 ```env
 # Banco de Dados
-DB_NAME=kbsys
-DB_USER=kbsys_user
+DB_NAME=flowra
+DB_USER=flowra_user
 DB_PASSWORD=sua-senha-segura
 DB_PORT=5432
 

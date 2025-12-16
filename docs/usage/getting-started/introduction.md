@@ -1,12 +1,12 @@
 # Introdução ao KBSys
 
-Bem-vindo ao **KBSys** - sua plataforma completa de gerenciamento de projetos!
+Bem-vindo ao **Flowra** - sua plataforma completa de gerenciamento de projetos!
 
 ---
 
-## O que é o KBSys?
+## O que é o Flowra?
 
-O KBSys é uma ferramenta poderosa que ajuda equipes a:
+O Flowra é uma ferramenta poderosa que ajuda equipes a:
 
 - 📋 **Organizar projetos** em boards visuais
 - ✅ **Gerenciar tarefas** com Kanban intuitivo

@@ -79,9 +79,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: kbsys
+      POSTGRES_USER: flowra
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: kbsys
+      POSTGRES_DB: flowra
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -89,7 +89,7 @@ services:
   backend:
     build: ./backend
     environment:
-      DATABASE_URL: postgresql://kbsys:${DB_PASSWORD}@db:5432/kbsys
+      DATABASE_URL: postgresql://flowra:${DB_PASSWORD}@db:5432/flowra
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
       PORT: 3000
@@ -165,7 +165,7 @@ docker-compose logs -f backend
 docker-compose exec backend sh
 
 # Backup do banco
-docker-compose exec db pg_dump -U kbsys kbsys > backup.sql
+docker-compose exec db pg_dump -U flowra flowra > backup.sql
 ```
 
 ---

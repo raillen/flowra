@@ -329,7 +329,7 @@ const KanbanBoardView = () => {
   // Initialize viewMode from localStorage (Global persistence)
   const [viewMode, setViewMode] = useState(() => {
     try {
-      return localStorage.getItem('kbsys_global_view_mode') || 'kanban';
+      return localStorage.getItem('flowra_global_view_mode') || 'kanban';
     } catch {
       return 'kanban';
     }
@@ -337,7 +337,7 @@ const KanbanBoardView = () => {
 
   // Persist viewMode changes
   useEffect(() => {
-    localStorage.setItem('kbsys_global_view_mode', viewMode);
+    localStorage.setItem('flowra_global_view_mode', viewMode);
   }, [viewMode]);
 
   const [filters, setFilters] = useState({});

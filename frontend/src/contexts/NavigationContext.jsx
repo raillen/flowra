@@ -10,7 +10,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const NavigationContext = createContext(null);
 
-const STORAGE_KEY = 'kbsys_navigation';
+const STORAGE_KEY = 'flowra_navigation';
 
 /**
  * Get initial state from localStorage or defaults
