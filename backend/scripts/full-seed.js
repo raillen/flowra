@@ -18,10 +18,10 @@ async function main() {
     const hashedPassword = await bcrypt.hash('admin123', 10);
 
     const admin = await prisma.user.upsert({
-        where: { email: 'admin@kbsys.com' },
+        where: { email: 'admin@flowra.com' },
         update: {},
         create: {
-            email: 'admin@kbsys.com',
+            email: 'admin@flowra.com',
             name: 'Administrador',
             password: hashedPassword,
             role: 'admin',
@@ -30,40 +30,40 @@ async function main() {
 
     const users = await Promise.all([
         prisma.user.upsert({
-            where: { email: 'joao.silva@kbsys.com' },
+            where: { email: 'joao.silva@flowra.com' },
             update: {},
             create: {
-                email: 'joao.silva@kbsys.com',
+                email: 'joao.silva@flowra.com',
                 name: 'João Silva',
                 password: hashedPassword,
                 role: 'user',
             },
         }),
         prisma.user.upsert({
-            where: { email: 'maria.santos@kbsys.com' },
+            where: { email: 'maria.santos@flowra.com' },
             update: {},
             create: {
-                email: 'maria.santos@kbsys.com',
+                email: 'maria.santos@flowra.com',
                 name: 'Maria Santos',
                 password: hashedPassword,
                 role: 'user',
             },
         }),
         prisma.user.upsert({
-            where: { email: 'pedro.costa@kbsys.com' },
+            where: { email: 'pedro.costa@flowra.com' },
             update: {},
             create: {
-                email: 'pedro.costa@kbsys.com',
+                email: 'pedro.costa@flowra.com',
                 name: 'Pedro Costa',
                 password: hashedPassword,
                 role: 'user',
             },
         }),
         prisma.user.upsert({
-            where: { email: 'ana.oliveira@kbsys.com' },
+            where: { email: 'ana.oliveira@flowra.com' },
             update: {},
             create: {
-                email: 'ana.oliveira@kbsys.com',
+                email: 'ana.oliveira@flowra.com',
                 name: 'Ana Oliveira',
                 password: hashedPassword,
                 role: 'user',
@@ -574,11 +574,11 @@ async function main() {
     logger.info('Full database seed completed!');
     logger.info('=================================');
     logger.info('Users:');
-    logger.info('  admin@kbsys.com / admin123 (Admin)');
-    logger.info('  joao.silva@kbsys.com / admin123');
-    logger.info('  maria.santos@kbsys.com / admin123');
-    logger.info('  pedro.costa@kbsys.com / admin123');
-    logger.info('  ana.oliveira@kbsys.com / admin123');
+    logger.info('  admin@flowra.com / admin123 (Admin)');
+    logger.info('  joao.silva@flowra.com / admin123');
+    logger.info('  maria.santos@flowra.com / admin123');
+    logger.info('  pedro.costa@flowra.com / admin123');
+    logger.info('  ana.oliveira@flowra.com / admin123');
 }
 
 main()

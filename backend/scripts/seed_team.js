@@ -11,13 +11,13 @@ async function main() {
     const passwordHash = await bcrypt.hash('123456', 10);
 
     const users = [
-        { name: 'Sabrina Pereira', email: 'sabrina@kbsys.com', avatar: null, role: 'admin' },
-        { name: 'Gerusia Nogueira', email: 'gerusia@kbsys.com', avatar: null, role: 'user' },
-        { name: 'Carolina Machado', email: 'carolina@kbsys.com', avatar: null, role: 'user' },
-        { name: 'Alexandre Maia', email: 'alexandre@kbsys.com', avatar: null, role: 'user' },
-        { name: 'Rafael Mascarenhas', email: 'rafael@kbsys.com', avatar: null, role: 'user' }, // The user in the screenshot seemed to be this one or Raillen
-        { name: 'Daiane Carvalho', email: 'daiane@kbsys.com', avatar: null, role: 'user' },
-        { name: 'Raillen Santos', email: 'raillen@kbsys.com', avatar: null, role: 'admin' } // Current user usually
+        { name: 'Sabrina Pereira', email: 'sabrina@flowra.com', avatar: null, role: 'admin' },
+        { name: 'Gerusia Nogueira', email: 'gerusia@flowra.com', avatar: null, role: 'user' },
+        { name: 'Carolina Machado', email: 'carolina@flowra.com', avatar: null, role: 'user' },
+        { name: 'Alexandre Maia', email: 'alexandre@flowra.com', avatar: null, role: 'user' },
+        { name: 'Rafael Mascarenhas', email: 'rafael@flowra.com', avatar: null, role: 'user' }, // The user in the screenshot seemed to be this one or Raillen
+        { name: 'Daiane Carvalho', email: 'daiane@flowra.com', avatar: null, role: 'user' },
+        { name: 'Raillen Santos', email: 'raillen@flowra.com', avatar: null, role: 'admin' } // Current user usually
     ];
 
     const createdUsers = [];

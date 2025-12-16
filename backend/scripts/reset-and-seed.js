@@ -50,7 +50,7 @@ async function main() {
     data: {
       id: uuid(),
       name: 'Administrador',
-      email: 'admin@kbsys.com',
+      email: 'admin@flowra.com',
       password: hashedPassword,
       role: 'admin',
     },
@@ -283,7 +283,7 @@ async function main() {
 
   logger.info('🎉 Database reset and seeded successfully!');
   console.log('\n📋 Test Data Summary:');
-  console.log('   - Admin User: admin@kbsys.com / admin123');
+  console.log('   - Admin User: admin@flowra.com / admin123');
   console.log('   - Company: Empresa Teste');
   console.log('   - Group: Grupo Desenvolvimento');
   console.log('   - Project: Projeto Teste Completo');

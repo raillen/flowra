@@ -37,13 +37,13 @@ node scripts/create-superuser.js --email admin@example.com --name "Administrador
 
 ```bash
 # Criar admin padrão
-node scripts/create-superuser.js --email admin@kbsys.com --name "Admin" --password "admin123"
+node scripts/create-superuser.js --email admin@flowra.com --name "Admin" --password "admin123"
 
 # Criar superuser
-node scripts/create-superuser.js --email superuser@kbsys.com --name "Super User" --password "super123" --role superuser
+node scripts/create-superuser.js --email superuser@flowra.com --name "Super User" --password "super123" --role superuser
 
 # Criar usuário comum (não recomendado via este script)
-node scripts/create-superuser.js --email user@kbsys.com --name "User" --password "user123" --role user
+node scripts/create-superuser.js --email user@flowra.com --name "User" --password "user123" --role user
 ```
 
 ## 🔐 Credenciais Padrão de Teste
@@ -51,7 +51,7 @@ node scripts/create-superuser.js --email user@kbsys.com --name "User" --password
 Após executar o script, você terá um usuário criado. Exemplo:
 
 ```
-Email: admin@kbsys.com
+Email: admin@flowra.com
 Senha: admin123
 Role: admin
 ```

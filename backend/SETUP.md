@@ -32,7 +32,7 @@ npm install
 cp .env.example .env
 
 # Editar .env com suas credenciais PostgreSQL
-# DATABASE_URL=postgresql://user:password@localhost:5432/kbsys
+# DATABASE_URL=postgresql://user:password@localhost:5432/flowra
 ```
 
 ### 3. Configurar Prisma
@@ -43,7 +43,7 @@ npm run prisma:generate
 
 # Criar banco de dados (se não existir)
 # Criar manualmente no PostgreSQL ou usar:
-createdb kbsys
+createdb flowra
 
 # Rodar migrations
 npm run prisma:migrate dev --name init

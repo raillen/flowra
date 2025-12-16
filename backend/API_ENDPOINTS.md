@@ -1,4 +1,4 @@
-# API Endpoints - KBSys Backend
+# API Endpoints - Flowra Backend
 
 ## 🔐 Autenticação
 

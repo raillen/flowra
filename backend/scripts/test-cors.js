@@ -26,18 +26,18 @@ async function testCORS() {
     console.log('1. Testing health endpoint...');
     console.log(`   URL: ${API_URL}/health`);
     const healthResponse = await fetch(`${API_URL}/health`);
-    
+
     const contentType = healthResponse.headers.get('content-type');
     console.log(`   Status: ${healthResponse.status} ${healthResponse.statusText}`);
     console.log(`   Content-Type: ${contentType || 'N/A'}`);
-    
+
     if (!healthResponse.ok) {
       const text = await healthResponse.text();
       console.error('❌ Health check failed:', `HTTP ${healthResponse.status}`);
       console.error('   Response (first 200 chars):', text.substring(0, 200));
       return;
     }
-    
+
     if (contentType && contentType.includes('application/json')) {
       const healthData = await healthResponse.json();
       console.log('✅ Health check passed:', healthData);
@@ -46,7 +46,7 @@ async function testCORS() {
       console.log('⚠️  Health endpoint returned non-JSON response');
       console.log('   Response (first 200 chars):', text.substring(0, 200));
     }
-    
+
     console.log('   CORS Headers:', {
       'access-control-allow-origin': healthResponse.headers.get('access-control-allow-origin') || 'N/A',
       'access-control-allow-credentials': healthResponse.headers.get('access-control-allow-credentials') || 'N/A',
@@ -72,7 +72,7 @@ async function testCORS() {
         'Access-Control-Request-Headers': 'Content-Type',
       },
     });
-    
+
     if (optionsResponse.ok) {
       console.log('✅ CORS preflight passed');
       console.log('   Status:', optionsResponse.status);
@@ -100,13 +100,13 @@ async function testCORS() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'admin@kbsys.com',
+        email: 'admin@flowra.com',
         password: 'admin123',
       }),
     });
-    
+
     const loginData = await loginResponse.json();
-    
+
     if (loginResponse.ok) {
       console.log('✅ Login request passed');
       console.log('   Status:', loginResponse.status);
